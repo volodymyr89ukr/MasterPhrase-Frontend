@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES6", // Версія JS, у яку компілюється TS
+    "module": "ESNext", // Тип модулів
+    "lib": ["DOM", "DOM.Iterable", "ESNext"], // Бібліотеки, які використовуєш
+    "allowJs": true, // Дозволяє імпортувати JS файли
+    "skipLibCheck": true, // Пропускає перевірку типів у залежностях
+    "esModuleInterop": true, // Обов’язково для імпорту JSON та багатьох пакетів
+    "allowSyntheticDefaultImports": true, // Дозволяє дефолтний імпорт там, де немає
+    "strict": true, // Увімкнути сувору типізацію
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node", // Як знаходити модулі (Node.js стиль)
+    "resolveJsonModule": true, // Щоб імпортувати JSON файли як модулі
+    "isolatedModules": true,
+    "noEmit": true, // Не компілювати у js (якщо збираєш через Babel/Vite)
+    "jsx": "react-jsx" // Якщо React 17+ з новим JSX трансформом
+  },
+  "include": ["src"] // Тека з твоїм кодом
+}
