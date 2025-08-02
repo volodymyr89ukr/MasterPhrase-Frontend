@@ -98,17 +98,22 @@ function AppContent() {
       }
 
       const token = localStorage.getItem("token");
-      await fetch(`/api/users/${newUser.id}/languages-settings`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          interface_language,
-          learning_language,
-        }),
-      });
+      await fetch(
+        `${import.meta.env.VITE_API_URL}/api/users/${
+          newUser.id
+        }/languages-settings`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            interface_language,
+            learning_language,
+          }),
+        }
+      );
     }
   };
 

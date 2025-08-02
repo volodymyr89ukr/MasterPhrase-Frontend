@@ -43,10 +43,14 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
         setLoading(true);
         setError(null);
 
-        const interfaceRes = await fetch("/api/languages");
+        const interfaceRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/languages`
+        );
         const interfaceData = await interfaceRes.json();
 
-        const learningRes = await fetch("/api/learning-languages");
+        const learningRes = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/learning-languages`
+        );
         const learningData = await learningRes.json();
 
         if (interfaceData.success && learningData.success) {
@@ -95,17 +99,22 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
           setSuccess(null);
 
           const token = localStorage.getItem("token");
-          const res = await fetch(`/api/users/${user.id}/languages-settings`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-            body: JSON.stringify({
-              interface_language: interfaceLang.code,
-              learning_language: learningLang.code,
-            }),
-          });
+          const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/users/${
+              user.id
+            }/languages-settings`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify({
+                interface_language: interfaceLang.code,
+                learning_language: learningLang.code,
+              }),
+            }
+          );
 
           if (!res.ok) {
             const data = await res.json();

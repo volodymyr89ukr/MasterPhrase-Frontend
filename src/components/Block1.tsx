@@ -144,7 +144,11 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
       return;
     }
     setLoadingThousands(true);
-    fetch(`/api/thousands?language_id=${learningLanguage.id}`)
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/thousands?language_id=${
+        learningLanguage.id
+      }`
+    )
       .then((r) => r.json())
       .then((data) => {
         setThousands(Array.isArray(data.data) ? data.data : []);
@@ -160,7 +164,11 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
   useEffect(() => {
     if (selectedThousandId) {
       setLoadingWordSets(true);
-      fetch(`/api/thousands/${selectedThousandId}/word-sets`)
+      fetch(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/thousands/${selectedThousandId}/word-sets`
+      )
         .then((r) => r.json())
         .then((data) => {
           setWordSets(Array.isArray(data.data) ? data.data : []);
@@ -189,7 +197,9 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
       setLoadingReadings(true);
       setLoadingExercises(true);
 
-      fetch(`/api/word-sets/${selectedSetId}/words`)
+      fetch(
+        `${import.meta.env.VITE_API_URL}/api/word-sets/${selectedSetId}/words`
+      )
         .then((r) => r.json())
         .then((data) => {
           setAllWords(
@@ -199,7 +209,9 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
         .catch(() => setAllWords([]))
         .finally(() => setLoadingWords(false));
 
-      fetch(`/api/word-sets/${selectedSetId}/texts`)
+      fetch(
+        `${import.meta.env.VITE_API_URL}/api/word-sets/${selectedSetId}/texts`
+      )
         .then((r) => r.json())
         .then((data) => {
           setReadingTitles(Array.isArray(data) ? data : data.data || []);
@@ -207,7 +219,11 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
         .catch(() => setReadingTitles([]))
         .finally(() => setLoadingReadings(false));
 
-      fetch(`/api/word-sets/${selectedSetId}/exercises`)
+      fetch(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/word-sets/${selectedSetId}/exercises`
+      )
         .then((r) => r.json())
         .then((data) => {
           setExercisesMeta(Array.isArray(data) ? data : data.data || []);
@@ -238,7 +254,9 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
     setSelectedReadingId(readingId);
     setReadingText(null);
     if (readingId) {
-      const res = await fetch(`/api/texts/${readingId}`);
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/texts/${readingId}`
+      );
       const data = await res.json();
       setReadingText(data.data || { text: "", translation: "" });
     }
@@ -251,7 +269,9 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
     if (exerciseId && selectedSetId) {
       try {
         const res = await fetch(
-          `/api/word-sets/${selectedSetId}/exercises/${exerciseId}`
+          `${
+            import.meta.env.VITE_API_URL
+          }/api/word-sets/${selectedSetId}/exercises/${exerciseId}`
         );
         const data = await res.json();
         setExerciseDetails(data);

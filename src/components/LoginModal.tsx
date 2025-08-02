@@ -100,11 +100,14 @@ export default function LoginModal({
 
     try {
       if (step === 1) {
-        const res = await fetch("/auth/forgot-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: form.email.trim() }),
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: form.email.trim() }),
+          }
+        );
         const data = await res.json();
         setLoading(false);
         setForm((f) => ({ ...f, token: "", password: "" }));
@@ -115,15 +118,18 @@ export default function LoginModal({
           setError(data.message || t("error_sending_email"));
         }
       } else if (step === 2) {
-        const res = await fetch("/auth/reset-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: form.email.trim(),
-            token: form.token.trim(),
-            password: form.password,
-          }),
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/auth/reset-password`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: form.email.trim(),
+              token: form.token.trim(),
+              password: form.password,
+            }),
+          }
+        );
         const data = await res.json();
         setLoading(false);
         if (res.ok) {
