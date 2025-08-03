@@ -47,7 +47,9 @@ export default function LoginModal({
     setLoading(true);
 
     try {
-      const url = isRegister ? "/api/auth/register" : "/api/auth/login";
+      const url = isRegister
+        ? `${import.meta.env.VITE_API_URL}/api/auth/register`
+        : `${import.meta.env.VITE_API_URL}/api/auth/login`;
       const body = isRegister
         ? {
             email: form.email.trim(),
