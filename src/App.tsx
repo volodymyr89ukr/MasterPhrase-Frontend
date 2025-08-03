@@ -246,6 +246,7 @@ function AppContent() {
         onClose={() => setShowLogin(false)}
         onSuccess={handleRegisterSuccess}
       />
+      <></>
 
       {/* Головна частина: Block1 керує навігацією */}
       <Block1
