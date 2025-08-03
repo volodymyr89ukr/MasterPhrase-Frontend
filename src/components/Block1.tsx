@@ -58,58 +58,31 @@ interface Language {
 interface Block1Props {
   user: User | null;
   learningLanguage: Language | null;
+  page: "thousands" | "sets" | "setDetails";
+  onSelectThousand: (thousand: Thousand) => void;
+  onSelectSet: (set: WordSet) => void;
+  selectedThousand: Thousand | null;
+  selectedSet: WordSet | null;
+  onBackFromSet: () => void;
+  onBackFromSets: () => void;
 }
 
-function ConfirmModal({
-  open,
-  onCancel,
-  onConfirm,
-}: {
-  open: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
+export default function Block1({
+  user,
+  learningLanguage,
+  page,
+  onSelectThousand,
+  onSelectSet,
+  selectedThousand,
+  selectedSet,
+  onBackFromSet,
+  onBackFromSets,
+}: Block1Props) {
   const { t } = useTranslation();
 
-  if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-2xl p-6 shadow-xl w-80 max-w-full">
-        <h3 className="font-bold text-lg mb-4 text-center">
-          {t("confirm_exit_title")}
-        </h3>
-        <div className="mb-4 text-gray-700 text-center">
-          {t("confirm_exit_text")}
-        </div>
-        <div className="flex justify-end gap-4">
-          <button
-            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-            onClick={onCancel}
-          >
-            {t("cancel")}
-          </button>
-          <button
-            className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 border border-blue-200"
-            onClick={onConfirm}
-          >
-            {t("exit")}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function Block1({ user, learningLanguage }: Block1Props) {
-  const { t } = useTranslation();
-
+  // --- State ---
   const [thousands, setThousands] = useState<Thousand[]>([]);
-  const [selectedThousandId, setSelectedThousandId] = useState<number | null>(
-    null
-  );
   const [wordSets, setWordSets] = useState<WordSet[]>([]);
-  const [selectedSetId, setSelectedSetId] = useState<number | null>(null);
-
   const [allWords, setAllWords] = useState<WordItem[]>([]);
   const [readingTitles, setReadingTitles] = useState<ReadingTitle[]>([]);
   const [exercisesMeta, setExercisesMeta] = useState<ExerciseMeta[]>([]);
@@ -120,27 +93,26 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
   const [activeTab, setActiveTab] = useState<"words" | "reading" | "exercises">(
     "words"
   );
-
   const [selectedExerciseId, setSelectedExerciseId] = useState<number | null>(
     null
   );
   const [exerciseDetails, setExerciseDetails] =
     useState<ExerciseDetails | null>(null);
-  const [loadingExerciseDetails, setLoadingExerciseDetails] =
-    useState<boolean>(false);
-
-  const [showConfirmExit, setShowConfirmExit] = useState<boolean>(false);
 
   const [loadingThousands, setLoadingThousands] = useState<boolean>(true);
   const [loadingWordSets, setLoadingWordSets] = useState<boolean>(false);
   const [loadingWords, setLoadingWords] = useState<boolean>(false);
   const [loadingReadings, setLoadingReadings] = useState<boolean>(false);
   const [loadingExercises, setLoadingExercises] = useState<boolean>(false);
+  const [loadingExerciseDetails, setLoadingExerciseDetails] =
+    useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // --- Load thousands ---
   useEffect(() => {
     if (!learningLanguage) {
       setThousands([]);
+      setLoadingThousands(false);
       return;
     }
     setLoadingThousands(true);
@@ -161,84 +133,74 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
       });
   }, [learningLanguage, t]);
 
+  // --- Load word sets when thousand selected ---
   useEffect(() => {
-    if (selectedThousandId) {
-      setLoadingWordSets(true);
-      fetch(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/thousands/${selectedThousandId}/word-sets`
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          setWordSets(Array.isArray(data.data) ? data.data : []);
-          setLoadingWordSets(false);
-        })
-        .catch(() => {
-          setWordSets([]);
-          setLoadingWordSets(false);
-          setError(t("error_loading_word_sets"));
-        });
-      setSelectedSetId(null);
-      setAllWords([]);
-      setReadingTitles([]);
-      setExercisesMeta([]);
-      setReadingText(null);
-      setSelectedReadingId(null);
-      setActiveTab("words");
-      setSelectedExerciseId(null);
-      setExerciseDetails(null);
-    }
-  }, [selectedThousandId, t]);
+    if (page !== "sets" || !selectedThousand) return;
+    setLoadingWordSets(true);
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/thousands/${
+        selectedThousand.id
+      }/word-sets`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        setWordSets(Array.isArray(data.data) ? data.data : []);
+        setLoadingWordSets(false);
+      })
+      .catch(() => {
+        setWordSets([]);
+        setLoadingWordSets(false);
+        setError(t("error_loading_word_sets"));
+      });
+  }, [page, selectedThousand, t]);
 
+  // --- Load set details (words, readings, exercises) ---
   useEffect(() => {
-    if (selectedSetId) {
-      setLoadingWords(true);
-      setLoadingReadings(true);
-      setLoadingExercises(true);
+    if (page !== "setDetails" || !selectedSet) return;
+    setLoadingWords(true);
+    setLoadingReadings(true);
+    setLoadingExercises(true);
 
-      fetch(
-        `${import.meta.env.VITE_API_URL}/api/word-sets/${selectedSetId}/words`
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          setAllWords(
-            Array.isArray(data) ? data : data.words || data.data || []
-          );
-        })
-        .catch(() => setAllWords([]))
-        .finally(() => setLoadingWords(false));
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/word-sets/${selectedSet.id}/words`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        setAllWords(Array.isArray(data) ? data : data.words || data.data || []);
+      })
+      .catch(() => setAllWords([]))
+      .finally(() => setLoadingWords(false));
 
-      fetch(
-        `${import.meta.env.VITE_API_URL}/api/word-sets/${selectedSetId}/texts`
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          setReadingTitles(Array.isArray(data) ? data : data.data || []);
-        })
-        .catch(() => setReadingTitles([]))
-        .finally(() => setLoadingReadings(false));
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/word-sets/${selectedSet.id}/texts`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        setReadingTitles(Array.isArray(data) ? data : data.data || []);
+      })
+      .catch(() => setReadingTitles([]))
+      .finally(() => setLoadingReadings(false));
 
-      fetch(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/word-sets/${selectedSetId}/exercises`
-      )
-        .then((r) => r.json())
-        .then((data) => {
-          setExercisesMeta(Array.isArray(data) ? data : data.data || []);
-        })
-        .catch(() => setExercisesMeta([]))
-        .finally(() => setLoadingExercises(false));
+    fetch(
+      `${import.meta.env.VITE_API_URL}/api/word-sets/${
+        selectedSet.id
+      }/exercises`
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        setExercisesMeta(Array.isArray(data) ? data : data.data || []);
+      })
+      .catch(() => setExercisesMeta([]))
+      .finally(() => setLoadingExercises(false));
 
-      setReadingText(null);
-      setSelectedReadingId(null);
-      setActiveTab("words");
-      setSelectedExerciseId(null);
-      setExerciseDetails(null);
-    }
-  }, [selectedSetId]);
+    setReadingText(null);
+    setSelectedReadingId(null);
+    setActiveTab("words");
+    setSelectedExerciseId(null);
+    setExerciseDetails(null);
+  }, [page, selectedSet]);
 
+  // --- Load reading text when selected ---
   useEffect(() => {
     if (
       activeTab === "reading" &&
@@ -266,12 +228,12 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
     setSelectedExerciseId(exerciseId);
     setLoadingExerciseDetails(true);
     setExerciseDetails(null);
-    if (exerciseId && selectedSetId) {
+    if (exerciseId && selectedSet) {
       try {
         const res = await fetch(
-          `${
-            import.meta.env.VITE_API_URL
-          }/api/word-sets/${selectedSetId}/exercises/${exerciseId}`
+          `${import.meta.env.VITE_API_URL}/api/word-sets/${
+            selectedSet.id
+          }/exercises/${exerciseId}`
         );
         const data = await res.json();
         setExerciseDetails(data);
@@ -284,305 +246,210 @@ export default function Block1({ user, learningLanguage }: Block1Props) {
     }
   };
 
-  const handleRequestExitExercise = () => setShowConfirmExit(true);
-  const handleCancelExitExercise = () => setShowConfirmExit(false);
-  const handleConfirmExitExercise = () => {
-    setShowConfirmExit(false);
-    setSelectedExerciseId(null);
-    setExerciseDetails(null);
-    setLoadingExerciseDetails(false);
-  };
-
-  if (!selectedThousandId) {
+  // --- UI: Вибір тисячі ---
+  if (page === "thousands") {
     if (loadingThousands) {
       return (
-        <div className="p-4 w-full max-w-full sm:max-w-2xl md:max-w-3xl min-w-0 mx-auto">
-          <div className="text-center text-gray-400 text-lg">
-            {t("loading_thousands")}
-          </div>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
+          <div className="text-blue-700">{t("loading_thousands")}</div>
         </div>
       );
     }
     return (
-      <div className="p-4 w-full max-w-full sm:max-w-2xl md:max-w-3xl min-w-0 mx-auto">
-        <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">
-          {t("select_thousand_words")}
+      <div className="p-4 w-full max-w-2xl mx-auto">
+        <h2 className="text-xl font-bold mb-4 text-blue-700 text-center">
+          {t("choose_thousand_title")}
         </h2>
-        {error && <div className="text-red-500 text-center mb-4">{error}</div>}
-        <div className="flex flex-wrap gap-4 justify-center">
-          {thousands.length > 0 ? (
-            thousands.map((thousand) => (
-              <button
-                key={thousand.id}
-                onClick={() => setSelectedThousandId(thousand.id)}
-                className="px-6 py-3 rounded-xl bg-white border shadow hover:bg-blue-100 transition text-lg font-semibold"
-              >
-                {thousand.name}
-                <div className="text-sm text-gray-500">
-                  {thousand.description}
-                </div>
-              </button>
-            ))
-          ) : (
-            <div className="text-gray-400 text-center my-10">
-              {t("empty_thousands_list")}
-            </div>
-          )}
+        {error && <div className="text-red-600 text-center mb-2">{error}</div>}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {thousands.map((th) => (
+            <button
+              key={th.id}
+              className="py-6 rounded-xl bg-white shadow hover:bg-blue-50 text-lg font-semibold text-blue-700 transition"
+              onClick={() => onSelectThousand(th)}
+            >
+              {th.name}
+            </button>
+          ))}
         </div>
       </div>
     );
   }
 
-  if (!selectedSetId) {
+  // --- UI: Вибір комплекту ---
+  if (page === "sets" && selectedThousand) {
     if (loadingWordSets) {
       return (
-        <div className="p-4 w-full max-w-full sm:max-w-2xl md:max-w-3xl min-w-0 mx-auto">
-          <div className="text-center text-gray-400 text-lg">
-            {t("loading_word_sets")}
-          </div>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
+          <div className="text-blue-700">{t("loading_word_sets")}</div>
         </div>
       );
     }
     return (
-      <div className="p-4 w-full max-w-full sm:max-w-2xl md:max-w-3xl min-w-0 mx-auto">
-        <button
-          className="mb-6 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-          onClick={() => setSelectedThousandId(null)}
-        >
-          {t("back_to_thousands")}
-        </button>
-        <h2 className="text-xl font-bold mb-4 text-blue-700 text-center">
-          {t("select_word_set")}
-        </h2>
-        {error && <div className="text-red-500 text-center mb-4">{error}</div>}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 justify-center items-stretch">
-          {wordSets.length > 0 &&
-            wordSets.map((set) => (
+      <div className="p-4 w-full max-w-2xl mx-auto">
+        <div className="flex items-center mb-4">
+          <button
+            className="text-xl text-blue-600 hover:text-blue-800 mr-2"
+            onClick={onBackFromSets}
+            aria-label={t("back")}
+          >
+            ←
+          </button>
+          <h2 className="text-lg font-bold text-blue-700">
+            {t("choose_set_title")}
+          </h2>
+        </div>
+        {error && <div className="text-red-600 text-center mb-2">{error}</div>}
+        <div className="flex flex-wrap gap-2">
+          {wordSets.map((set) => (
+            <button
+              key={set.id}
+              className="py-3 px-4 rounded-xl bg-white shadow hover:bg-blue-50 text-base font-semibold text-blue-700 transition"
+              onClick={() => onSelectSet(set)}
+            >
+              {set.name || set.word_set}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // --- UI: Всередині комплекту ---
+  if (page === "setDetails" && selectedSet) {
+    // Tabs with icons
+    const tabs = [
+      { key: "words", label: t("all_words"), icon: "📋" },
+      { key: "reading", label: t("reading"), icon: "📖" },
+      { key: "exercises", label: t("exercises"), icon: "📝" },
+    ] as const;
+
+    return (
+      <div className="p-2 sm:p-4 w-full max-w-3xl min-w-[320px] mx-auto">
+        <div className="flex items-center mb-2">
+          <button
+            className="text-xl text-blue-600 hover:text-blue-800 mr-2"
+            onClick={onBackFromSet}
+            aria-label={t("back")}
+          >
+            ←
+          </button>
+          <span className="font-bold text-blue-700 text-lg">
+            {selectedSet.name || selectedSet.word_set}
+          </span>
+        </div>
+        {/* Sticky Tabs */}
+        <div className="sticky top-0 z-20 bg-blue-50">
+          <div className="flex gap-2 border-b border-blue-100 mb-2">
+            {tabs.map((tab) => (
               <button
-                key={set.id}
-                onClick={() => setSelectedSetId(set.id)}
-                className="h-28 w-full flex flex-col justify-center items-center px-4 py-3 rounded-xl bg-white border shadow hover:bg-blue-100 transition min-w-[120px] min-h-[70px] text-base font-semibold"
-                style={{ aspectRatio: "1.2/1", maxWidth: 260 }}
+                key={tab.key}
+                className={`flex items-center gap-1 px-3 py-2 rounded-t-md font-medium text-sm transition
+                  ${
+                    activeTab === tab.key
+                      ? "bg-white text-blue-700 shadow"
+                      : "text-blue-500 hover:text-blue-700"
+                  }`}
+                onClick={() => setActiveTab(tab.key as typeof activeTab)}
               >
-                {set.word_set || set.name || `Set #${set.id}`}
+                <span>{tab.icon}</span>
+                {tab.label}
               </button>
             ))}
-          {wordSets.length === 0 && (
-            <div className="text-gray-400 text-center my-10">
-              {t("empty_word_sets_list")}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (selectedExerciseId && exerciseDetails) {
-    return (
-      // <div className="p-2 sm:p-4 w-full max-w-3xl min-w-[360px] mx-auto flex flex-col min-h-[60vh] justify-between">
-      <div className="p-2 sm:p-4 w-full max-w-full sm:max-w-2xl md:max-w-3xl min-w-0 mx-auto flex flex-col min-h-[60vh] justify-between">
-        <div className="flex justify-end mb-6">
-          <button
-            onClick={handleRequestExitExercise}
-            className="px-3 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 border border-blue-200 shadow text-sm"
-          >
-            {t("finish_exercise")}
-          </button>
-        </div>
-        <div className="flex-1">
-          {loadingExerciseDetails ? (
-            <div className="text-gray-400 text-center my-6">
-              {t("loading_exercise")}
-            </div>
-          ) : exerciseDetails.error ? (
-            <div className="text-red-500">{exerciseDetails.error}</div>
-          ) : (
-            <ExerciseBlockContainer
-              theoryText={exerciseDetails.theory}
-              exerciseData={exerciseDetails.data}
-              title={
-                exerciseDetails.exercise_name ||
-                exerciseDetails.name ||
-                exerciseDetails.title
-              }
-            />
-          )}
-        </div>
-        <ConfirmModal
-          open={showConfirmExit}
-          onCancel={handleCancelExitExercise}
-          onConfirm={handleConfirmExitExercise}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-2 sm:p-4 w-full max-w-3xl min-w-[360px] mx-auto">
-      <button
-        className="mb-6 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-        onClick={() => setSelectedSetId(null)}
-      >
-        {t("back_to_word_sets")}
-      </button>
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setActiveTab("words")}
-          className={`px-4 py-2 rounded-t-xl font-semibold transition-all border-b-4 ${
-            activeTab === "words"
-              ? "bg-white text-blue-700 border-blue-500 shadow"
-              : "bg-blue-100 text-gray-500 border-transparent hover:bg-blue-200"
-          }`}
-        >
-          {t("tab_all_words")}
-        </button>
-        <button
-          onClick={() => setActiveTab("reading")}
-          className={`px-4 py-2 rounded-t-xl font-semibold transition-all border-b-4 ${
-            activeTab === "reading"
-              ? "bg-white text-blue-700 border-blue-500 shadow"
-              : "bg-blue-100 text-gray-500 border-transparent hover:bg-blue-200"
-          }`}
-        >
-          {t("tab_reading")}
-        </button>
-        <button
-          onClick={() => setActiveTab("exercises")}
-          className={`px-4 py-2 rounded-t-xl font-semibold transition-all border-b-4 ${
-            activeTab === "exercises"
-              ? "bg-white text-blue-700 border-blue-500 shadow"
-              : "bg-blue-100 text-gray-500 border-transparent hover:bg-blue-200"
-          }`}
-        >
-          {t("tab_exercises")}
-        </button>
-      </div>
-      <div>
-        {activeTab === "words" && (
-          <div className="mb-6">
-            {loadingWords ? (
-              <div className="text-gray-400 text-center my-8">
-                {t("loading_words")}
-              </div>
-            ) : (
-              <ul className="grid grid-cols-2 gap-2">
-                {allWords.map((w, idx) => (
-                  <li
-                    key={typeof w === "object" && "id" in w ? w.id : idx}
-                    className="px-2 py-1 rounded bg-blue-50 border"
-                  >
-                    {typeof w === "object" && "word" in w ? w.word : w}
-                  </li>
-                ))}
-                {allWords.length === 0 && (
-                  <div className="text-gray-400 text-center my-8">
-                    {t("no_words_for_set")}
-                  </div>
-                )}
-              </ul>
-            )}
           </div>
-        )}
-        {activeTab === "reading" && (
-          <div className="mb-6">
-            {loadingReadings ? (
-              <div className="text-gray-400 text-center my-8">
-                {t("loading_readings")}
-              </div>
-            ) : (
-              <>
-                {readingTitles.length > 0 ? (
-                  <div className="mb-4 w-full relative">
-                    <select
-                      value={selectedReadingId || readingTitles[0].id}
-                      onChange={(e) =>
-                        handleSelectReading(Number(e.target.value))
-                      }
-                      className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
-                      style={{
-                        minWidth: 0,
-                        maxWidth: "100%",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {readingTitles.map((rt) => (
-                        <option key={rt.id} value={rt.id}>
-                          {rt.title}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 20 20"
-                        fill="none"
+        </div>
+        {/* Tab Content */}
+        <div className="mt-2">
+          {activeTab === "words" && (
+            <div className="bg-white rounded-xl shadow p-4 min-h-[200px]">
+              {loadingWords ? (
+                <div className="text-blue-700">{t("loading_words")}</div>
+              ) : allWords.length === 0 ? (
+                <div className="text-gray-500">{t("no_words_found")}</div>
+              ) : (
+                <ul className="list-disc pl-6 space-y-1">
+                  {allWords.map((w, idx) =>
+                    typeof w === "string" ? (
+                      <li key={idx}>{w}</li>
+                    ) : (
+                      <li key={w.id}>{w.word}</li>
+                    )
+                  )}
+                </ul>
+              )}
+            </div>
+          )}
+          {activeTab === "reading" && (
+            <div className="bg-white rounded-xl shadow p-4 min-h-[200px]">
+              {loadingReadings ? (
+                <div className="text-blue-700">{t("loading_readings")}</div>
+              ) : readingTitles.length === 0 ? (
+                <div className="text-gray-500">{t("no_readings_found")}</div>
+              ) : (
+                <div>
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    {readingTitles.map((rt) => (
+                      <button
+                        key={rt.id}
+                        className={`px-3 py-1 rounded bg-blue-100 text-blue-700 font-medium text-sm
+                          ${
+                            selectedReadingId === rt.id
+                              ? "bg-blue-500 text-white"
+                              : "hover:bg-blue-200"
+                          }`}
+                        onClick={() => handleSelectReading(rt.id)}
                       >
-                        <path
-                          d="M6 8l4 4 4-4"
-                          stroke="#666"
-                          strokeWidth="2"
-                          fill="none"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </div>
+                        {rt.title}
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <div className="text-gray-400 text-center my-8">
-                    {t("no_texts_for_set")}
-                  </div>
-                )}
-
-                {selectedReadingId && readingText ? (
-                  <div className="my-6">
+                  {readingText ? (
                     <TextSpeechHighlighter
                       text={readingText.text}
                       translation={readingText.translation}
                     />
-                  </div>
-                ) : readingTitles.length > 0 ? (
-                  <div className="text-gray-400 text-center my-8">
-                    {t("loading_text")}
-                  </div>
-                ) : null}
-              </>
-            )}
-          </div>
-        )}
-        {activeTab === "exercises" && (
-          <div className="mb-6">
-            {loadingExercises ? (
-              <div className="text-gray-400 text-center my-8">
-                {t("loading_exercises")}
-              </div>
-            ) : (
-              <ul className="flex flex-col gap-2">
-                {exercisesMeta.map((ex) => (
-                  <li
-                    key={ex.id}
-                    className="px-4 py-2 rounded border bg-white shadow text-left cursor-pointer hover:bg-blue-50"
-                    onClick={() => handleSelectExercise(ex.id)}
-                  >
-                    {ex.exercise_name || ex.name || ex.title || ex.id}
-                  </li>
-                ))}
-                {exercisesMeta.length === 0 && (
-                  <div className="text-gray-400 text-center my-8">
-                    {t("no_exercises_for_set")}
-                  </div>
-                )}
-              </ul>
-            )}
-            {loadingExerciseDetails && (
-              <div className="text-gray-400 text-center my-6">
-                {t("loading_exercise")}
-              </div>
-            )}
-          </div>
-        )}
+                  ) : (
+                    <div className="text-gray-500">{t("select_reading")}</div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {activeTab === "exercises" && (
+            <div className="bg-white rounded-xl shadow p-4 min-h-[200px]">
+              {loadingExercises ? (
+                <div className="text-blue-700">{t("loading_exercises")}</div>
+              ) : exercisesMeta.length === 0 ? (
+                <div className="text-gray-500">{t("no_exercises_found")}</div>
+              ) : selectedExerciseId && exerciseDetails ? (
+                <ExerciseBlockContainer
+                  theoryText={exerciseDetails.theory}
+                  exerciseData={exerciseDetails.data}
+                  onBack={() => setSelectedExerciseId(null)}
+                  title={exerciseDetails.title || exerciseDetails.name}
+                />
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {exercisesMeta.map((ex) => (
+                    <button
+                      key={ex.id}
+                      className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-medium text-sm hover:bg-blue-200"
+                      onClick={() => handleSelectExercise(ex.id)}
+                    >
+                      {ex.title || ex.name || ex.exercise_name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // --- Fallback ---
+  return null;
 }
