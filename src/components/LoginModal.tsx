@@ -47,7 +47,7 @@ export default function LoginModal({
     setLoading(true);
 
     try {
-      const url = isRegister ? "/auth/register" : "/auth/login";
+      const url = isRegister ? "/api/auth/register" : "/api/auth/login";
       const body = isRegister
         ? {
             email: form.email.trim(),
@@ -101,7 +101,7 @@ export default function LoginModal({
     try {
       if (step === 1) {
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/auth/forgot-password`,
+          `${import.meta.env.VITE_API_URL}/api/auth/forgot-password`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -119,7 +119,7 @@ export default function LoginModal({
         }
       } else if (step === 2) {
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/auth/reset-password`,
+          `${import.meta.env.VITE_API_URL}/api/auth/reset-password`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
