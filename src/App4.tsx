@@ -6,6 +6,7 @@ import { AppProvider, useAppContext } from "./AppContext";
 import { User } from "./types";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import ExercisePage from "./components/ExercisePage"; // Додайте цей компонент
 
 function AppContent() {
   const { t } = useTranslation();
@@ -24,44 +25,6 @@ function AppContent() {
     const token = localStorage.getItem("token");
     const u = localStorage.getItem("user");
     if (token && u) setUser(JSON.parse(u));
-
-    // Відновлення мов з localStorage (як у App_2.tsx)
-    const savedInterfaceLang =
-      localStorage.getItem("interfaceLanguage") ||
-      localStorage.getItem("interfaceLanguageCode");
-    const savedLearningLang =
-      localStorage.getItem("learningLanguage") ||
-      localStorage.getItem("learningLanguageId");
-
-    if (savedInterfaceLang) {
-      try {
-        setInterfaceLanguage(
-          typeof savedInterfaceLang === "string" &&
-            savedInterfaceLang.startsWith("{")
-            ? JSON.parse(savedInterfaceLang)
-            : { code: savedInterfaceLang, id: 0, name: "" }
-        );
-      } catch {
-        setInterfaceLanguage({ code: savedInterfaceLang, id: 0, name: "" });
-      }
-    }
-    if (savedLearningLang) {
-      try {
-        setLearningLanguage(
-          typeof savedLearningLang === "string" &&
-            savedLearningLang.startsWith("{")
-            ? JSON.parse(savedLearningLang)
-            : { id: Number(savedLearningLang), code: "", name: "" }
-        );
-      } catch {
-        setLearningLanguage({
-          id: Number(savedLearningLang),
-          code: "",
-          name: "",
-        });
-      }
-    }
-    // eslint-disable-next-line
   }, []);
 
   const handleRegisterSuccess = async (newUser: User) => {
@@ -136,13 +99,7 @@ function AppContent() {
         <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
           <div className="font-bold text-lg text-blue-700 flex items-center gap-4">
             MasterPhrase
-            <button
-              onClick={() => setShowLanguageSelection(true)}
-              className="text-sm text-blue-600 hover:text-blue-800 underline"
-              title={t("change_language_title")}
-            >
-              {t("change_language")}
-            </button>
+            {/* ...інші елементи TopBar... */}
           </div>
           {user ? (
             <div className="flex items-center gap-2">
@@ -192,7 +149,12 @@ function AppContent() {
           path="/thousand/:thousandId/set/:setId"
           element={<Block1 user={user} learningLanguage={learningLanguage} />}
         />
-        {/* Далі — інші сторінки, якщо потрібно */}
+        <Route
+          path="/thousand/:thousandId/set/:setId/exercise/:exerciseId"
+          element={
+            <ExercisePage user={user} learningLanguage={learningLanguage} />
+          }
+        />
       </Routes>
     </div>
   );
