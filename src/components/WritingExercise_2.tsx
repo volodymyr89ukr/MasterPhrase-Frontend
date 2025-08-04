@@ -336,8 +336,16 @@ export default function WritingExercise({
             {t("show_whole_word")}
           </button>
         </div>
-        {/* Видалено поле з "enter_word_or_press_enter" та "correct" */}
-        {/* Видалено повідомлення "fix_the_word_error" */}
+        <div className="text-base text-gray-400 min-h-[1.8em] mt-1 text-center">
+          {inputStatus === "correct"
+            ? t("correct")
+            : t("enter_word_or_press_enter")}
+        </div>
+        {showFixHint && inputStatus === "wrong" && (
+          <div className="mt-2 text-base text-red-500 animate-shake text-center">
+            {t("fix_the_word_error")}
+          </div>
+        )}
         <style>
           {`
               .animate-shake {
