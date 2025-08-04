@@ -6,7 +6,6 @@ import { AppProvider, useAppContext } from "./AppContext";
 import { User } from "./types";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import ExercisePage from "./components/ExercisePage"; // Додайте цей компонент
 
 function AppContent() {
   const { t } = useTranslation();
@@ -25,6 +24,7 @@ function AppContent() {
     const token = localStorage.getItem("token");
     const u = localStorage.getItem("user");
     if (token && u) setUser(JSON.parse(u));
+    // ...можна додати логіку для мов, якщо потрібно...
   }, []);
 
   const handleRegisterSuccess = async (newUser: User) => {
@@ -99,7 +99,13 @@ function AppContent() {
         <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
           <div className="font-bold text-lg text-blue-700 flex items-center gap-4">
             MasterPhrase
-            {/* ...інші елементи TopBar... */}
+            <button
+              onClick={() => setShowLanguageSelection(true)}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+              title={t("change_language_title")}
+            >
+              {t("change_language")}
+            </button>
           </div>
           {user ? (
             <div className="flex items-center gap-2">
@@ -149,12 +155,7 @@ function AppContent() {
           path="/thousand/:thousandId/set/:setId"
           element={<Block1 user={user} learningLanguage={learningLanguage} />}
         />
-        <Route
-          path="/thousand/:thousandId/set/:setId/exercise/:exerciseId"
-          element={
-            <ExercisePage user={user} learningLanguage={learningLanguage} />
-          }
-        />
+        {/* Далі — інші сторінки, якщо потрібно */}
       </Routes>
     </div>
   );

@@ -2,8 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { User } from "./types";
 import i18n from "./i18n"; // Додаємо імпорт i18n
 
-export interface Language {
-  // ← Додаємо export
+interface Language {
   id: number;
   code: string;
   name: string;

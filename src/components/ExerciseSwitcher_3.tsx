@@ -42,11 +42,11 @@ function deduplicatePhrases(arr: Phrase[]): Phrase[] {
   });
 }
 
-const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
+export default function ExerciseSwitcher({
   exerciseData = [],
   onBack,
   title,
-}) => {
+}: ExerciseSwitcherProps) {
   const { t } = useTranslation();
 
   if (!Array.isArray(exerciseData) || exerciseData.length === 0) {
@@ -289,6 +289,4 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       </div>
     </div>
   );
-};
-
-export default ExerciseSwitcher;
+}

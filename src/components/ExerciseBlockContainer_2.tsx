@@ -4,18 +4,18 @@ import { useTranslation } from "react-i18next";
 
 interface ExerciseBlockContainerProps {
   theoryText?: string | ReactNode;
-  exerciseData?: any[]; // Якщо відомий тип, замініть any[] на конкретний тип
+  exerciseData: any; // можна конкретизувати тип, якщо відомий
   onBack?: () => void;
   title?: string;
 }
 
-const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
+export default function ExerciseBlockContainer({
   theoryText,
   exerciseData,
   onBack,
   title,
-}) => {
-  const [showTheory, setShowTheory] = useState(!!theoryText);
+}: ExerciseBlockContainerProps) {
+  const [showTheory, setShowTheory] = useState(true);
   const { t } = useTranslation();
 
   if (showTheory) {
@@ -32,9 +32,7 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
         {title && (
           <h2 className="text-xl font-bold mb-3 text-blue-700">{title}</h2>
         )}
-        {theoryText && (
-          <div className="whitespace-pre-line mb-4">{theoryText}</div>
-        )}
+        <div className="whitespace-pre-line mb-4">{theoryText}</div>
         <button
           className="px-6 py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600"
           onClick={() => setShowTheory(false)}
@@ -45,16 +43,6 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
     );
   }
 
-  if (
-    !exerciseData ||
-    !Array.isArray(exerciseData) ||
-    exerciseData.length === 0
-  ) {
-    return (
-      <div className="p-8 text-center text-red-500">{t("data_not_found")}</div>
-    );
-  }
-
   return (
     <ExerciseSwitcher
       exerciseData={exerciseData}
@@ -62,6 +50,4 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
       title={title}
     />
   );
-};
-
-export default ExerciseBlockContainer;
+}
