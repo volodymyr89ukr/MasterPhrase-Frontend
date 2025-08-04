@@ -460,7 +460,7 @@ export default function TextSpeechHighlighter({
               : ""}
           </div>
 
-          <div className="mb-4 w-90 flex items-center justify-center">
+          <div className="mb-4 w-full flex items-center justify-center">
             <label className="flex items-center cursor-pointer text-sm">
               <input
                 type="checkbox"
