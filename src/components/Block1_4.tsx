@@ -59,8 +59,6 @@ interface Language {
 interface Block1Props {
   user: any;
   learningLanguage: Language | null;
-  renderThousandItem?: (thousand: Thousand) => React.ReactNode;
-  renderWordSetItem?: (set: WordSet) => React.ReactNode;
 }
 
 function ConfirmModal({
@@ -103,12 +101,7 @@ function ConfirmModal({
   );
 }
 
-export default function Block1({
-  user,
-  learningLanguage,
-  renderThousandItem,
-  renderWordSetItem,
-}: Block1Props) {
+export default function Block1({ user, learningLanguage }: Block1Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { thousandId, setId } = useParams();
@@ -284,30 +277,18 @@ export default function Block1({
         {loadingThousands ? (
           <div>{t("loading")}</div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <ul>
             {thousands.map((th) => (
-              <div
-                key={th.id}
-                onClick={() => navigate(`/thousand/${th.id}`)}
-                className="cursor-pointer"
-              >
-                {renderThousandItem ? (
-                  renderThousandItem(th)
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition select-none p-3">
-                    <div className="text-lg font-bold text-blue-700 text-center">
-                      {th.name}
-                    </div>
-                    {th.description && (
-                      <div className="text-xs text-gray-500 text-center mt-1">
-                        {th.description}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <li key={th.id}>
+                <button
+                  className="w-full text-left py-2 px-3 rounded hover:bg-blue-100"
+                  onClick={() => navigate(`/thousand/${th.id}`)}
+                >
+                  {th.name}
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
         {error && <div className="text-red-500">{error}</div>}
       </div>
@@ -325,25 +306,20 @@ export default function Block1({
         {loadingWordSets ? (
           <div>{t("loading")}</div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <ul>
             {wordSets.map((ws) => (
-              <div
-                key={ws.id}
-                onClick={() => navigate(`/thousand/${thousandId}/set/${ws.id}`)}
-                className="cursor-pointer"
-              >
-                {renderWordSetItem ? (
-                  renderWordSetItem(ws)
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition select-none p-3">
-                    <div className="text-lg font-bold text-blue-700 text-center">
-                      {ws.name || ws.word_set}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <li key={ws.id}>
+                <button
+                  className="w-full text-left py-2 px-3 rounded hover:bg-blue-100"
+                  onClick={() =>
+                    navigate(`/thousand/${thousandId}/set/${ws.id}`)
+                  }
+                >
+                  {ws.name || ws.word_set}
+                </button>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
         {error && <div className="text-red-500">{error}</div>}
       </div>
@@ -452,7 +428,7 @@ export default function Block1({
                       onChange={(e) =>
                         handleSelectReading(Number(e.target.value))
                       }
-                      className="block w-90 p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
+                      className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
                       style={{
                         minWidth: 0,
                         maxWidth: "100%",

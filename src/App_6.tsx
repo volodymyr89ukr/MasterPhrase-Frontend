@@ -128,53 +128,48 @@ function AppContent() {
 
   // --- Визначаємо, чи показувати TopBar ---
   const location = useLocation();
-  const isHome = location.pathname === "/";
+  const showTopBar = location.pathname === "/";
 
   return (
     <div className="min-h-screen h-screen flex flex-col bg-blue-50">
-      {/* Назва додатку окремим рядком по центру на головній */}
-      {isHome && (
-        <div className="w-full flex flex-col items-center mt-6 mb-2">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-blue-700 tracking-tight text-center mb-2 select-none">
+      {showTopBar && (
+        <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
+          <div className="font-bold text-lg text-blue-700 flex items-center gap-4">
             MasterPhrase
-          </h1>
-          <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
-            <div className="flex items-center gap-4">
+            <button
+              onClick={() => setShowLanguageSelection(true)}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+              title={t("change_language_title")}
+            >
+              {t("change_language")}
+            </button>
+          </div>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 text-sm">
+                {user.username
+                  ? t("profile_user", { username: user.username })
+                  : user.email}
+              </span>
               <button
-                onClick={() => setShowLanguageSelection(true)}
-                className="text-sm text-blue-600 hover:text-blue-800 underline"
-                title={t("change_language_title")}
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("user");
+                  setUser(null);
+                }}
+                className="py-1 px-3 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition text-xs"
               >
-                {t("change_language")}
+                {t("logout")}
               </button>
             </div>
-            {user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-700 text-sm">
-                  {user.username
-                    ? t("profile_user", { username: user.username })
-                    : user.email}
-                </span>
-                <button
-                  onClick={() => {
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
-                    setUser(null);
-                  }}
-                  className="py-1 px-3 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition text-xs"
-                >
-                  {t("logout")}
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowLogin(true)}
-                className="py-1 px-3 rounded bg-blue-500 text-white font-semibold hover:bg-blue-600 transition text-xs"
-              >
-                {t("login")}
-              </button>
-            )}
-          </div>
+          ) : (
+            <button
+              onClick={() => setShowLogin(true)}
+              className="py-1 px-3 rounded bg-blue-500 text-white font-semibold hover:bg-blue-600 transition text-xs"
+            >
+              {t("login")}
+            </button>
+          )}
         </div>
       )}
       {/* Модальне вікно */}
@@ -187,48 +182,11 @@ function AppContent() {
       <Routes>
         <Route
           path="/"
-          element={
-            <Block1
-              user={user}
-              learningLanguage={learningLanguage}
-              // Додаємо проп для кастомного рендера тисяч/комплектів
-              renderThousandItem={(thousand) => (
-                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-blue-700 text-center">
-                    {thousand.name}
-                  </div>
-                  {thousand.description && (
-                    <div className="text-xs text-gray-500 text-center mt-1">
-                      {thousand.description}
-                    </div>
-                  )}
-                </div>
-              )}
-              renderWordSetItem={(set) => (
-                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-blue-700 text-center">
-                    {set.word_set || set.name || `Set #${set.id}`}
-                  </div>
-                </div>
-              )}
-            />
-          }
+          element={<Block1 user={user} learningLanguage={learningLanguage} />}
         />
         <Route
           path="/thousand/:thousandId"
-          element={
-            <Block1
-              user={user}
-              learningLanguage={learningLanguage}
-              renderWordSetItem={(set) => (
-                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-blue-700 text-center">
-                    {set.word_set || set.name || `Set #${set.id}`}
-                  </div>
-                </div>
-              )}
-            />
-          }
+          element={<Block1 user={user} learningLanguage={learningLanguage} />}
         />
         <Route
           path="/thousand/:thousandId/set/:setId"
