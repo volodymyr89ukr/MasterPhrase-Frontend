@@ -5,13 +5,12 @@ import LanguageSelection from "./components/LanguageSelection";
 import { AppProvider, useAppContext } from "./AppContext";
 import { User } from "./types";
 import { useTranslation } from "react-i18next";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
 function AppContent() {
   const { t } = useTranslation();
-
   const [showLogin, setShowLogin] = useState(false);
   const [showLanguageSelection, setShowLanguageSelection] = useState(false);
-
   const {
     user,
     setUser,
@@ -25,43 +24,7 @@ function AppContent() {
     const token = localStorage.getItem("token");
     const u = localStorage.getItem("user");
     if (token && u) setUser(JSON.parse(u));
-
-    const savedInterfaceLang =
-      localStorage.getItem("interfaceLanguage") ||
-      localStorage.getItem("interfaceLanguageCode");
-    const savedLearningLang =
-      localStorage.getItem("learningLanguage") ||
-      localStorage.getItem("learningLanguageId");
-
-    if (savedInterfaceLang) {
-      try {
-        setInterfaceLanguage(
-          typeof savedInterfaceLang === "string" &&
-            savedInterfaceLang.startsWith("{")
-            ? JSON.parse(savedInterfaceLang)
-            : { code: savedInterfaceLang, id: 0, name: "" }
-        );
-      } catch {
-        setInterfaceLanguage({ code: savedInterfaceLang, id: 0, name: "" });
-      }
-    }
-    if (savedLearningLang) {
-      try {
-        setLearningLanguage(
-          typeof savedLearningLang === "string" &&
-            savedLearningLang.startsWith("{")
-            ? JSON.parse(savedLearningLang)
-            : { id: Number(savedLearningLang), code: "", name: "" }
-        );
-      } catch {
-        setLearningLanguage({
-          id: Number(savedLearningLang),
-          code: "",
-          name: "",
-        });
-      }
-    }
-    // eslint-disable-next-line
+    // ...можна додати логіку для мов, якщо потрібно...
   }, []);
 
   const handleRegisterSuccess = async (newUser: User) => {
@@ -117,6 +80,7 @@ function AppContent() {
     }
   };
 
+  // --- Показати вибір мови, якщо не обрано ---
   if (!interfaceLanguage || !learningLanguage || showLanguageSelection) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -125,55 +89,74 @@ function AppContent() {
     );
   }
 
+  // --- Визначаємо, чи показувати TopBar ---
+  const location = useLocation();
+  const showTopBar = location.pathname === "/";
+
   return (
     <div className="min-h-screen h-screen flex flex-col bg-blue-50">
-      {/* Top bar з профілем/входом */}
-      <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
-        <div className="font-bold text-lg text-blue-700 flex items-center gap-4">
-          MasterPhrase
-          <button
-            onClick={() => setShowLanguageSelection(true)}
-            className="text-sm text-blue-600 hover:text-blue-800 underline"
-            title={t("change_language_title")}
-          >
-            {t("change_language")}
-          </button>
-        </div>
-        {user ? (
-          <div className="flex items-center gap-2">
-            <span className="text-gray-700 text-sm">
-              {user.username
-                ? t("profile_user", { username: user.username })
-                : user.email}
-            </span>
+      {showTopBar && (
+        <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
+          <div className="font-bold text-lg text-blue-700 flex items-center gap-4">
+            MasterPhrase
             <button
-              onClick={() => {
-                localStorage.removeItem("token");
-                localStorage.removeItem("user");
-                setUser(null);
-              }}
-              className="py-1 px-3 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition text-xs"
+              onClick={() => setShowLanguageSelection(true)}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+              title={t("change_language_title")}
             >
-              {t("logout")}
+              {t("change_language")}
             </button>
           </div>
-        ) : (
-          <button
-            onClick={() => setShowLogin(true)}
-            className="py-1 px-3 rounded bg-blue-500 text-white font-semibold hover:bg-blue-600 transition text-xs"
-          >
-            {t("login")}
-          </button>
-        )}
-      </div>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-gray-700 text-sm">
+                {user.username
+                  ? t("profile_user", { username: user.username })
+                  : user.email}
+              </span>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  localStorage.removeItem("user");
+                  setUser(null);
+                }}
+                className="py-1 px-3 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition text-xs"
+              >
+                {t("logout")}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowLogin(true)}
+              className="py-1 px-3 rounded bg-blue-500 text-white font-semibold hover:bg-blue-600 transition text-xs"
+            >
+              {t("login")}
+            </button>
+          )}
+        </div>
+      )}
       {/* Модальне вікно */}
       <LoginModal
         open={showLogin}
         onClose={() => setShowLogin(false)}
         onSuccess={handleRegisterSuccess}
       />
-      {/* Головна частина */}
-      <Block1 user={user} learningLanguage={learningLanguage} />
+      {/* Роутінг сторінок */}
+      <Routes>
+        <Route
+          path="/"
+          element={<Block1 user={user} learningLanguage={learningLanguage} />}
+        />
+        <Route
+          path="/thousand/:thousandId"
+          element={<Block1 user={user} learningLanguage={learningLanguage} />}
+        />
+        <Route
+          path="/thousand/:thousandId/set/:setId"
+          element={<Block1 user={user} learningLanguage={learningLanguage} />}
+        />
+        {/* Далі — інші сторінки, якщо потрібно */}
+      </Routes>
     </div>
   );
 }
@@ -181,7 +164,9 @@ function AppContent() {
 export default function App() {
   return (
     <AppProvider>
-      <AppContent />
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
     </AppProvider>
   );
 }
