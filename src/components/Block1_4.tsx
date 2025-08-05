@@ -17,11 +17,11 @@ interface WordSet {
   name?: string;
 }
 
-type WordItem = Word | string;
-
-interface Word {
+interface WordWithTranslation {
   id: number;
   word: string;
+  created_at?: string;
+  translation?: string | null;
 }
 
 interface ExerciseMeta {
@@ -109,7 +109,7 @@ export default function Block1({
   renderThousandItem,
   renderWordSetItem,
 }: Block1Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { thousandId, setId } = useParams();
   const location = useLocation();
@@ -117,7 +117,7 @@ export default function Block1({
   // State
   const [thousands, setThousands] = useState<Thousand[]>([]);
   const [wordSets, setWordSets] = useState<WordSet[]>([]);
-  const [allWords, setAllWords] = useState<WordItem[]>([]);
+  const [allWords, setAllWords] = useState<WordWithTranslation[]>([]);
   const [readingTitles, setReadingTitles] = useState<ReadingTitle[]>([]);
   const [exercisesMeta, setExercisesMeta] = useState<ExerciseMeta[]>([]);
   const [readingText, setReadingText] = useState<ReadingText | null>(null);
@@ -195,12 +195,18 @@ export default function Block1({
       setLoadingReadings(true);
       setLoadingExercises(true);
 
-      fetch(`${import.meta.env.VITE_API_URL}/api/word-sets/${setId}/words`)
+      // --- Fetch words with translations ---
+      fetch(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/word-sets/${setId}/words?interface_language=${
+          i18n.language || "uk"
+        }`
+      )
         .then((r) => r.json())
         .then((data) => {
-          setAllWords(
-            Array.isArray(data) ? data : data.words || data.data || []
-          );
+          // Очікуємо структуру: { success, wordSet, words: [{id, word, translation}] }
+          setAllWords(Array.isArray(data.words) ? data.words : []);
         })
         .catch(() => setAllWords([]))
         .finally(() => setLoadingWords(false));
@@ -221,7 +227,7 @@ export default function Block1({
         .catch(() => setExercisesMeta([]))
         .finally(() => setLoadingExercises(false));
     }
-  }, [setId, t]);
+  }, [setId, t, i18n.language]);
 
   // --- Reading selection ---
   useEffect(() => {
@@ -431,14 +437,27 @@ export default function Block1({
             <div className="flex-1">
               {loadingWords ? (
                 <div className="text-gray-400 text-center">{t("loading")}</div>
+              ) : allWords.length === 0 ? (
+                <div className="text-gray-400 text-center">
+                  {t("no_words_for_set")}
+                </div>
               ) : (
-                <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {allWords.map((w: any, idx) => (
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {allWords.map((w) => (
                     <li
-                      key={w.id || idx}
-                      className="px-3 py-2 rounded bg-blue-50 text-blue-900 text-center shadow-sm border border-blue-100"
+                      key={w.id}
+                      className="flex flex-col sm:flex-row items-center sm:items-stretch justify-between gap-1 px-3 py-2 rounded bg-blue-50 text-blue-900 shadow-sm border border-blue-100"
                     >
-                      {typeof w === "string" ? w : w.word}
+                      <span className="font-semibold text-lg text-blue-900 text-center sm:text-left flex-1">
+                        {w.word}
+                      </span>
+                      <span
+                        className={`text-gray-500 italic text-base text-center sm:text-right flex-1 ${
+                          !w.translation ? "opacity-60" : ""
+                        }`}
+                      >
+                        {w.translation || t("no_translation")}
+                      </span>
                     </li>
                   ))}
                 </ul>
