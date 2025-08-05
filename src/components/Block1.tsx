@@ -63,6 +63,46 @@ interface Block1Props {
   renderWordSetItem?: (set: WordSet) => React.ReactNode;
 }
 
+function ConfirmModal({
+  open,
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const { t } = useTranslation();
+
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-2xl p-6 shadow-xl w-80 max-w-full">
+        <h3 className="font-bold text-lg mb-4 text-center">
+          {t("confirm_exit_title")}
+        </h3>
+        <div className="mb-4 text-gray-700 text-center">
+          {t("confirm_exit_text")}
+        </div>
+        <div className="flex justify-end gap-4">
+          <button
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+            onClick={onCancel}
+          >
+            {t("cancel")}
+          </button>
+          <button
+            className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 border border-blue-200"
+            onClick={onConfirm}
+          >
+            {t("exit")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Block1({
   user,
   learningLanguage,
@@ -108,7 +148,6 @@ export default function Block1({
   useEffect(() => {
     if (!learningLanguage) {
       setThousands([]);
-      setLoadingThousands(false);
       return;
     }
     setLoadingThousands(true);
@@ -159,7 +198,6 @@ export default function Block1({
       fetch(`${import.meta.env.VITE_API_URL}/api/word-sets/${setId}/words`)
         .then((r) => r.json())
         .then((data) => {
-          // Гарантовано отримуємо масив слів
           setAllWords(
             Array.isArray(data) ? data : data.words || data.data || []
           );
@@ -349,122 +387,148 @@ export default function Block1({
               />
             )}
           </div>
-          {/* ConfirmModal */}
+          <ConfirmModal
+            open={showConfirmExit}
+            onCancel={handleCancelExitExercise}
+            onConfirm={handleConfirmExitExercise}
+          />
         </div>
       );
     }
-
-    // Tabs with icons
-    const tabs = [
-      { key: "words", label: t("tab_all_words"), icon: "📋" },
-      { key: "reading", label: t("tab_reading"), icon: "📖" },
-      { key: "exercises", label: t("tab_exercises"), icon: "📝" },
-    ] as const;
 
     return (
       <div className="p-4 max-w-3xl mx-auto">
         <div className="flex items-center gap-2 mb-4">
           <BackButton to={`/thousand/${thousandId}`} />
           <div className="flex gap-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                className={`flex items-center gap-1 px-3 py-1 rounded font-medium text-base transition ${
-                  activeTab === tab.key
-                    ? "bg-blue-200 text-blue-900"
-                    : "bg-gray-100 text-blue-700 hover:bg-blue-200"
-                }`}
-                onClick={() => setActiveTab(tab.key as typeof activeTab)}
-              >
-                <span>{tab.icon}</span>
-                {tab.label}
-              </button>
-            ))}
+            <button
+              className={`px-3 py-1 rounded ${
+                activeTab === "words" ? "bg-blue-200" : "bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("words")}
+            >
+              {t("tab_all_words")}
+            </button>
+            <button
+              className={`px-3 py-1 rounded ${
+                activeTab === "reading" ? "bg-blue-200" : "bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("reading")}
+            >
+              {t("tab_reading")}
+            </button>
+            <button
+              className={`px-3 py-1 rounded ${
+                activeTab === "exercises" ? "bg-blue-200" : "bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("exercises")}
+            >
+              {t("tab_exercises")}
+            </button>
           </div>
         </div>
         {/* Tabs content */}
         {activeTab === "words" && (
-          <div className="bg-white rounded-xl shadow p-4 min-h-[200px]">
+          <div>
             {loadingWords ? (
-              <div className="text-blue-700">{t("loading_words")}</div>
-            ) : allWords.length === 0 ? (
-              <div className="text-gray-500">{t("no_words_found")}</div>
+              t("loading")
             ) : (
-              <ul className="list-disc pl-6 space-y-1">
-                {allWords.map((w, idx) =>
-                  typeof w === "string" ? (
-                    <li key={idx}>{w}</li>
-                  ) : (
-                    <li key={w.id}>{w.word}</li>
-                  )
-                )}
+              <ul>
+                {allWords.map((w: any, idx) => (
+                  <li key={w.id || idx}>
+                    {typeof w === "string" ? w : w.word}
+                  </li>
+                ))}
               </ul>
             )}
           </div>
         )}
         {activeTab === "reading" && (
-          <div className="bg-white rounded-xl shadow p-4 min-h-[200px]">
+          <div>
             {loadingReadings ? (
-              <div className="text-blue-700">{t("loading_readings")}</div>
-            ) : readingTitles.length === 0 ? (
-              <div className="text-gray-500">{t("no_readings_found")}</div>
+              t("loading")
             ) : (
-              <div>
-                <div className="flex gap-2 mb-2 flex-wrap">
-                  {readingTitles.map((rt) => (
-                    <button
-                      key={rt.id}
-                      className={`px-3 py-1 rounded bg-blue-100 text-blue-700 font-medium text-sm
-                        ${
-                          selectedReadingId === rt.id
-                            ? "bg-blue-500 text-white"
-                            : "hover:bg-blue-200"
-                        }`}
-                      onClick={() => handleSelectReading(rt.id)}
+              <>
+                {readingTitles.length > 0 ? (
+                  <div className="mb-4 w-full relative">
+                    <select
+                      value={selectedReadingId || readingTitles[0].id}
+                      onChange={(e) =>
+                        handleSelectReading(Number(e.target.value))
+                      }
+                      className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
+                      style={{
+                        minWidth: 0,
+                        maxWidth: "100%",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
                     >
-                      {rt.title}
-                    </button>
-                  ))}
-                </div>
-                {readingText ? (
-                  <TextSpeechHighlighter
-                    text={readingText.text}
-                    translation={readingText.translation}
-                  />
+                      {readingTitles.map((rt) => (
+                        <option key={rt.id} value={rt.id}>
+                          {rt.title}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                      <svg
+                        className="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 ) : (
-                  <div className="text-gray-500">{t("select_reading")}</div>
+                  <div className="text-gray-400 text-center my-8">
+                    {t("no_texts_for_set")}
+                  </div>
                 )}
-              </div>
+
+                {selectedReadingId && readingText ? (
+                  <div className="my-6">
+                    <TextSpeechHighlighter
+                      text={readingText.text}
+                      translation={readingText.translation}
+                    />
+                  </div>
+                ) : readingTitles.length > 0 ? (
+                  <div className="text-gray-400 text-center my-8">
+                    {t("loading_text")}
+                  </div>
+                ) : null}
+              </>
             )}
           </div>
         )}
         {activeTab === "exercises" && (
-          <div className="bg-white rounded-xl shadow p-4 min-h-[200px]">
+          <div>
             {loadingExercises ? (
-              <div className="text-blue-700">{t("loading_exercises")}</div>
-            ) : exercisesMeta.length === 0 ? (
-              <div className="text-gray-500">{t("no_exercises_found")}</div>
-            ) : selectedExerciseId && exerciseDetails ? (
-              <ExerciseBlockContainer
-                theoryText={exerciseDetails.theory}
-                exerciseData={exerciseDetails.data}
-                title={
-                  exerciseDetails.exercise_name ||
-                  exerciseDetails.name ||
-                  exerciseDetails.title
-                }
-              />
+              t("loading")
             ) : (
-              <div className="flex flex-wrap gap-2">
+              <ul className="flex flex-col gap-2">
                 {exercisesMeta.map((ex) => (
-                  <button
+                  <li
                     key={ex.id}
-                    className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-medium text-sm hover:bg-blue-200"
+                    className="px-4 py-2 rounded border bg-white shadow text-left cursor-pointer hover:bg-blue-50"
                     onClick={() => handleSelectExercise(ex.id)}
                   >
-                    {ex.title || ex.name || ex.exercise_name}
-                  </button>
+                    {ex.exercise_name || ex.name || ex.title || ex.id}
+                  </li>
                 ))}
+                {exercisesMeta.length === 0 && (
+                  <div className="text-gray-400 text-center my-8">
+                    {t("no_exercises_for_set")}
+                  </div>
+                )}
+              </ul>
+            )}
+            {loadingExerciseDetails && (
+              <div className="text-gray-400 text-center my-6">
+                {t("loading_exercise")}
               </div>
             )}
           </div>
