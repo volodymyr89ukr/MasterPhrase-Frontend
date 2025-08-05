@@ -313,7 +313,7 @@ export default function WritingExercise({
           autoFocus
           spellCheck={false}
           autoComplete="off"
-          placeholder={t("enter_word_or_press_enter")}
+          placeholder={t("enter_word")}
           autoCapitalize="off"
         />
         <div className="flex flex-row gap-3 w-full justify-center mt-5">
