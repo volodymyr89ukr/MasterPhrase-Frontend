@@ -396,147 +396,144 @@ export default function Block1({
       );
     }
 
-    // --- Tabs unified container ---
     return (
-      <div className="p-0 sm:p-4 w-full max-w-3xl min-w-[320px] mx-auto">
-        <div className="flex items-center gap-2 mb-4 px-4 pt-4">
+      <div className="p-4 max-w-3xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
           <BackButton to={`/thousand/${thousandId}`} />
-          <div className="flex gap-1 sm:gap-2 bg-gray-100 rounded-lg p-1 shadow-sm">
-            {(["words", "reading", "exercises"] as const).map((tab) => (
-              <button
-                key={tab}
-                className={`px-3 py-1 rounded-md text-base font-semibold transition-colors duration-200
-                  ${
-                    activeTab === tab
-                      ? "bg-blue-500 text-white shadow"
-                      : "bg-transparent text-blue-700 hover:bg-blue-100"
-                  }
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
-                `}
-                style={{ minWidth: 0 }}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab === "words"
-                  ? t("tab_all_words")
-                  : tab === "reading"
-                  ? t("tab_reading")
-                  : t("tab_exercises")}
-              </button>
-            ))}
+          <div className="flex gap-2">
+            <button
+              className={`px-3 py-1 rounded text-lg font-semibold ${
+                activeTab === "words" ? "bg-blue-200" : "bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("words")}
+            >
+              {t("tab_all_words")}
+            </button>
+            <button
+              className={`px-3 py-1 rounded text-lg font-semibold ${
+                activeTab === "reading" ? "bg-blue-200" : "bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("reading")}
+            >
+              {t("tab_reading")}
+            </button>
+            <button
+              className={`px-3 py-1 rounded text-lg font-semibold ${
+                activeTab === "exercises" ? "bg-blue-200" : "bg-gray-100"
+              }`}
+              onClick={() => setActiveTab("exercises")}
+            >
+              {t("tab_exercises")}
+            </button>
           </div>
         </div>
         {/* Tabs content */}
-        <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
-          {activeTab === "words" && (
-            <div className="flex-1">
-              {loadingWords ? (
-                <div className="text-gray-400 text-center">{t("loading")}</div>
-              ) : (
-                <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {allWords.map((w: any, idx) => (
-                    <li
-                      key={w.id || idx}
-                      className="px-3 py-2 rounded bg-blue-50 text-blue-900 text-center shadow-sm border border-blue-100"
+        {activeTab === "words" && (
+          <div>
+            {loadingWords ? (
+              t("loading")
+            ) : (
+              <ul>
+                {allWords.map((w: any, idx) => (
+                  <li key={w.id || idx}>
+                    {typeof w === "string" ? w : w.word}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+        {activeTab === "reading" && (
+          <div>
+            {loadingReadings ? (
+              t("loading")
+            ) : (
+              <>
+                {readingTitles.length > 0 ? (
+                  <div className="mb-4 w-full relative">
+                    <select
+                      value={selectedReadingId || readingTitles[0].id}
+                      onChange={(e) =>
+                        handleSelectReading(Number(e.target.value))
+                      }
+                      className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
+                      style={{
+                        minWidth: 0,
+                        maxWidth: "100%",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
                     >
-                      {typeof w === "string" ? w : w.word}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-          {activeTab === "reading" && (
-            <div className="flex-1">
-              {loadingReadings ? (
-                <div className="text-gray-400 text-center">{t("loading")}</div>
-              ) : (
-                <>
-                  {readingTitles.length > 0 ? (
-                    <div className="mb-4 w-full relative">
-                      <select
-                        value={selectedReadingId || readingTitles[0].id}
-                        onChange={(e) =>
-                          handleSelectReading(Number(e.target.value))
-                        }
-                        className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
-                        style={{
-                          minWidth: 0,
-                          maxWidth: "100%",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
+                      {readingTitles.map((rt) => (
+                        <option key={rt.id} value={rt.id}>
+                          {rt.title}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                      <svg
+                        className="w-4 h-4 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        viewBox="0 0 24 24"
                       >
-                        {readingTitles.map((rt) => (
-                          <option key={rt.id} value={rt.id}>
-                            {rt.title}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                        <svg
-                          className="w-4 h-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </div>
+                        <path d="M19 9l-7 7-7-7" />
+                      </svg>
                     </div>
-                  ) : (
-                    <div className="text-gray-400 text-center my-8">
-                      {t("no_texts_for_set")}
-                    </div>
-                  )}
+                  </div>
+                ) : (
+                  <div className="text-gray-400 text-center my-8">
+                    {t("no_texts_for_set")}
+                  </div>
+                )}
 
-                  {selectedReadingId && readingText ? (
-                    <div className="my-6">
-                      <TextSpeechHighlighter
-                        text={readingText.text}
-                        translation={readingText.translation}
-                      />
-                    </div>
-                  ) : readingTitles.length > 0 ? (
-                    <div className="text-gray-400 text-center my-8">
-                      {t("loading_text")}
-                    </div>
-                  ) : null}
-                </>
-              )}
-            </div>
-          )}
-          {activeTab === "exercises" && (
-            <div className="flex-1">
-              {loadingExercises ? (
-                <div className="text-gray-400 text-center">{t("loading")}</div>
-              ) : (
-                <ul className="flex flex-col gap-2">
-                  {exercisesMeta.map((ex) => (
-                    <li
-                      key={ex.id}
-                      className="px-4 py-2 rounded border bg-blue-50 text-blue-900 shadow text-left cursor-pointer hover:bg-blue-100"
-                      onClick={() => handleSelectExercise(ex.id)}
-                    >
-                      {ex.exercise_name || ex.name || ex.title || ex.id}
-                    </li>
-                  ))}
-                  {exercisesMeta.length === 0 && (
-                    <div className="text-gray-400 text-center my-8">
-                      {t("no_exercises_for_set")}
-                    </div>
-                  )}
-                </ul>
-              )}
-              {loadingExerciseDetails && (
-                <div className="text-gray-400 text-center my-6">
-                  {t("loading_exercise")}
-                </div>
-              )}
-            </div>
-          )}
-          {error && <div className="text-red-500">{error}</div>}
-        </div>
+                {selectedReadingId && readingText ? (
+                  <div className="my-6">
+                    <TextSpeechHighlighter
+                      text={readingText.text}
+                      translation={readingText.translation}
+                    />
+                  </div>
+                ) : readingTitles.length > 0 ? (
+                  <div className="text-gray-400 text-center my-8">
+                    {t("loading_text")}
+                  </div>
+                ) : null}
+              </>
+            )}
+          </div>
+        )}
+        {activeTab === "exercises" && (
+          <div>
+            {loadingExercises ? (
+              t("loading")
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {exercisesMeta.map((ex) => (
+                  <li
+                    key={ex.id}
+                    className="px-4 py-2 rounded border bg-white shadow text-left cursor-pointer hover:bg-blue-50"
+                    onClick={() => handleSelectExercise(ex.id)}
+                  >
+                    {ex.exercise_name || ex.name || ex.title || ex.id}
+                  </li>
+                ))}
+                {exercisesMeta.length === 0 && (
+                  <div className="text-gray-400 text-center my-8">
+                    {t("no_exercises_for_set")}
+                  </div>
+                )}
+              </ul>
+            )}
+            {loadingExerciseDetails && (
+              <div className="text-gray-400 text-center my-6">
+                {t("loading_exercise")}
+              </div>
+            )}
+          </div>
+        )}
+        {error && <div className="text-red-500">{error}</div>}
       </div>
     );
   }

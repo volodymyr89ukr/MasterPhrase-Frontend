@@ -231,7 +231,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
         <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
           <div className="text-3xl mb-4 text-green-600">✔️</div>
           <div className="text-xl font-bold mb-2">
-            {t("great_find_phrases")}
+            {t("great_match_right_answer")}
           </div>
           <button
             className="mt-6 py-2 px-8 rounded-xl bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 transition"
