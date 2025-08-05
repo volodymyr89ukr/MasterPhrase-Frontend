@@ -66,7 +66,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     | "pairs"
     | "pronunciation"
     | "writing"
-    | "writing-finish"
     | "finished"
   >("matching");
   const [pairsKey, setPairsKey] = useState<number>(1);
@@ -152,9 +151,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       setMode("finished");
       return;
     }
-    // Показати модальне вікно про успіх перед поверненням до matching
-    setMode("writing-finish");
-    // Повернення до matching буде після натискання кнопки або таймера (див. нижче)
+    setQuestions((qArr) => shuffleArray(qArr));
+    setCurrentIdx(0);
+    setMode("matching");
   }
 
   function handleFullReset() {
@@ -165,18 +164,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setPairsKey((k) => k + 1);
     setFullyCompleted(false);
   }
-
-  // Додаємо обробку переходу з writing-finish до matching
-  useEffect(() => {
-    if (mode === "writing-finish") {
-      const timer = setTimeout(() => {
-        setQuestions((qArr) => shuffleArray(qArr));
-        setCurrentIdx(0);
-        setMode("matching");
-      }, 1200);
-      return () => clearTimeout(timer);
-    }
-  }, [mode]);
 
   useEffect(() => {
     return () => {
@@ -219,30 +206,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
           <div className="text-xl font-bold mb-2">
             {t("great_find_phrases")}
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Модальне вікно після WritingExercise
-  if (mode === "writing-finish") {
-    return (
-      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
-        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
-          <div className="text-3xl mb-4 text-green-600">✔️</div>
-          <div className="text-xl font-bold mb-2">
-            {t("great_find_phrases")}
-          </div>
-          <button
-            className="mt-6 py-2 px-8 rounded-xl bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 transition"
-            onClick={() => {
-              setQuestions((qArr) => shuffleArray(qArr));
-              setCurrentIdx(0);
-              setMode("matching");
-            }}
-          >
-            {t("next")}
-          </button>
         </div>
       </div>
     );

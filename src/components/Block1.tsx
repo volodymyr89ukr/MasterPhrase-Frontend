@@ -402,7 +402,7 @@ export default function Block1({
           <BackButton to={`/thousand/${thousandId}`} />
           <div className="flex gap-2">
             <button
-              className={`px-3 py-1 rounded text-xl ${
+              className={`px-3 py-1 rounded text-lg font-semibold ${
                 activeTab === "words" ? "bg-blue-200" : "bg-gray-100"
               }`}
               onClick={() => setActiveTab("words")}
@@ -410,7 +410,7 @@ export default function Block1({
               {t("tab_all_words")}
             </button>
             <button
-              className={`px-3 py-1 rounded text-xl ${
+              className={`px-3 py-1 rounded text-lg font-semibold ${
                 activeTab === "reading" ? "bg-blue-200" : "bg-gray-100"
               }`}
               onClick={() => setActiveTab("reading")}
@@ -418,7 +418,7 @@ export default function Block1({
               {t("tab_reading")}
             </button>
             <button
-              className={`px-3 py-1 rounded text-xl${
+              className={`px-3 py-1 rounded text-lg font-semibold ${
                 activeTab === "exercises" ? "bg-blue-200" : "bg-gray-100"
               }`}
               onClick={() => setActiveTab("exercises")}
