@@ -104,8 +104,8 @@
   "writing_block_completed": "تم إكمال كتلة الكتابة!",
   "proceed_to_next_block": "المتابعة إلى الكتلة التالية",
   "enter_word_or_press_enter": "أدخل الكلمة أو اضغط على Enter",
-  "show_part_of_word": "عرض جزء من الكلمة",
-  "show_whole_word": "عرض الكلمة كاملة",
+  "show_part_of_word": "حروف",
+  "show_whole_word": "كلمة",
   "fix_the_word_error": "صحح الخطأ في الكلمة",
   "phrases_count": "{{current}} / {{total}} عبارات"
 }

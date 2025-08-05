@@ -104,8 +104,8 @@
   "writing_block_completed": "Blok pisania ukończony!",
   "proceed_to_next_block": "Przejdź do następnego bloku",
   "enter_word_or_press_enter": "Wpisz słowo lub naciśnij Enter",
-  "show_part_of_word": "Pokaż część słowa",
-  "show_whole_word": "Pokaż całe słowo",
+  "show_part_of_word": "Litery",
+  "show_whole_word": "Słowo",
   "fix_the_word_error": "Popraw błąd w słowie",
   "phrases_count": "{{current}} / {{total}} frazy"
 }

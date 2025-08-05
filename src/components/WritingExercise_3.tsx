@@ -316,7 +316,7 @@ export default function WritingExercise({
           placeholder={t("enter_word_or_press_enter")}
           autoCapitalize="off"
         />
-        <div className="flex flex-row gap-3 w-full justify-center mt-5">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 w-full justify-center mt-5">
           <button
             onClick={handleHintPart}
             disabled={hintLevel >= 1}

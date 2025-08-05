@@ -104,8 +104,8 @@
   "writing_block_completed": "Yazma bloğu tamamlandı!",
   "proceed_to_next_block": "Sonraki bloğa geç",
   "enter_word_or_press_enter": "Kelimeyi girin veya Enter'a basın",
-  "show_part_of_word": "Kelimenin bir kısmını göster",
-  "show_whole_word": "Tüm kelimeyi göster",
+  "show_part_of_word": "Harf",
+  "show_whole_word": "Kelime",
   "fix_the_word_error": "Kelimedeki hatayı düzelt",
   "phrases_count": "{{current}} / {{total}} cümle"
 }

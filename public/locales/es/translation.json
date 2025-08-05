@@ -104,8 +104,8 @@
   "writing_block_completed": "¡Bloque de escritura completado!",
   "proceed_to_next_block": "Proceder al siguiente bloque",
   "enter_word_or_press_enter": "Introduce la palabra o presiona Enter",
-  "show_part_of_word": "Mostrar parte de la palabra",
-  "show_whole_word": "Mostrar la palabra completa",
+  "show_part_of_word": "Letra",
+  "show_whole_word": "Palabra",
   "fix_the_word_error": "Corrige el error en la palabra",
   "phrases_count": "{{current}} / {{total}} frases"
 }
