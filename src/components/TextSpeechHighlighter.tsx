@@ -88,7 +88,7 @@ function SettingsMenu({
           </span>
         </div>
         <div className="text-xs text-gray-400 mt-1">
-          {t("longer_sentences_longer_pause")} Довші речення — більша пауза. Коротші — менша.
+          {t("longer_sentences_longer_pause")}
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-2">

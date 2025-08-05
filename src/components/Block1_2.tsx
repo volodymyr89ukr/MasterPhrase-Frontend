@@ -197,7 +197,11 @@ export default function Block1({
 
       fetch(`${import.meta.env.VITE_API_URL}/api/word-sets/${setId}/words`)
         .then((r) => r.json())
-        .then((data) => setAllWords(Array.isArray(data.data) ? data.data : []))
+        .then((data) => {
+          setAllWords(
+            Array.isArray(data) ? data : data.words || data.data || []
+          );
+        })
         .catch(() => setAllWords([]))
         .finally(() => setLoadingWords(false));
 
@@ -280,7 +284,7 @@ export default function Block1({
   if (!thousandId) {
     return (
       <div className="p-4 max-w-3xl mx-auto">
-        <h2 className="text-xl font-bold mb-4">{t("select_thousand")}</h2>
+        <h2 className="text-xl font-bold mb-4">{t("select_thousand_words")}</h2>
         {loadingThousands ? (
           <div>{t("loading")}</div>
         ) : (
@@ -392,57 +396,62 @@ export default function Block1({
       );
     }
 
+    // --- Tabs unified container ---
     return (
-      <div className="p-4 max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 mb-4">
+      <div className="p-0 sm:p-4 w-full max-w-3xl min-w-[320px] mx-auto">
+        <div className="flex items-center gap-2 mb-4 px-4 pt-4">
           <BackButton to={`/thousand/${thousandId}`} />
-          <div className="flex gap-2">
-            <button
-              className={`px-3 py-1 rounded ${
-                activeTab === "words" ? "bg-blue-200" : "bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("words")}
-            >
-              {t("tab_all_words")}
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${
-                activeTab === "reading" ? "bg-blue-200" : "bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("reading")}
-            >
-              {t("tab_reading")}
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${
-                activeTab === "exercises" ? "bg-blue-200" : "bg-gray-100"
-              }`}
-              onClick={() => setActiveTab("exercises")}
-            >
-              {t("tab_exercises")}
-            </button>
+          <div className="flex gap-1 sm:gap-2 bg-gray-100 rounded-lg p-1 shadow-sm">
+            {(["words", "reading", "exercises"] as const).map((tab) => (
+              <button
+                key={tab}
+                className={`px-3 py-1 rounded-md text-base font-semibold transition-colors duration-200
+                  ${
+                    activeTab === tab
+                      ? "bg-blue-500 text-white shadow"
+                      : "bg-transparent text-blue-700 hover:bg-blue-100"
+                  }
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
+                `}
+                style={{ minWidth: 0 }}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab === "words"
+                  ? t("tab_all_words")
+                  : tab === "reading"
+                  ? t("tab_reading")
+                  : t("tab_exercises")}
+              </button>
+            ))}
           </div>
         </div>
         {/* Tabs content */}
         {activeTab === "words" && (
-          <div>
-            {loadingWords ? (
-              t("loading")
-            ) : (
-              <ul>
-                {allWords.map((w: any, idx) => (
-                  <li key={w.id || idx}>
-                    {typeof w === "string" ? w : w.word}
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
+            <div className="flex-1">
+              {loadingWords ? (
+                <div className="text-gray-400 text-center">{t("loading")}</div>
+              ) : (
+                <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {allWords.map((w: any, idx) => (
+                    <li
+                      key={w.id || idx}
+                      className="px-3 py-2 rounded bg-blue-50 text-blue-900 text-center shadow-sm border border-blue-100"
+                    >
+                      {typeof w === "string" ? w : w.word}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         )}
         {activeTab === "reading" && (
-          <div>
+          <div className="w-full">
             {loadingReadings ? (
-              t("loading")
+              <div className="text-gray-400 text-center bg-white rounded-xl shadow p-4 min-h-[320px]">
+                {t("loading")}
+              </div>
             ) : (
               <>
                 {readingTitles.length > 0 ? (
@@ -479,20 +488,20 @@ export default function Block1({
                     </div>
                   </div>
                 ) : (
-                  <div className="text-gray-400 text-center my-8">
+                  <div className="text-gray-400 text-center my-8 bg-white rounded-xl shadow p-4">
                     {t("no_texts_for_set")}
                   </div>
                 )}
 
                 {selectedReadingId && readingText ? (
-                  <div className="my-6">
+                  <div className="my-6 w-full">
                     <TextSpeechHighlighter
                       text={readingText.text}
                       translation={readingText.translation}
                     />
                   </div>
                 ) : readingTitles.length > 0 ? (
-                  <div className="text-gray-400 text-center my-8">
+                  <div className="text-gray-400 text-center my-8 bg-white rounded-xl shadow p-4">
                     {t("loading_text")}
                   </div>
                 ) : null}
@@ -501,32 +510,34 @@ export default function Block1({
           </div>
         )}
         {activeTab === "exercises" && (
-          <div>
-            {loadingExercises ? (
-              t("loading")
-            ) : (
-              <ul className="flex flex-col gap-2">
-                {exercisesMeta.map((ex) => (
-                  <li
-                    key={ex.id}
-                    className="px-4 py-2 rounded border bg-white shadow text-left cursor-pointer hover:bg-blue-50"
-                    onClick={() => handleSelectExercise(ex.id)}
-                  >
-                    {ex.exercise_name || ex.name || ex.title || ex.id}
-                  </li>
-                ))}
-                {exercisesMeta.length === 0 && (
-                  <div className="text-gray-400 text-center my-8">
-                    {t("no_exercises_for_set")}
-                  </div>
-                )}
-              </ul>
-            )}
-            {loadingExerciseDetails && (
-              <div className="text-gray-400 text-center my-6">
-                {t("loading_exercise")}
-              </div>
-            )}
+          <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
+            <div className="flex-1">
+              {loadingExercises ? (
+                <div className="text-gray-400 text-center">{t("loading")}</div>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {exercisesMeta.map((ex) => (
+                    <li
+                      key={ex.id}
+                      className="px-4 py-2 rounded border bg-blue-50 text-blue-900 shadow text-left cursor-pointer hover:bg-blue-100"
+                      onClick={() => handleSelectExercise(ex.id)}
+                    >
+                      {ex.exercise_name || ex.name || ex.title || ex.id}
+                    </li>
+                  ))}
+                  {exercisesMeta.length === 0 && (
+                    <div className="text-gray-400 text-center my-8">
+                      {t("no_exercises_for_set")}
+                    </div>
+                  )}
+                </ul>
+              )}
+              {loadingExerciseDetails && (
+                <div className="text-gray-400 text-center my-6">
+                  {t("loading_exercise")}
+                </div>
+              )}
+            </div>
           </div>
         )}
         {error && <div className="text-red-500">{error}</div>}
