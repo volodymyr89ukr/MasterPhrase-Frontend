@@ -284,7 +284,7 @@ export default function Block1({
   if (!thousandId) {
     return (
       <div className="p-4 max-w-3xl mx-auto">
-        <h2 className="text-xl font-bold mb-4">{t("select_thousand")}</h2>
+        <h2 className="text-xl font-bold mb-4">{t("select_thousand_words")}</h2>
         {loadingThousands ? (
           <div>{t("loading")}</div>
         ) : (
@@ -402,7 +402,7 @@ export default function Block1({
           <BackButton to={`/thousand/${thousandId}`} />
           <div className="flex gap-2">
             <button
-              className={`px-3 py-1 rounded ${
+              className={`px-3 py-1 rounded text-xl ${
                 activeTab === "words" ? "bg-blue-200" : "bg-gray-100"
               }`}
               onClick={() => setActiveTab("words")}
@@ -410,7 +410,7 @@ export default function Block1({
               {t("tab_all_words")}
             </button>
             <button
-              className={`px-3 py-1 rounded ${
+              className={`px-3 py-1 rounded text-xl ${
                 activeTab === "reading" ? "bg-blue-200" : "bg-gray-100"
               }`}
               onClick={() => setActiveTab("reading")}
@@ -418,7 +418,7 @@ export default function Block1({
               {t("tab_reading")}
             </button>
             <button
-              className={`px-3 py-1 rounded ${
+              className={`px-3 py-1 rounded text-xl${
                 activeTab === "exercises" ? "bg-blue-200" : "bg-gray-100"
               }`}
               onClick={() => setActiveTab("exercises")}
