@@ -95,6 +95,7 @@
   "medium": "Medio",
   "fast": "Rápido",
   "pause_after_sentence": "Pausa después de la frase (30 caracteres)",
+  "longer_sentences_longer_pause": "Frases más largas — pausa más larga. Más cortas — pausa más corta.",
   "ok": "Ok",
   "play": "Reproducir",
   "pause": "Pausa",

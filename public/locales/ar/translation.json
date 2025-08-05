@@ -95,6 +95,7 @@
   "medium": "متوسط",
   "fast": "سريع",
   "pause_after_sentence": "وقفة بعد الجملة (30 حرفًا)",
+  "longer_sentences_longer_pause": "الجمل الأطول — وقفة أطول. الأقصر — وقفة أقصر.",
   "ok": "حسنًا",
   "play": "تشغيل",
   "pause": "إيقاف مؤقت",

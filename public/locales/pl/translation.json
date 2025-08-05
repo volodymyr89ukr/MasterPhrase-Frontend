@@ -95,6 +95,7 @@
   "medium": "Średnio",
   "fast": "Szybko",
   "pause_after_sentence": "Pauza po zdaniu (30 znaków)",
+  "longer_sentences_longer_pause": "Dłuższe zdania — dłuższa pauza. Krótsze — krótsza.",
   "ok": "Ok",
   "play": "Odtwórz",
   "pause": "Pauza",

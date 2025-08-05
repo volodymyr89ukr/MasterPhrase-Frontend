@@ -426,8 +426,8 @@ export default function Block1({
           </div>
         </div>
         {/* Tabs content */}
-        {activeTab === "words" && (
-          <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
+        <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
+          {activeTab === "words" && (
             <div className="flex-1">
               {loadingWords ? (
                 <div className="text-gray-400 text-center">{t("loading")}</div>
@@ -444,73 +444,69 @@ export default function Block1({
                 </ul>
               )}
             </div>
-          </div>
-        )}
-        {activeTab === "reading" && (
-          <div className="w-full">
-            {loadingReadings ? (
-              <div className="text-gray-400 text-center bg-white rounded-xl shadow p-4 min-h-[320px]">
-                {t("loading")}
-              </div>
-            ) : (
-              <>
-                {readingTitles.length > 0 ? (
-                  <div className="mb-4 w-full relative">
-                    <select
-                      value={selectedReadingId || readingTitles[0].id}
-                      onChange={(e) =>
-                        handleSelectReading(Number(e.target.value))
-                      }
-                      className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
-                      style={{
-                        minWidth: 0,
-                        maxWidth: "100%",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
-                      {readingTitles.map((rt) => (
-                        <option key={rt.id} value={rt.id}>
-                          {rt.title}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
+          )}
+          {activeTab === "reading" && (
+            <div className="flex-1">
+              {loadingReadings ? (
+                <div className="text-gray-400 text-center">{t("loading")}</div>
+              ) : (
+                <>
+                  {readingTitles.length > 0 ? (
+                    <div className="mb-4 w-full relative">
+                      <select
+                        value={selectedReadingId || readingTitles[0].id}
+                        onChange={(e) =>
+                          handleSelectReading(Number(e.target.value))
+                        }
+                        className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
+                        style={{
+                          minWidth: 0,
+                          maxWidth: "100%",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
                       >
-                        <path d="M19 9l-7 7-7-7" />
-                      </svg>
+                        {readingTitles.map((rt) => (
+                          <option key={rt.id} value={rt.id}>
+                            {rt.title}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                        <svg
+                          className="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-gray-400 text-center my-8 bg-white rounded-xl shadow p-4">
-                    {t("no_texts_for_set")}
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-gray-400 text-center my-8">
+                      {t("no_texts_for_set")}
+                    </div>
+                  )}
 
-                {selectedReadingId && readingText ? (
-                  <div className="my-6 w-full">
-                    <TextSpeechHighlighter
-                      text={readingText.text}
-                      translation={readingText.translation}
-                    />
-                  </div>
-                ) : readingTitles.length > 0 ? (
-                  <div className="text-gray-400 text-center my-8 bg-white rounded-xl shadow p-4">
-                    {t("loading_text")}
-                  </div>
-                ) : null}
-              </>
-            )}
-          </div>
-        )}
-        {activeTab === "exercises" && (
-          <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
+                  {selectedReadingId && readingText ? (
+                    <div className="my-6">
+                      <TextSpeechHighlighter
+                        text={readingText.text}
+                        translation={readingText.translation}
+                      />
+                    </div>
+                  ) : readingTitles.length > 0 ? (
+                    <div className="text-gray-400 text-center my-8">
+                      {t("loading_text")}
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </div>
+          )}
+          {activeTab === "exercises" && (
             <div className="flex-1">
               {loadingExercises ? (
                 <div className="text-gray-400 text-center">{t("loading")}</div>
@@ -538,9 +534,9 @@ export default function Block1({
                 </div>
               )}
             </div>
-          </div>
-        )}
-        {error && <div className="text-red-500">{error}</div>}
+          )}
+          {error && <div className="text-red-500">{error}</div>}
+        </div>
       </div>
     );
   }

@@ -95,6 +95,7 @@
   "medium": "Orta",
   "fast": "Hızlı",
   "pause_after_sentence": "Cümleden sonra duraklama (30 karakter)",
+  "longer_sentences_longer_pause": "Daha uzun cümleler — daha uzun duraklama. Daha kısa cümleler — daha kısa.",
   "ok": "Tamam",
   "play": "Oynat",
   "pause": "Duraklat",
