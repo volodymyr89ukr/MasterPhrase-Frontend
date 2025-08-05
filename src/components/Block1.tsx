@@ -452,7 +452,7 @@ export default function Block1({
                       onChange={(e) =>
                         handleSelectReading(Number(e.target.value))
                       }
-                      className="block w-90 p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
+                      className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
                       style={{
                         minWidth: 0,
                         maxWidth: "100%",

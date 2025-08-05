@@ -142,7 +142,7 @@ function AppContent() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowLanguageSelection(true)}
-                className="text-sm text-blue-600 hover:text-blue-800 underline"
+                className="text-lg sm:text-xl text-blue-700 hover:text-blue-900 underline font-semibold transition"
                 title={t("change_language_title")}
               >
                 {t("change_language")}
@@ -150,7 +150,7 @@ function AppContent() {
             </div>
             {user ? (
               <div className="flex items-center gap-2">
-                <span className="text-gray-700 text-sm">
+                <span className="text-blue-900 text-lg sm:text-xl font-semibold">
                   {user.username
                     ? t("profile_user", { username: user.username })
                     : user.email}
@@ -161,7 +161,7 @@ function AppContent() {
                     localStorage.removeItem("user");
                     setUser(null);
                   }}
-                  className="py-1 px-3 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 transition text-xs"
+                  className="py-2 px-5 rounded-lg bg-blue-100 text-blue-700 font-bold hover:bg-blue-200 transition text-base sm:text-lg"
                 >
                   {t("logout")}
                 </button>
@@ -169,7 +169,7 @@ function AppContent() {
             ) : (
               <button
                 onClick={() => setShowLogin(true)}
-                className="py-1 px-3 rounded bg-blue-500 text-white font-semibold hover:bg-blue-600 transition text-xs"
+                className="py-2 px-5 rounded-lg bg-blue-500 text-white font-bold hover:bg-blue-600 transition text-base sm:text-lg"
               >
                 {t("login")}
               </button>
