@@ -195,7 +195,12 @@ export default function Block1({
       setLoadingReadings(true);
       setLoadingExercises(true);
 
-      fetch(`${import.meta.env.VITE_API_URL}/api/word-sets/${setId}/words`)
+      // fetch(`${import.meta.env.VITE_API_URL}/api/word-sets/${setId}/words`)
+      fetch(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/word-sets/${setId}/words?interface_language=uk`
+      )
         .then((r) => r.json())
         .then((data) => {
           setAllWords(
