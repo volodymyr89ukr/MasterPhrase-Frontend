@@ -445,13 +445,24 @@ export default function Block1({
                   {allWords.map((w: any, idx) => (
                     <li
                       key={w.id || idx}
-                      className="px-3 py-2 rounded bg-blue-50 text-blue-900 text-center shadow-sm border border-blue-100"
+                      className="px-3 py-2 rounded bg-blue-50 text-center shadow-sm border border-blue-100 flex flex-col items-center justify-center min-h-[56px]"
                     >
-                      {typeof w === "string"
-                        ? w
-                        : `${w.word}${
-                            w.translation ? ` — ${w.translation}` : ""
-                          }`}
+                      {typeof w === "string" ? (
+                        <span className="text-lg font-semibold text-blue-900 leading-tight">
+                          {w}
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-lg font-bold text-blue-900 leading-tight">
+                            {w.word}
+                          </span>
+                          {w.translation && (
+                            <span className="text-base text-blue-600 opacity-80 mt-0.5 leading-tight">
+                              {w.translation}
+                            </span>
+                          )}
+                        </>
+                      )}
                     </li>
                   ))}
                 </ul>

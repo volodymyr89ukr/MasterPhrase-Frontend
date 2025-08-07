@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import BackButton from "./BackButton";
 import ExerciseBlockContainer from "./ExerciseBlockContainer";
 import TextSpeechHighlighter from "./TextSpeechHighlighter";
+import { useAppContext } from "../AppContext";
 
 interface Thousand {
   id: number;
@@ -22,6 +23,7 @@ type WordItem = Word | string;
 interface Word {
   id: number;
   word: string;
+  translation?: string;
 }
 
 interface ExerciseMeta {
@@ -113,6 +115,7 @@ export default function Block1({
   const navigate = useNavigate();
   const { thousandId, setId } = useParams();
   const location = useLocation();
+  const { interfaceLanguage } = useAppContext();
 
   // State
   const [thousands, setThousands] = useState<Thousand[]>([]);
@@ -190,12 +193,18 @@ export default function Block1({
 
   // --- Fetch words, readings, exercises for selected set ---
   useEffect(() => {
-    if (setId) {
+    if (setId && interfaceLanguage && interfaceLanguage.code) {
       setLoadingWords(true);
       setLoadingReadings(true);
       setLoadingExercises(true);
 
-      fetch(`${import.meta.env.VITE_API_URL}/api/word-sets/${setId}/words`)
+      fetch(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/word-sets/${setId}/words?interface_language=${
+          interfaceLanguage.code
+        }`
+      )
         .then((r) => r.json())
         .then((data) => {
           setAllWords(
@@ -221,7 +230,7 @@ export default function Block1({
         .catch(() => setExercisesMeta([]))
         .finally(() => setLoadingExercises(false));
     }
-  }, [setId, t]);
+  }, [setId, t, interfaceLanguage]);
 
   // --- Reading selection ---
   useEffect(() => {
@@ -438,7 +447,11 @@ export default function Block1({
                       key={w.id || idx}
                       className="px-3 py-2 rounded bg-blue-50 text-blue-900 text-center shadow-sm border border-blue-100"
                     >
-                      {typeof w === "string" ? w : w.word}
+                      {typeof w === "string"
+                        ? w
+                        : `${w.word}${
+                            w.translation ? ` — ${w.translation}` : ""
+                          }`}
                     </li>
                   ))}
                 </ul>
