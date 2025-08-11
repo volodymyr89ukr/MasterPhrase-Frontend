@@ -261,12 +261,15 @@ export default function Block1({
     setSelectedExerciseId(exerciseId);
     setLoadingExerciseDetails(true);
     setExerciseDetails(null);
-    if (exerciseId && setId) {
+
+    if (exerciseId && setId && interfaceLanguage && interfaceLanguage.code) {
       try {
         const res = await fetch(
           `${
             import.meta.env.VITE_API_URL
-          }/api/word-sets/${setId}/exercises/${exerciseId}`
+          }/api/word-sets/${setId}/exercises/${exerciseId}?interface_language=${
+            interfaceLanguage.code
+          }`
         );
         const data = await res.json();
         setExerciseDetails(data);
@@ -275,6 +278,11 @@ export default function Block1({
           error: t("failed_to_load_exercise"),
         } as ExerciseDetails);
       }
+      setLoadingExerciseDetails(false);
+    } else {
+      setExerciseDetails({
+        error: t("failed_to_load_exercise"),
+      } as ExerciseDetails);
       setLoadingExerciseDetails(false);
     }
   };
