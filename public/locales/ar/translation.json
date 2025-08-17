@@ -109,5 +109,12 @@
   "show_part_of_word": "حروف",
   "show_whole_word": "كلمة",
   "fix_the_word_error": "صحح الخطأ في الكلمة",
-  "phrases_count": "{{current}} / {{total}} عبارات"
+  "phrases_count": "{{current}} / {{total}} عبارات",
+  "remove_token": "إزالة الرمز",
+  "token_disabled": "تم تعطيل الرمز",
+  "add_token": "إضافة رمز",
+  "check": "تحقق",
+  "hint": "تلميح",
+  "skip": "تخطي",
+  "clear": "مسح"
 }

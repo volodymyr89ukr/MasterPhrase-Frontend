@@ -109,5 +109,12 @@
   "show_part_of_word": "Harf",
   "show_whole_word": "Kelime",
   "fix_the_word_error": "Kelimedeki hatayı düzelt",
-  "phrases_count": "{{current}} / {{total}} cümle"
+  "phrases_count": "{{current}} / {{total}} cümle",
+  "remove_token": "Tokeni kaldır",
+  "token_disabled": "Token devre dışı",
+  "add_token": "Token ekle",
+  "check": "Kontrol et",
+  "hint": "İpucu",
+  "skip": "Atla",
+  "clear": "Temizle"
 }

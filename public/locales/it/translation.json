@@ -109,5 +109,12 @@
   "show_part_of_word": "Lettere",
   "show_whole_word": "Parola",
   "fix_the_word_error": "Correggi l'errore nella parola",
-  "phrases_count": "{{current}} / {{total}} frasi"
+  "phrases_count": "{{current}} / {{total}} frasi",
+  "remove_token": "Rimuovi token",
+  "token_disabled": "Token disabilitato",
+  "add_token": "Aggiungi token",
+  "check": "Controlla",
+  "hint": "Suggerimento",
+  "skip": "Salta",
+  "clear": "Cancella"
 }

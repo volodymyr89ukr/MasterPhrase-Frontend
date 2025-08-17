@@ -109,5 +109,12 @@
   "show_part_of_word": "Lettres",
   "show_whole_word": "Mot",
   "fix_the_word_error": "Corriger l'erreur dans le mot",
-  "phrases_count": "{{current}} / {{total}} phrases"
+  "phrases_count": "{{current}} / {{total}} phrases",
+  "remove_token": "Supprimer le jeton",
+  "token_disabled": "Jeton désactivé",
+  "add_token": "Ajouter un jeton",
+  "check": "Vérifier",
+  "hint": "Indice",
+  "skip": "Passer",
+  "clear": "Effacer"
 }

@@ -109,5 +109,12 @@
   "show_part_of_word": "Litery",
   "show_whole_word": "Słowo",
   "fix_the_word_error": "Popraw błąd w słowie",
-  "phrases_count": "{{current}} / {{total}} frazy"
+  "phrases_count": "{{current}} / {{total}} frazy",
+  "remove_token": "Usuń token",
+  "token_disabled": "Token wyłączony",
+  "add_token": "Dodaj token",
+  "check": "Sprawdź",
+  "hint": "Podpowiedź",
+  "skip": "Pomiń",
+  "clear": "Wyczyść"
 }

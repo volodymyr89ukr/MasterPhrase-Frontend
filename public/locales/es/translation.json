@@ -109,5 +109,12 @@
   "show_part_of_word": "Letra",
   "show_whole_word": "Palabra",
   "fix_the_word_error": "Corrige el error en la palabra",
-  "phrases_count": "{{current}} / {{total}} frases"
+  "phrases_count": "{{current}} / {{total}} frases",
+  "remove_token": "Eliminar token",
+  "token_disabled": "Token deshabilitado",
+  "add_token": "Agregar token",
+  "check": "Comprobar",
+  "hint": "Pista",
+  "skip": "Saltar",
+  "clear": "Borrar"
 }

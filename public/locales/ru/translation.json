@@ -109,5 +109,12 @@
   "show_part_of_word": "Буквы",
   "show_whole_word": "Слово",
   "fix_the_word_error": "Исправьте ошибку в слове",
-  "phrases_count": "{{current}} / {{total}} фраз"
+  "phrases_count": "{{current}} / {{total}} фраз",
+  "remove_token": "Убрать токен",
+  "token_disabled": "Токен отключён",
+  "add_token": "Добавить токен",
+  "check": "Проверить",
+  "hint": "Подсказка",
+  "skip": "Пропустить",
+  "clear": "Очистить"
 }

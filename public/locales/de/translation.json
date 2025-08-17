@@ -109,5 +109,12 @@
   "show_part_of_word": "Buchstaben",
   "show_whole_word": "Wort",
   "fix_the_word_error": "Korrigiere den Fehler im Wort",
-  "phrases_count": "{{current}} / {{total}} Phrasen"
+  "phrases_count": "{{current}} / {{total}} Phrasen",
+  "remove_token": "Token entfernen",
+  "token_disabled": "Token deaktiviert",
+  "add_token": "Token hinzufügen",
+  "check": "Prüfen",
+  "hint": "Hinweis",
+  "skip": "Überspringen",
+  "clear": "Löschen"
 }

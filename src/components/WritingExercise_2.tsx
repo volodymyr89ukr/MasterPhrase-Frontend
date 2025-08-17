@@ -56,132 +56,6 @@ export default function WritingExercise({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const feedbackTimeoutRef = useRef<number | null>(null);
   const fixHintTimeoutRef = useRef<number | null>(null);
-  const lastSelectionRef = useRef<{ start: number; end: number } | null>(null);
-
-  // --- спецсимволи для мови навчання ---
-  function getSpecialCharsForLanguage(code?: string): string[] {
-    if (!code) return [];
-    const lang = code.toLowerCase();
-    if (lang.startsWith("de")) return ["ä", "ö", "ü", "ß", "Ä", "Ö", "Ü"];
-    if (lang.startsWith("es"))
-      return ["á", "é", "í", "ó", "ú", "ü", "ñ", "¡", "¿"];
-    if (lang.startsWith("fr"))
-      return [
-        "à",
-        "â",
-        "ç",
-        "é",
-        "è",
-        "ê",
-        "ë",
-        "ï",
-        "î",
-        "ô",
-        "ù",
-        "û",
-        "ü",
-        "œ",
-        "æ",
-      ];
-    if (lang.startsWith("it")) return ["à", "è", "é", "ì", "ò", "ù"];
-    if (lang.startsWith("pt"))
-      return ["á", "â", "ã", "à", "ç", "é", "ê", "í", "ó", "ô", "õ", "ú", "ü"];
-    if (lang.startsWith("pl"))
-      return [
-        "ą",
-        "ć",
-        "ę",
-        "ł",
-        "ń",
-        "ó",
-        "ś",
-        "ź",
-        "ż",
-        "Ą",
-        "Ć",
-        "Ę",
-        "Ł",
-        "Ń",
-        "Ó",
-        "Ś",
-        "Ź",
-        "Ż",
-      ];
-    if (lang.startsWith("tr"))
-      return ["ç", "ğ", "ı", "İ", "ö", "ş", "ü", "Ç", "Ğ", "Ö", "Ş", "Ü"];
-    if (lang.startsWith("uk")) return ["ґ", "є", "і", "ї", "Ґ", "Є", "І", "Ї"];
-    if (lang.startsWith("ru")) return ["ё", "Ё", "ъ", "Ъ", "ы", "Ы"];
-    if (lang.startsWith("ar"))
-      return ["ء", "أ", "إ", "آ", "ى", "ة", "ؤ", "ئ", "‎ً", "‎ٌ", "‎ٍ"];
-    return [];
-  }
-
-  const specialChars = getSpecialCharsForLanguage(learningLanguage?.code);
-
-  // --- Нормалізація тексту: Unicode NFC + прибрати невидимі символи ---
-  function normalizeText(s: string): string {
-    try {
-      // NFC + прибрати zero-width/invisible + стандартний trim
-      return s
-        .normalize("NFC")
-        .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
-        .trim();
-    } catch {
-      return s.replace(/[\u200B-\u200D\uFEFF\u2060]/g, "").trim();
-    }
-  }
-
-  // --- Вставка спецсимволу у позицію курсора (без перезапису виділення) ---
-  const handleInsertChar = (ch: string) => {
-    const el = inputRef.current;
-    if (!el) return;
-
-    // Обчислюємо позицію вставки: кінець виділення, якщо воно є (поважаємо напрямок)
-    const start = el.selectionStart ?? el.value.length;
-    const end = el.selectionEnd ?? el.value.length;
-    const insertionIndex =
-      (el.selectionDirection === "backward" ? start : end) ?? end;
-
-    // Використовуємо setRangeText на нульовому діапазоні, щоб не затирати виділення
-    // 1) встановимо курсор у точку вставки (колапсуємо виділення)
-    try {
-      el.setSelectionRange(
-        insertionIndex,
-        insertionIndex,
-        el.selectionDirection || "none"
-      );
-    } catch {}
-    if (typeof el.setRangeText === "function") {
-      el.setRangeText(ch, insertionIndex, insertionIndex, "end");
-      // Оновлюємо React-стан відповідно до значення інпуту
-      setUserInput(el.value);
-      // Каретка вже після вставки (end), але додатково гарантуємо
-      const caretPos = insertionIndex + ch.length;
-      // Зберігаємо останню позицію для можливого відновлення
-      lastSelectionRef.current = { start: caretPos, end: caretPos };
-      // Підтримуємо фокус
-      setTimeout(() => {
-        el.focus();
-        try {
-          el.setSelectionRange(caretPos, caretPos);
-        } catch {}
-      }, 0);
-    } else {
-      // Фолбек: контрольовано формуємо значення без заміни виділення
-      const value = el.value;
-      const newValue =
-        value.slice(0, insertionIndex) + ch + value.slice(insertionIndex);
-      setUserInput(newValue);
-      const caretPos = insertionIndex + ch.length;
-      lastSelectionRef.current = { start: caretPos, end: caretPos };
-      setTimeout(() => {
-        el.focus();
-        try {
-          el.setSelectionRange(caretPos, caretPos);
-        } catch {}
-      }, 0);
-    }
-  };
 
   // --- Прогрів TTS ---
   useEffect(() => {
@@ -277,7 +151,6 @@ export default function WritingExercise({
 
   const phraseWords = obj.phrase.split(/\s+/);
   const targetWord = getWordByIndex(obj.phrase, wordIndex);
-  const targetNorm = normalizeText(targetWord);
 
   const maskedPhrase = phraseWords
     .map((w, i) => {
@@ -305,11 +178,13 @@ export default function WritingExercise({
       }
       return;
     }
-    const userNorm = normalizeText(userInput);
-    if (targetNorm.startsWith(userNorm)) {
+    if (targetWord.startsWith(userInput.trim())) {
       setInputStatus("default");
       setShowFixHint(false);
-      if (userNorm === targetNorm && userNorm.length === targetNorm.length) {
+      if (
+        userInput.trim() === targetWord &&
+        userInput.trim().length === targetWord.length
+      ) {
         setInputStatus("correct");
         speakSmart(obj.phrase, { lang: learningLanguage?.code || "de-DE" });
         if (feedbackTimeoutRef.current) {
@@ -341,7 +216,7 @@ export default function WritingExercise({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     userInput,
-    targetNorm,
+    targetWord,
     currentIdx,
     phrases.length,
     onComplete,
@@ -359,7 +234,7 @@ export default function WritingExercise({
 
   const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      if (normalizeText(userInput) === targetNorm) {
+      if (userInput.trim() === targetWord) {
         setInputStatus("correct");
         setHintLevel(0);
         speakSmart(obj.phrase, { lang: learningLanguage?.code || "de-DE" });
@@ -393,17 +268,9 @@ export default function WritingExercise({
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput(e.target.value);
-    // зберегти позицію курсора (для можливого відновлення після ререндеру)
-    try {
-      const el = e.target as HTMLInputElement;
-      lastSelectionRef.current = {
-        start: el.selectionStart ?? el.value.length,
-        end: el.selectionEnd ?? el.value.length,
-      };
-    } catch {}
     if (
       inputStatus === "wrong" &&
-      targetNorm.startsWith(normalizeText(e.target.value))
+      targetWord.startsWith(e.target.value.trim())
     ) {
       setInputStatus("default");
       setShowFixHint(false);
@@ -449,22 +316,6 @@ export default function WritingExercise({
           placeholder={t("enter_word")}
           autoCapitalize="off"
         />
-        {/* Панель спецсимволів під полем вводу */}
-        {specialChars.length > 0 && (
-          <div className="flex flex-wrap gap-2 w-full justify-center mt-3">
-            {specialChars.map((ch) => (
-              <button
-                key={ch}
-                type="button"
-                aria-label={`Insert ${ch}`}
-                className="min-w-[44px] h-11 px-3 py-2 rounded-xl border bg-gray-100 hover:bg-blue-100 text-lg font-semibold text-blue-900 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 select-none"
-                onClick={() => handleInsertChar(ch)}
-              >
-                {ch}
-              </button>
-            ))}
-          </div>
-        )}
         <div className="flex flex-row gap-3 w-full justify-center mt-5">
           <button
             onClick={handleHintPart}
