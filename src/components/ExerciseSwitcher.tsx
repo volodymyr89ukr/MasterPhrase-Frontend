@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import MatchingExercise from "./MatchingExercise";
+import MatchingExercise, { Phrase as Question } from "./MatchingExercise";
 import MatchingPairsExercise from "./MatchingPairsExercise";
+import MakePhrase from "./MakePhrase";
 import PronunciationBlock from "./PronunciationBlock";
 import WritingExercise from "./WritingExercise";
-import MakePhrase from "./MakePhrase";
+import { useTranslation } from "react-i18next";
 
-export interface Phrase {
+export interface Phrase extends Question {
   id: number;
-  phrase: string;
-  translation: string;
-  options: string[];
-  answer: string;
-  matching_exercise: number;
-  explanation?: string;
   writing_exercise?: string | number;
   [key: string]: any;
 }
@@ -69,8 +63,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   const [matchingPool, setMatchingPool] = useState<Phrase[]>([]);
   const [mode, setMode] = useState<
     | "matching"
-    | "makephrase"
     | "transition"
+    | "make-phrase"
     | "pairs"
     | "pronunciation"
     | "writing"
@@ -79,6 +73,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   >("matching");
   const [pairsKey, setPairsKey] = useState<number>(1);
   const [fullyCompleted, setFullyCompleted] = useState<boolean>(false);
+  const [makePhraseIdx, setMakePhraseIdx] = useState<number>(0);
 
   useEffect(() => {
     setQuestions(prepareQuestions(exerciseData));
@@ -87,11 +82,12 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setMode("matching");
     setPairsKey(1);
     setFullyCompleted(false);
+    setMakePhraseIdx(0);
   }, [exerciseData]);
 
-  // --- MatchingExercise Answer Handler ---
   function handleAnswer(option: string | null) {
     if (option === null) {
+      // Optionally ignore or handle null option
       return;
     }
     const currQ = questions[currentIdx];
@@ -108,10 +104,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       if (updatedQuestions.length === 0) {
         setQuestions(updatedQuestions);
         setMatchingPool(pool);
-        setMode("transition");
-        setTimeout(() => {
-          setMode("makephrase");
-        }, 1000);
+        // run MakePhrase phase over the pool before pairs
+        setMakePhraseIdx(0);
+        setMode("make-phrase");
         return;
       }
       updatedIdx = Math.min(currentIdx, updatedQuestions.length - 1);
@@ -135,32 +130,10 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setMatchingPool(pool);
 
     if (pool.length >= 6) {
-      setMode("transition");
-      setTimeout(() => {
-        setMode("makephrase");
-      }, 1000);
-      return;
-    }
-  }
-
-  // --- MakePhrase Handler ---
-  const [makePhraseIdx, setMakePhraseIdx] = useState(0);
-  const [makePhraseResults, setMakePhraseResults] = useState<
-    { id: number; result: "success" | "skipped" | "error" }[]
-  >([]);
-
-  function handleMakePhraseComplete(result: {
-    id: number;
-    result: "success" | "skipped" | "error";
-  }) {
-    setMakePhraseResults((prev) => [...prev, result]);
-    if (makePhraseIdx < matchingPool.length - 1) {
-      setMakePhraseIdx(makePhraseIdx + 1);
-    } else {
-      setMode("pairs");
-      setPairsKey((k) => k + 1);
+      // Start MakePhrase phase when we have a full pool
       setMakePhraseIdx(0);
-      setMakePhraseResults([]);
+      setMode("make-phrase");
+      return;
     }
   }
 
@@ -179,7 +152,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       setMode("finished");
       return;
     }
+    // Показати модальне вікно про успіх перед поверненням до matching
     setMode("writing-finish");
+    // Повернення до matching буде після натискання кнопки або таймера (див. нижче)
   }
 
   function handleFullReset() {
@@ -189,10 +164,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setMode("matching");
     setPairsKey((k) => k + 1);
     setFullyCompleted(false);
-    setMakePhraseIdx(0);
-    setMakePhraseResults([]);
   }
 
+  // Додаємо обробку переходу з writing-finish до matching
   useEffect(() => {
     if (mode === "writing-finish") {
       const timer = setTimeout(() => {
@@ -250,6 +224,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     );
   }
 
+  // Модальне вікно після WritingExercise
   if (mode === "writing-finish") {
     return (
       <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
@@ -298,10 +273,23 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             total={exerciseData.length}
           />
         )}
-        {mode === "makephrase" && matchingPool.length > 0 && (
+        {mode === "make-phrase" && matchingPool.length >= 1 && (
           <MakePhrase
-            phraseObj={matchingPool[makePhraseIdx]}
-            onComplete={handleMakePhraseComplete}
+            key={`make-${makePhraseIdx}-${matchingPool.length}`}
+            question={matchingPool[makePhraseIdx]}
+            onComplete={() => {
+              const nextIdx = makePhraseIdx + 1;
+              if (nextIdx < matchingPool.length) {
+                setMakePhraseIdx(nextIdx);
+              } else {
+                // proceed to pairs
+                setMode("transition");
+                setTimeout(() => {
+                  setMode("pairs");
+                  setPairsKey((k) => k + 1);
+                }, 500);
+              }
+            }}
           />
         )}
         {mode === "pairs" && matchingPool.length >= 2 && (
@@ -314,10 +302,28 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
         {mode === "pairs" && matchingPool.length < 2 && (
           <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
             <div className="max-w-lg w-full p-6 rounded-xl shadow bg-white text-center">
-              {t("not_enough_phrases_for_pairs")}
+              <div className="text-4xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold mb-4">
+                {t("congratulations_finished")}
+              </h2>
+              <button
+                className="mt-6 py-2 px-8 rounded-xl bg-green-500 text-white font-semibold shadow hover:bg-green-600 transition"
+                onClick={handleFullReset}
+              >
+                {t("start_over")}
+              </button>
+              {onBack && (
+                <button
+                  className="mt-3 ml-3 py-2 px-6 rounded-xl bg-gray-200 text-gray-800 font-semibold shadow hover:bg-gray-300 transition"
+                  onClick={onBack}
+                >
+                  {t("back_to_exercise_selection")}
+                </button>
+              )}
             </div>
           </div>
         )}
+
         {mode === "pronunciation" && matchingPool.length >= 1 && (
           <PronunciationBlock
             phrases={matchingPool}
@@ -325,6 +331,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             onComplete={handlePronunciationComplete}
           />
         )}
+
         {mode === "writing" && matchingPool.length >= 1 && (
           <WritingExercise
             key={matchingPool.map((obj) => obj.id).join("_")}

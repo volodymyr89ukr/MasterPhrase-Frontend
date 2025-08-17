@@ -109,5 +109,13 @@
   "show_part_of_word": "Letters",
   "show_whole_word": "Word",
   "fix_the_word_error": "Fix the error in the word",
-  "phrases_count": "{{current}} / {{total}} phrases"
+  "phrases_count": "{{current}} / {{total}} phrases",
+  "assemble_phrase_prompt": "Tap words to build the phrase",
+  "remove_token": "Remove token",
+  "token_disabled": "Token disabled",
+  "add_token": "Add token",
+  "check": "Check",
+  "hint": "Hint",
+  "skip": "Skip",
+  "clear": "Clear"
 }

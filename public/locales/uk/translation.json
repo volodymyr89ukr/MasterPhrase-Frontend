@@ -109,5 +109,13 @@
   "show_part_of_word": "Літери",
   "show_whole_word": "Слово",
   "fix_the_word_error": "Виправте помилку у слові",
-  "phrases_count": "{{current}} / {{total}} фраз"
+  "phrases_count": "{{current}} / {{total}} фраз",
+  "assemble_phrase_prompt": "Тисни на слова, щоб скласти фразу",
+  "remove_token": "Прибрати токен",
+  "token_disabled": "Токен вимкнено",
+  "add_token": "Додати токен",
+  "check": "Перевірити",
+  "hint": "Підказка",
+  "skip": "Пропустити",
+  "clear": "Очистити"
 }
