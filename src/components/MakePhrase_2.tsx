@@ -21,9 +21,6 @@ interface MakePhraseProps {
   onComplete: (res: MakePhraseResult) => void;
 }
 
-// ── Timing: пауза після коректного складання (озвучення стартує одразу)
-const NEXT_SET_DELAY_MS = 1500; // підібрано під середню фразу ~7 слів і темп 0.85
-
 // Stable seeded RNG (mulberry32)
 function mulberry32(seed: number) {
   let t = seed >>> 0;
@@ -91,9 +88,6 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
   );
   const [errorIndices, setErrorIndices] = useState<number[]>([]);
   const [focusedDropIdx, setFocusedDropIdx] = useState<number | null>(null);
-  const [isSuccessPause, setIsSuccessPause] = useState(false); // ⟵ новий стан паузи успіху
-  const pauseTimerRef = useRef<number | null>(null);
-
   const dropZoneRef = useRef<HTMLDivElement | null>(null);
 
   const correctTokens = useMemo(
@@ -126,29 +120,11 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
     setFocusedDropIdx(null);
     setAvailable(allTokens.map((t) => ({ token: t, used: false })));
     setSelected([]);
-    setIsSuccessPause(false);
-    if (pauseTimerRef.current) {
-      window.clearTimeout(pauseTimerRef.current);
-      pauseTimerRef.current = null;
-    }
   }, [allTokens]);
-
-  useEffect(() => {
-    return () => {
-      if (pauseTimerRef.current) {
-        window.clearTimeout(pauseTimerRef.current);
-        pauseTimerRef.current = null;
-      }
-    };
-  }, []);
 
   const langCode = learningLanguage?.code || "de-DE";
 
-  // Під час паузи блокуємо інтеракції
-  const interactionsLocked = isSuccessPause;
-
   function handlePick(idx: number) {
-    if (interactionsLocked) return;
     const item = available[idx];
     if (!item || item.used) return;
     // if token disabled by hint2, ignore
@@ -161,7 +137,6 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
   }
 
   function handleRemove(dropIdx: number) {
-    if (interactionsLocked) return;
     const tok = selected[dropIdx];
     if (!tok) return;
     // free exactly one matching 'used' token from available (first matching and used)
@@ -177,7 +152,6 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
   }
 
   function handleClear() {
-    if (interactionsLocked) return;
     setAvailable((arr) => arr.map((o) => ({ ...o, used: false })));
     setSelected([]);
     setErrorIndices([]);
@@ -185,8 +159,6 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
   }
 
   function handleCheck() {
-    if (interactionsLocked) return;
-
     // Validate selection vs correct tokens
     const errs: number[] = [];
     for (let i = 0; i < selected.length || i < correctTokens.length; i++) {
@@ -200,29 +172,14 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
 
     const ok = compareTokens(selected, correctTokens);
     if (ok) {
-      // 1) одразу запускаємо озвучення
+      // speak and move on (let speech continue)
       speakSmart(question.phrase, { lang: langCode });
-
-      // 2) вмикаємо "успішну" паузу із зеленим акцентом/анімацією
-      setIsSuccessPause(true);
-
-      // 3) після фіксованої паузи — переходимо далі
-      if (pauseTimerRef.current) {
-        window.clearTimeout(pauseTimerRef.current);
-        pauseTimerRef.current = null;
-      }
-      pauseTimerRef.current = window.setTimeout(() => {
-        setIsSuccessPause(false);
-        onComplete({ id: question.id, result: "done" });
-      }, NEXT_SET_DELAY_MS) as unknown as number;
-
-      return;
+      // small smooth transition
+      setTimeout(() => onComplete({ id: question.id, result: "done" }), 400);
     }
   }
 
   function handleHint() {
-    if (interactionsLocked) return;
-
     if (hintCount === 0) {
       // Hint #1: highlight next correct token not yet chosen
       setHintCount(1);
@@ -246,7 +203,6 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
 
   // Keyboard handling for drop-zone (remove with Backspace/Delete)
   function onDropZoneKeyDown(e: React.KeyboardEvent) {
-    if (interactionsLocked) return;
     if (e.key === "Backspace" || e.key === "Delete") {
       e.preventDefault();
       if (focusedDropIdx !== null) {
@@ -276,54 +232,38 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
         {/* Drop zone */}
         <div
           ref={dropZoneRef}
-          className={[
-            "min-h-[64px] p-3 mb-4 rounded-xl border flex flex-wrap gap-2 items-center transition-colors",
-            // базові стани
-            isSuccessPause
-              ? "bg-green-50 border-green-300 animate-pulse"
-              : "bg-white shadow border-blue-100",
-          ].join(" ")}
+          className="min-h-[64px] p-3 mb-4 rounded-xl bg-white shadow border border-blue-100 flex flex-wrap gap-2 items-center"
           tabIndex={0}
           onKeyDown={onDropZoneKeyDown}
-          aria-live="polite"
         >
-          {selected.length === 0 && !isSuccessPause && (
+          {selected.length === 0 && (
             <span className="text-gray-400">
               {t("assemble_phrase_prompt", "Tap words to build the phrase")}
             </span>
           )}
-
-          {/* Під час паузи показуємо зібрану фразу цільним рядком для відчуття “готово” */}
-          {isSuccessPause ? (
-            <span className="text-green-700 font-semibold">
-              {normalizeStr(selected.join(" "))}
-            </span>
-          ) : (
-            selected.map((tok, idx) => (
-              <button
-                key={idx}
-                tabIndex={0}
-                onFocus={() => setFocusedDropIdx(idx)}
-                onBlur={() => setFocusedDropIdx((v) => (v === idx ? null : v))}
-                onClick={() => handleRemove(idx)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleRemove(idx);
-                  }
-                }}
-                disabled={interactionsLocked}
-                className={`px-3 py-1 rounded-lg border shadow-sm bg-blue-50 text-blue-900 font-semibold hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${
-                  errorIndices.includes(idx)
-                    ? "border-red-400 bg-red-50"
-                    : "border-blue-100"
-                }`}
-                title={t("remove_token", "Remove token")}
-              >
-                {tok}
-              </button>
-            ))
-          )}
+          {selected.map((tok, idx) => (
+            <button
+              key={idx}
+              tabIndex={0}
+              onFocus={() => setFocusedDropIdx(idx)}
+              onBlur={() => setFocusedDropIdx((v) => (v === idx ? null : v))}
+              onClick={() => handleRemove(idx)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleRemove(idx);
+                }
+              }}
+              className={`px-3 py-1 rounded-lg border shadow-sm bg-blue-50 text-blue-900 font-semibold hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${
+                errorIndices.includes(idx)
+                  ? "border-red-400 bg-red-50"
+                  : "border-blue-100"
+              }`}
+              title={t("remove_token", "Remove token")}
+            >
+              {tok}
+            </button>
+          ))}
         </div>
 
         {/* Available tokens */}
@@ -334,8 +274,7 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
               normalizeStr(a.token) ===
                 normalizeStr(correctTokens[nextCorrectIdx] || "") &&
               !a.used;
-            const disabled =
-              a.used || disabledDistractors.has(i) || interactionsLocked;
+            const disabled = a.used || disabledDistractors.has(i);
             return (
               <button
                 key={`${a.token}_${i}`}
@@ -368,22 +307,19 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
         <div className="flex flex-wrap gap-3 justify-center">
           <button
             onClick={handleCheck}
-            disabled={interactionsLocked}
-            className="px-4 py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 shadow disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 shadow"
           >
             {t("check", "Check")}
           </button>
           <button
             onClick={handleHint}
-            disabled={interactionsLocked}
-            className="px-4 py-2 rounded-xl bg-gray-100 text-blue-900 font-semibold hover:bg-blue-100 border border-blue-100 shadow disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-xl bg-gray-100 text-blue-900 font-semibold hover:bg-blue-100 border border-blue-100 shadow"
           >
             {hintCount < 2 ? t("hint", "Hint") : t("skip", "Skip")}
           </button>
           <button
             onClick={handleClear}
-            disabled={interactionsLocked}
-            className="px-4 py-2 rounded-xl bg-gray-100 text-blue-900 font-semibold hover:bg-blue-100 border border-blue-100 shadow disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-xl bg-gray-100 text-blue-900 font-semibold hover:bg-blue-100 border border-blue-100 shadow"
           >
             {t("clear", "Clear")}
           </button>
