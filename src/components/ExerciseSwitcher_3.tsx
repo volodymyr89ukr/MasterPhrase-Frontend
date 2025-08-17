@@ -18,9 +18,6 @@ interface ExerciseSwitcherProps {
   title?: string;
 }
 
-// Centralized transition delay between exercise blocks (ms)
-const TRANSITION_DELAY_MS = 500;
-
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -109,8 +106,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
         setMatchingPool(pool);
         // run MakePhrase phase over the pool before pairs
         setMakePhraseIdx(0);
-        setMode("transition");
-        setTimeout(() => setMode("make-phrase"), TRANSITION_DELAY_MS);
+        setMode("make-phrase");
         return;
       }
       updatedIdx = Math.min(currentIdx, updatedQuestions.length - 1);
@@ -136,21 +132,17 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     if (pool.length >= 6) {
       // Start MakePhrase phase when we have a full pool
       setMakePhraseIdx(0);
-      setMode("transition");
-      setTimeout(() => setMode("make-phrase"), TRANSITION_DELAY_MS);
+      setMode("make-phrase");
       return;
     }
   }
 
   function handlePairsComplete() {
-    // small delay for smooth transition
-    setMode("transition");
-    setTimeout(() => setMode("pronunciation"), TRANSITION_DELAY_MS);
+    setMode("pronunciation");
   }
 
   function handlePronunciationComplete() {
-    setMode("transition");
-    setTimeout(() => setMode("writing"), TRANSITION_DELAY_MS);
+    setMode("writing");
   }
 
   function handleWritingComplete() {
@@ -295,7 +287,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
                 setTimeout(() => {
                   setMode("pairs");
                   setPairsKey((k) => k + 1);
-                }, TRANSITION_DELAY_MS);
+                }, 500);
               }
             }}
           />

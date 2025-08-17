@@ -62,13 +62,6 @@ export default function MatchingPairsExercise({
   const [moves, setMoves] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
-  function getStarRating(attempts: number): 0 | 1 | 2 | 3 {
-    if (attempts <= 12) return 3;
-    if (attempts <= 18) return 2;
-    if (attempts <= 24) return 1;
-    return 0;
-  }
-
   useEffect(() => {
     setCards(buildCards(phrases));
     setOpened([]);
@@ -134,13 +127,8 @@ export default function MatchingPairsExercise({
       <div className="mb-2 text-center text-sm text-gray-600">
         {t("find_all_pairs")}
       </div>
-      <div className="mb-2 text-center text-xs text-gray-500 flex items-center justify-center gap-3 flex-wrap">
-        <span>
-          {t("attempts")}: {moves}
-        </span>
-        <span className="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200">
-          ⭐ 0–12 — 3★ · 13–18 — 2★ · 19–24 — 1★
-        </span>
+      <div className="mb-2 text-center text-xs text-gray-400">
+        {t("attempts")}: {moves}
       </div>
 
       <div
@@ -246,24 +234,9 @@ export default function MatchingPairsExercise({
         <div className="absolute left-0 top-0 w-full h-full flex items-center justify-center bg-white bg-opacity-90 z-20">
           <div className="p-8 rounded-2xl shadow-xl bg-green-100 text-center max-w-xs mx-auto">
             <div className="text-4xl mb-2">🎉</div>
-            <div className="flex items-center justify-center gap-1 mb-3">
-              {Array.from({ length: 3 }).map((_, i) => {
-                const filled = i < getStarRating(moves);
-                return (
-                  <span
-                    key={i}
-                    className={filled ? "text-yellow-400" : "text-gray-300"}
-                    style={{ fontSize: "1.6rem", lineHeight: 1 }}
-                    aria-hidden
-                  >
-                    ★
-                  </span>
-                );
-              })}
-            </div>
             <div className="font-bold text-xl mb-2">{t("congratulations")}</div>
             <div className="mb-2">{t("all_pairs_found")}</div>
-            <div className="text-sm text-gray-600 mb-2">
+            <div className="text-sm text-gray-500 mb-2">
               {t("attempts")}: {moves}
             </div>
           </div>
