@@ -101,12 +101,12 @@ export default function MatchingPairsExercise({
               lang: learningLanguage?.code || "de-DE",
             });
           }
-        }, 600);
+        }, 800);
       } else {
         setTimeout(() => {
           setOpened([]);
           setLock(false);
-        }, 950);
+        }, 1500);
       }
     }
   }, [opened, cards, learningLanguage]);
