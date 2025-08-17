@@ -62,24 +62,9 @@ export default function WritingExercise({
   function getSpecialCharsForLanguage(code?: string): string[] {
     if (!code) return [];
     const lang = code.toLowerCase();
-    if (lang.startsWith("de")) return ["ä", "ö", "ü", "ß", "Ä", "Ö", "Ü"];
+    if (lang.startsWith("de")) return ["ä", "ö", "ü", "Ä", "Ö", "Ü", "ß"];
     if (lang.startsWith("es"))
-      return [
-        "á",
-        "é",
-        "í",
-        "ó",
-        "ú",
-        "ü",
-        "ñ",
-        "Á",
-        "É",
-        "Í",
-        "Ó",
-        "Ú",
-        "Ü",
-        "Ñ",
-      ];
+      return ["á", "é", "í", "ó", "ú", "ü", "ñ", "¡", "¿"];
     if (lang.startsWith("fr"))
       return [
         "à",
@@ -466,13 +451,13 @@ export default function WritingExercise({
         />
         {/* Панель спецсимволів під полем вводу */}
         {specialChars.length > 0 && (
-          <div className="grid grid-cols-7 gap-1 w-full justify-items-center mt-3">
+          <div className="flex flex-wrap gap-2 w-full justify-center mt-3">
             {specialChars.map((ch) => (
               <button
                 key={ch}
                 type="button"
                 aria-label={`Insert ${ch}`}
-                className="min-w-[40px] h-10 px-2 py-2 rounded-xl border bg-gray-100 hover:bg-blue-100 text-base md:text-lg font-semibold text-blue-900 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 select-none"
+                className="min-w-[44px] h-11 px-3 py-2 rounded-xl border bg-gray-100 hover:bg-blue-100 text-lg font-semibold text-blue-900 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 select-none"
                 onClick={() => handleInsertChar(ch)}
               >
                 {ch}
