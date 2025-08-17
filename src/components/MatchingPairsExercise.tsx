@@ -138,8 +138,13 @@ export default function MatchingPairsExercise({
         <span>
           {t("attempts")}: {moves}
         </span>
-        <span className="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200">
-          ⭐ 0–12 — 3★ · 13–18 — 2★ · 19–24 — 1★
+
+        {/* Легкий, непомітний текст-легенда; ховаємо на xs, показуємо з sm */}
+        <span
+          className="hidden sm:inline text-[11px] leading-snug text-gray-400/80 select-none"
+          aria-label="Stars scoring rules"
+        >
+          0–12 = 3★ · 13–18 = 2★ · 19–24 = 1★
         </span>
       </div>
 

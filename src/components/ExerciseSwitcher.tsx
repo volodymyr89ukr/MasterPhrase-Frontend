@@ -19,7 +19,7 @@ interface ExerciseSwitcherProps {
 }
 
 // Centralized transition delay between exercise blocks (ms)
-const TRANSITION_DELAY_MS = 500;
+const TRANSITION_DELAY_MS = 5000;
 
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
