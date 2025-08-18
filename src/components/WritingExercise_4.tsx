@@ -22,9 +22,6 @@ interface WritingExerciseProps {
   onComplete?: () => void;
 }
 
-// === Статична пауза між фразами (після правильного введення) ===
-const WRITING_NEXT_DELAY_MS = 1800;
-
 // --- Повертає слово за індексом (1-based) ---
 function getWordByIndex(str: string, idx: number): string {
   const words = str.split(/\s+/);
@@ -343,7 +340,7 @@ export default function WritingExercise({
             setCompleted(true);
             if (onComplete) onComplete();
           }
-        }, WRITING_NEXT_DELAY_MS);
+        }, 1100);
       }
     } else {
       setInputStatus("wrong");
@@ -394,7 +391,7 @@ export default function WritingExercise({
             setCompleted(true);
             if (onComplete) onComplete();
           }
-        }, WRITING_NEXT_DELAY_MS);
+        }, 1100);
       } else {
         setInputStatus("wrong");
         setShowFixHint(false);
