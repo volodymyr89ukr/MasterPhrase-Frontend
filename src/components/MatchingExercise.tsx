@@ -8,7 +8,8 @@ export interface Phrase {
   translation: string;
   options: string[];
   answer: string;
-  matching_exercise: number;
+  // allow array or number (backward-compat)
+  matching_exercise: number | number[];
   explanation?: string;
   id?: number;
 }
@@ -31,11 +32,21 @@ function shuffleArray<T>(array: T[]): T[] {
   return arr;
 }
 
-function getMaskedPhrase(phrase: string, maskIndex: number): string {
+// normalize matching indices into 1-based unique sorted array
+function normalizeMaskIndices(idx: number | number[] | undefined): number[] {
+  if (idx == null) return [];
+  const arr = Array.isArray(idx) ? idx : [idx];
+  const nums = arr
+    .map((v) => Number(v))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  return Array.from(new Set(nums)).sort((a, b) => a - b);
+}
+
+function getMaskedPhrase(phrase: string, maskIndices: number[]): string {
+  if (!maskIndices.length) return phrase;
+  const maskSet = new Set(maskIndices);
   const words = phrase.split(/\s+/);
-  return words
-    .map((w, i) => (i === maskIndex - 1 ? "__________" : w))
-    .join(" ");
+  return words.map((w, i) => (maskSet.has(i + 1) ? "__________" : w)).join(" ");
 }
 
 export default function MatchingExercise({
@@ -78,65 +89,6 @@ export default function MatchingExercise({
     };
   }, [question]);
 
-  let maskedPhrase = question?.phrase || "";
-  if (question && question.matching_exercise > 0) {
-    maskedPhrase = getMaskedPhrase(question.phrase, question.matching_exercise);
-  }
-
-  const handleSelect = (option: string) => {
-    if (!question) return;
-    const isCorrect = option === question.answer;
-    setSelected(option);
-    setAnswerResult(isCorrect ? "correct" : "wrong");
-    setFeedback(isCorrect ? t("correct") : t("wrong"));
-    setShowFeedback(true);
-
-    const correctPhrase = question.phrase.replace(
-      getMaskedWordRegex(question.phrase, question.matching_exercise),
-      question.answer
-    );
-
-    setIsSpeaking(true);
-    if (speakTimeoutRef.current !== null)
-      window.clearTimeout(speakTimeoutRef.current);
-    speakSmart(correctPhrase, {
-      lang: learningLanguage?.code || "de-DE",
-      rate: 0.85,
-      onEnd: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
-    });
-    speakTimeoutRef.current = window.setTimeout(
-      () => setIsSpeaking(false),
-      2500
-    );
-  };
-
-  function getMaskedWordRegex(phrase: string, maskIndex: number): RegExp {
-    const words = phrase.split(/\s+/);
-    if (maskIndex > 0 && maskIndex <= words.length) {
-      const maskWord = words[maskIndex - 1];
-      if (/^_+$/.test(maskWord)) return /_+/;
-      return new RegExp("\\b" + escapeRegExp(maskWord) + "\\b");
-    }
-    return /_+/;
-  }
-
-  function escapeRegExp(string: string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-
-  const handleNext = () => {
-    window.speechSynthesis.cancel();
-    setSelected(null);
-    setShowFeedback(false);
-    setFeedback("");
-    setAnswerResult(null);
-    setIsSpeaking(false);
-    if (speakTimeoutRef.current !== null)
-      window.clearTimeout(speakTimeoutRef.current);
-    if (onAnswer) onAnswer(selected);
-  };
-
   if (isTransitioning) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[360px] py-12">
@@ -165,10 +117,49 @@ export default function MatchingExercise({
 
   if (!question) return null;
 
+  const maskIndices = normalizeMaskIndices(question.matching_exercise);
+  const maskedPhrase = getMaskedPhrase(question.phrase, maskIndices);
+
+  const handleSelect = (option: string) => {
+    if (!question) return;
+    const isCorrect = option === question.answer;
+    setSelected(option);
+    setAnswerResult(isCorrect ? "correct" : "wrong");
+    setFeedback(isCorrect ? t("correct") : t("wrong"));
+    setShowFeedback(true);
+
+    // Озвучуємо повну правильну фразу (без підстановок)
+    setIsSpeaking(true);
+    if (speakTimeoutRef.current !== null)
+      window.clearTimeout(speakTimeoutRef.current);
+    speakSmart(question.phrase, {
+      lang: learningLanguage?.code || "de-DE",
+      rate: 0.85,
+      onEnd: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+    });
+    speakTimeoutRef.current = window.setTimeout(
+      () => setIsSpeaking(false),
+      2500
+    );
+  };
+
+  const handleNext = () => {
+    window.speechSynthesis.cancel();
+    setSelected(null);
+    setShowFeedback(false);
+    setFeedback("");
+    setAnswerResult(null);
+    setIsSpeaking(false);
+    if (speakTimeoutRef.current !== null)
+      window.clearTimeout(speakTimeoutRef.current);
+    if (onAnswer) onAnswer(selected);
+  };
+
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
       <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-white">
-        {/* German phrase block */}
+        {/* Phrase with multiple blanks */}
         <div
           className="mb-2 text-2xl text-center font-medium min-h-[3.6em] max-h-[4.5em] overflow-hidden flex items-center justify-center"
           style={{ lineHeight: "1.2" }}
@@ -216,7 +207,7 @@ export default function MatchingExercise({
           ))}
         </div>
 
-        {/* Feedback and explanation block */}
+        {/* Feedback and explanation */}
         <div
           className={`mt-2 text-center min-h-[200px] max-h-[250px] transition-all duration-300 flex flex-col items-center justify-center ${
             showFeedback
@@ -237,14 +228,7 @@ export default function MatchingExercise({
               <div className="flex items-start gap-2 mt-2 max-w-xl mx-auto">
                 <button
                   onClick={() => {
-                    const correctPhrase = question.phrase.replace(
-                      getMaskedWordRegex(
-                        question.phrase,
-                        question.matching_exercise
-                      ),
-                      question.answer
-                    );
-                    speakSmart(correctPhrase, {
+                    speakSmart(question.phrase, {
                       lang: learningLanguage?.code || "de-DE",
                     });
                   }}

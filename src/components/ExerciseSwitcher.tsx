@@ -8,7 +8,8 @@ import { useTranslation } from "react-i18next";
 
 export interface Phrase extends Question {
   id: number;
-  writing_exercise?: string | number;
+  // accept array or scalar (backward-compat)
+  writing_exercise?: string | number | Array<string | number>;
   [key: string]: any;
 }
 
@@ -343,10 +344,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
         {mode === "writing" && matchingPool.length >= 1 && (
           <WritingExercise
             key={matchingPool.map((obj) => obj.id).join("_")}
-            phrases={matchingPool.map((obj) => ({
-              ...obj,
-              wordIndexToWrite: Number(obj.writing_exercise),
-            }))}
+            phrases={matchingPool}
             onComplete={handleWritingComplete}
           />
         )}

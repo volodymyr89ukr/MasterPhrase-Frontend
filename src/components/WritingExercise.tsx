@@ -12,8 +12,9 @@ import { useTranslation } from "react-i18next";
 interface Phrase {
   phrase: string;
   translation?: string;
-  writing_exercise?: string | number;
-  wordIndexToWrite?: number; // для сумісності
+  // allow array or scalar (backward-compat)
+  writing_exercise?: number | string | Array<number | string>;
+  wordIndexToWrite?: number; // legacy, not used anymore
   [key: string]: any;
 }
 
@@ -22,10 +23,8 @@ interface WritingExerciseProps {
   onComplete?: () => void;
 }
 
-// === Статична пауза між фразами (після правильного введення) ===
 const WRITING_NEXT_DELAY_MS = 1800;
 
-// --- Повертає слово за індексом (1-based) ---
 function getWordByIndex(str: string, idx: number): string {
   const words = str.split(/\s+/);
   if (idx < 1 || idx > words.length) return "";
@@ -41,6 +40,28 @@ function getHint(word: string): string {
   return word.slice(0, 3);
 }
 
+// normalize indices into 1-based unique sorted array with a sane default [2]
+function normalizeTargetIndices(input: Phrase["writing_exercise"]): number[] {
+  if (input == null) return [2];
+  const arr = Array.isArray(input) ? input : [input];
+  const nums = arr
+    .map((v) => Number(v))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  const uniq = Array.from(new Set(nums)).sort((a, b) => a - b);
+  return uniq.length ? uniq : [2];
+}
+
+function normalizeText(s: string): string {
+  try {
+    return s
+      .normalize("NFC")
+      .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
+      .trim();
+  } catch {
+    return s.replace(/[\u200B-\u200D\uFEFF\u2060]/g, "").trim();
+  }
+}
+
 export default function WritingExercise({
   phrases = [],
   onComplete,
@@ -48,11 +69,12 @@ export default function WritingExercise({
   const { t } = useTranslation();
   const { learningLanguage } = useAppContext();
   const [currentIdx, setCurrentIdx] = useState(0);
+  // index of current target within the normalized indices list
+  const [targetPos, setTargetPos] = useState(0);
   const [userInput, setUserInput] = useState("");
   const [inputStatus, setInputStatus] = useState<
     "default" | "wrong" | "correct"
   >("default");
-  const [showFeedback, setShowFeedback] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [hintLevel, setHintLevel] = useState(0);
   const [showFixHint, setShowFixHint] = useState(false);
@@ -61,7 +83,7 @@ export default function WritingExercise({
   const fixHintTimeoutRef = useRef<number | null>(null);
   const lastSelectionRef = useRef<{ start: number; end: number } | null>(null);
 
-  // --- спецсимволи для мови навчання ---
+  // special chars
   function getSpecialCharsForLanguage(code?: string): string[] {
     if (!code) return [];
     const lang = code.toLowerCase();
@@ -133,35 +155,17 @@ export default function WritingExercise({
       return ["ء", "أ", "إ", "آ", "ى", "ة", "ؤ", "ئ", "‎ً", "‎ٌ", "‎ٍ"];
     return [];
   }
-
   const specialChars = getSpecialCharsForLanguage(learningLanguage?.code);
 
-  // --- Нормалізація тексту: Unicode NFC + прибрати невидимі символи ---
-  function normalizeText(s: string): string {
-    try {
-      // NFC + прибрати zero-width/invisible + стандартний trim
-      return s
-        .normalize("NFC")
-        .replace(/[\u200B-\u200D\uFEFF\u2060]/g, "")
-        .trim();
-    } catch {
-      return s.replace(/[\u200B-\u200D\uFEFF\u2060]/g, "").trim();
-    }
-  }
-
-  // --- Вставка спецсимволу у позицію курсора (без перезапису виділення) ---
+  // caret-aware insertion without overwriting selection
+  const inputRefEl = inputRef;
   const handleInsertChar = (ch: string) => {
-    const el = inputRef.current;
+    const el = inputRefEl.current;
     if (!el) return;
-
-    // Обчислюємо позицію вставки: кінець виділення, якщо воно є (поважаємо напрямок)
     const start = el.selectionStart ?? el.value.length;
     const end = el.selectionEnd ?? el.value.length;
     const insertionIndex =
       (el.selectionDirection === "backward" ? start : end) ?? end;
-
-    // Використовуємо setRangeText на нульовому діапазоні, щоб не затирати виділення
-    // 1) встановимо курсор у точку вставки (колапсуємо виділення)
     try {
       el.setSelectionRange(
         insertionIndex,
@@ -171,13 +175,9 @@ export default function WritingExercise({
     } catch {}
     if (typeof el.setRangeText === "function") {
       el.setRangeText(ch, insertionIndex, insertionIndex, "end");
-      // Оновлюємо React-стан відповідно до значення інпуту
       setUserInput(el.value);
-      // Каретка вже після вставки (end), але додатково гарантуємо
       const caretPos = insertionIndex + ch.length;
-      // Зберігаємо останню позицію для можливого відновлення
       lastSelectionRef.current = { start: caretPos, end: caretPos };
-      // Підтримуємо фокус
       setTimeout(() => {
         el.focus();
         try {
@@ -185,7 +185,6 @@ export default function WritingExercise({
         } catch {}
       }, 0);
     } else {
-      // Фолбек: контрольовано формуємо значення без заміни виділення
       const value = el.value;
       const newValue =
         value.slice(0, insertionIndex) + ch + value.slice(insertionIndex);
@@ -201,7 +200,7 @@ export default function WritingExercise({
     }
   };
 
-  // --- Прогрів TTS ---
+  // warm-up TTS
   useEffect(() => {
     if ("speechSynthesis" in window) {
       const utter = new window.SpeechSynthesisUtterance(" .");
@@ -212,14 +211,14 @@ export default function WritingExercise({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Скидання стану при нових phrases
+  // reset when phrases change
   useEffect(() => {
     setCurrentIdx(0);
+    setTargetPos(0);
     setUserInput("");
     setInputStatus("default");
     setCompleted(false);
     setHintLevel(0);
-    setShowFeedback(false);
     setShowFixHint(false);
     if (fixHintTimeoutRef.current) {
       window.clearTimeout(fixHintTimeoutRef.current);
@@ -227,11 +226,11 @@ export default function WritingExercise({
     }
   }, [phrases]);
 
+  // reset when moving to next phrase or next target within phrase
   useEffect(() => {
     setUserInput("");
     setInputStatus("default");
     setHintLevel(0);
-    setShowFeedback(false);
     setShowFixHint(false);
     if (fixHintTimeoutRef.current) {
       window.clearTimeout(fixHintTimeoutRef.current);
@@ -241,7 +240,7 @@ export default function WritingExercise({
       inputRef.current.focus();
       inputRef.current.select();
     }
-  }, [currentIdx]);
+  }, [currentIdx, targetPos]);
 
   useEffect(() => {
     return () => {
@@ -273,10 +272,11 @@ export default function WritingExercise({
         <button
           onClick={() => {
             setCurrentIdx(0);
+            setTargetPos(0);
             setUserInput("");
             setCompleted(false);
             setHintLevel(0);
-            setShowFeedback(false);
+            setShowFixHint(false);
             if (onComplete) onComplete();
           }}
           className="mt-2 py-3 px-8 rounded-2xl bg-blue-500 text-white text-lg font-semibold shadow hover:bg-blue-600 transition"
@@ -286,33 +286,45 @@ export default function WritingExercise({
       </div>
     );
 
-  // Поточна фраза
+  // current phrase and targets
   const obj = phrases[currentIdx];
-  const wordIndex =
-    typeof obj.writing_exercise === "number"
-      ? obj.writing_exercise
-      : parseInt(obj.writing_exercise as string, 10) || 2;
+  const targetIndices = normalizeTargetIndices(obj.writing_exercise);
+  const currentTargetIndex =
+    targetIndices[Math.min(targetPos, targetIndices.length - 1)];
 
   const phraseWords = obj.phrase.split(/\s+/);
-  const targetWord = getWordByIndex(obj.phrase, wordIndex);
+  const targetWord = getWordByIndex(obj.phrase, currentTargetIndex);
   const targetNorm = normalizeText(targetWord);
 
+  // Build masked phrase:
+  // - solved targets (index < targetPos): reveal word
+  // - current target (index === targetPos): show masked/hinted
+  // - future targets: full mask
   const maskedPhrase = phraseWords
     .map((w, i) => {
-      if (i === wordIndex - 1) {
-        if (hintLevel === 2) return targetWord;
-        if (hintLevel === 1)
-          return (
-            getHint(targetWord) +
-            maskWord(targetWord).slice(getHint(targetWord).length)
-          );
-        return maskWord(targetWord);
+      const idx1 = i + 1;
+      const posInTargets = targetIndices.indexOf(idx1);
+      if (posInTargets === -1) return w; // not a target
+
+      if (posInTargets < targetPos) {
+        return getWordByIndex(obj.phrase, idx1); // already solved
       }
-      return w;
+      if (posInTargets === targetPos) {
+        if (hintLevel === 2) return getWordByIndex(obj.phrase, idx1);
+        const realWord = getWordByIndex(obj.phrase, idx1);
+        if (hintLevel === 1) {
+          const prefix = getHint(realWord);
+          return prefix + maskWord(realWord).slice(prefix.length);
+        }
+        return maskWord(realWord);
+      }
+      // future target
+      const realWord = getWordByIndex(obj.phrase, idx1);
+      return maskWord(realWord);
     })
     .join(" ");
 
-  // Автоматична перевірка на кожен символ
+  // per-keystroke verification against current target
   useEffect(() => {
     if (userInput === "") {
       setInputStatus("default");
@@ -328,22 +340,39 @@ export default function WritingExercise({
       setInputStatus("default");
       setShowFixHint(false);
       if (userNorm === targetNorm && userNorm.length === targetNorm.length) {
+        // Correct current target
         setInputStatus("correct");
-        speakSmart(obj.phrase, { lang: learningLanguage?.code || "de-DE" });
-        if (feedbackTimeoutRef.current) {
-          window.clearTimeout(feedbackTimeoutRef.current);
-        }
-        feedbackTimeoutRef.current = window.setTimeout(() => {
-          if (currentIdx < phrases.length - 1) {
-            setCurrentIdx((idx) => idx + 1);
+        // If this was the last target for this phrase — move to next phrase
+        const isLastTarget = targetPos >= targetIndices.length - 1;
+        if (isLastTarget) {
+          speakSmart(obj.phrase, { lang: learningLanguage?.code || "de-DE" });
+          if (feedbackTimeoutRef.current) {
+            window.clearTimeout(feedbackTimeoutRef.current);
+          }
+          feedbackTimeoutRef.current = window.setTimeout(() => {
+            if (currentIdx < phrases.length - 1) {
+              setCurrentIdx((idx) => idx + 1);
+              setTargetPos(0);
+              setUserInput("");
+              setHintLevel(0);
+              setInputStatus("default");
+            } else {
+              setCompleted(true);
+              if (onComplete) onComplete();
+            }
+          }, WRITING_NEXT_DELAY_MS);
+        } else {
+          // Move to next target within the same phrase
+          if (feedbackTimeoutRef.current) {
+            window.clearTimeout(feedbackTimeoutRef.current);
+          }
+          feedbackTimeoutRef.current = window.setTimeout(() => {
+            setTargetPos((p) => p + 1);
             setUserInput("");
             setHintLevel(0);
             setInputStatus("default");
-          } else {
-            setCompleted(true);
-            if (onComplete) onComplete();
-          }
-        }, WRITING_NEXT_DELAY_MS);
+          }, 400);
+        }
       }
     } else {
       setInputStatus("wrong");
@@ -361,13 +390,14 @@ export default function WritingExercise({
     userInput,
     targetNorm,
     currentIdx,
+    targetPos,
+    targetIndices.length,
     phrases.length,
     onComplete,
     obj.phrase,
     learningLanguage,
   ]);
 
-  // Підказки
   const handleHintPart = () => {
     if (hintLevel < 1) setHintLevel(1);
   };
@@ -380,21 +410,35 @@ export default function WritingExercise({
       if (normalizeText(userInput) === targetNorm) {
         setInputStatus("correct");
         setHintLevel(0);
-        speakSmart(obj.phrase, { lang: learningLanguage?.code || "de-DE" });
-        if (feedbackTimeoutRef.current) {
-          window.clearTimeout(feedbackTimeoutRef.current);
-        }
-        feedbackTimeoutRef.current = window.setTimeout(() => {
-          if (currentIdx < phrases.length - 1) {
-            setCurrentIdx((idx) => idx + 1);
+        const isLastTarget = targetPos >= targetIndices.length - 1;
+        if (isLastTarget) {
+          speakSmart(obj.phrase, { lang: learningLanguage?.code || "de-DE" });
+          if (feedbackTimeoutRef.current) {
+            window.clearTimeout(feedbackTimeoutRef.current);
+          }
+          feedbackTimeoutRef.current = window.setTimeout(() => {
+            if (currentIdx < phrases.length - 1) {
+              setCurrentIdx((idx) => idx + 1);
+              setTargetPos(0);
+              setUserInput("");
+              setHintLevel(0);
+              setInputStatus("default");
+            } else {
+              setCompleted(true);
+              if (onComplete) onComplete();
+            }
+          }, WRITING_NEXT_DELAY_MS);
+        } else {
+          if (feedbackTimeoutRef.current) {
+            window.clearTimeout(feedbackTimeoutRef.current);
+          }
+          feedbackTimeoutRef.current = window.setTimeout(() => {
+            setTargetPos((p) => p + 1);
             setUserInput("");
             setHintLevel(0);
             setInputStatus("default");
-          } else {
-            setCompleted(true);
-            if (onComplete) onComplete();
-          }
-        }, WRITING_NEXT_DELAY_MS);
+          }, 200);
+        }
       } else {
         setInputStatus("wrong");
         setShowFixHint(false);
@@ -411,7 +455,6 @@ export default function WritingExercise({
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUserInput(e.target.value);
-    // зберегти позицію курсора (для можливого відновлення після ререндеру)
     try {
       const el = e.target as HTMLInputElement;
       lastSelectionRef.current = {
@@ -467,7 +510,6 @@ export default function WritingExercise({
           placeholder={t("enter_word")}
           autoCapitalize="off"
         />
-        {/* Панель спецсимволів під полем вводу */}
         {specialChars.length > 0 && (
           <div className="grid grid-cols-7 gap-1 w-full justify-items-center mt-3">
             {specialChars.map((ch) => (
@@ -503,24 +545,25 @@ export default function WritingExercise({
             {t("show_whole_word")}
           </button>
         </div>
-        {/* Видалено поле з "enter_word_or_press_enter" та "correct" */}
-        {/* Видалено повідомлення "fix_the_word_error" */}
         <style>
           {`
-              .animate-shake {
-                animation: shake 0.22s cubic-bezier(.36,.07,.19,.97) both;
-              }
-              @keyframes shake {
-                10%, 90% { transform: translateX(-2px); }
-                20%, 80% { transform: translateX(4px); }
-                30%, 50%, 70% { transform: translateX(-6px); }
-                40%, 60% { transform: translateX(6px); }
-              }
-            `}
+            .animate-shake {
+              animation: shake 0.22s cubic-bezier(.36,.07,.19,.97) both;
+            }
+            @keyframes shake {
+              10%, 90% { transform: translateX(-2px); }
+              20%, 80% { transform: translateX(4px); }
+              30%, 50%, 70% { transform: translateX(-6px); }
+              40%, 60% { transform: translateX(6px); }
+            }
+          `}
         </style>
       </div>
       <div className="py-3 text-gray-600 text-base font-medium text-center select-none">
-        {t("phrases_count", { current: currentIdx + 1, total: phrases.length })}
+        {t("phrases_count", {
+          current: currentIdx + 1,
+          total: phrases.length,
+        })}
       </div>
     </div>
   );
