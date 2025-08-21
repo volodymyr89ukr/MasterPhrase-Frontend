@@ -1,14 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" id="html-root" data-app="masterphrase">
   <head>
     <meta charset="UTF-8" />
-    <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+
+    <!-- ===== Primary SEO ===== -->
+    <title>MasterPhrase — Learn German & English with Smart Exercises</title>
+    <meta
+      name="description"
+      content="Choose 1–5K word packs, study sets of 50, and train via a cycle of grammar, matching cards, speaking, and writing. UI in 11 languages. Demo available."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://masterphrase.pro/" />
+
+    <!-- ===== Icons & PWA ===== -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MasterPhrase</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#0f172a" />
+    <meta name="theme-color" content="#0f172a" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- ===== Social (Open Graph / Twitter) ===== -->
+    <meta property="og:url" content="https://masterphrase.pro/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MasterPhrase — Language Learning App" />
+    <meta
+      property="og:description"
+      content="5,000-word curriculum split into 50-word sets. Train grammar, vocabulary, speaking, and writing with adaptive cycles. UI in 11 languages."
+    />
+    <meta property="og:image" content="https://masterphrase.pro/og-cover.jpg" />
+    <meta property="og:image:alt" content="MasterPhrase app preview" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MasterPhrase — Language Learning App" />
+    <meta
+      name="twitter:description"
+      content="Study German & English through smart exercise cycles. UI in 11 languages. Try the demo without signup."
+    />
+    <meta
+      name="twitter:image"
+      content="https://masterphrase.pro/og-cover.jpg"
+    />
+
+    <!-- ===== Performance hints (safe no-ops if absent) ===== -->
+    <!-- Preconnect to your API domain to speed up first requests -->
+    <link rel="preconnect" href="https://api.masterphrase.pro" crossorigin />
+    <!-- (Optional) Preload your main variable font -->
+    <!--
+    <link
+      rel="preload"
+      href="/fonts/Inter-Variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    -->
+
+    <!-- ===== Structured Data (JSON-LD) ===== -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "MasterPhrase",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "url": "https://masterphrase.pro/",
+        "description": "Language learning app with 5,000-word packs, 50-word sets, and a cycle of grammar, matching, speaking, and writing. UI in 11 languages.",
+        "inLanguage": [
+          "en",
+          "de",
+          "uk",
+          "ru",
+          "fr",
+          "it",
+          "pl",
+          "es",
+          "pt",
+          "tr",
+          "ar"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR",
+          "availability": "https://schema.org/InStock"
+        },
+        "featureList": [
+          "Word packs: 1–1000, 1001–2000, 2001–3000, 3001–4000, 4001–5000",
+          "Sets of 50 words each",
+          "Exercise cycle: theory → grammar (MCQ) → matching cards → speaking/recording → writing",
+          "Mistakes pool & reviews",
+          "Optional spaced repetition",
+          "Exclude known words (paid)"
+        ]
+      }
+    </script>
+
+    <!-- ===== Minimal i18n bootstrap for RTL (safe, non-blocking) =====
+         Reads i18next's language key if present and sets <html lang/dir>.
+         If your app controls this already, you may remove this snippet. -->
+    <script>
+      (function () {
+        try {
+          var saved =
+            localStorage.getItem("i18nextLng") ||
+            sessionStorage.getItem("i18nextLng");
+          if (saved) {
+            var lang = saved.split("-")[0].toLowerCase();
+            document.documentElement.lang = lang;
+            var isRTL = lang === "ar";
+            document.documentElement.dir = isRTL ? "rtl" : "ltr";
+            if (isRTL) document.documentElement.classList.add("rtl");
+          }
+        } catch (_) {}
+      })();
+    </script>
   </head>
+
   <body>
+    <noscript>
+      <p
+        style="
+          margin: 16px;
+          font-family: system-ui, -apple-system, Segoe UI, Roboto;
+        "
+      >
+        MasterPhrase needs JavaScript enabled to run.
+      </p>
+    </noscript>
+
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+
+    <!-- If your entry is JSX, switch back to /src/main.jsx -->
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
