@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAppContext } from "../AppContext";
-import { speakSmart, cancelSpeak } from "../utils/ttsUtils";
+import { speakSmart } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
 export interface Phrase {
@@ -80,14 +80,12 @@ export default function MatchingExercise({
     setIsSpeaking(false);
     if (speakTimeoutRef.current !== null)
       window.clearTimeout(speakTimeoutRef.current);
-    cancelSpeak();
-    // window.speechSynthesis.cancel(); // замінено на cancelSpeak()
+    window.speechSynthesis.cancel();
 
     return () => {
       if (speakTimeoutRef.current !== null)
         window.clearTimeout(speakTimeoutRef.current);
-      cancelSpeak();
-      // window.speechSynthesis.cancel(); // замінено на cancelSpeak()
+      window.speechSynthesis.cancel();
     };
   }, [question]);
 
@@ -134,7 +132,6 @@ export default function MatchingExercise({
     setIsSpeaking(true);
     if (speakTimeoutRef.current !== null)
       window.clearTimeout(speakTimeoutRef.current);
-    cancelSpeak();
     speakSmart(question.phrase, {
       lang: learningLanguage?.code || "de-DE",
       rate: 0.85,
@@ -148,7 +145,7 @@ export default function MatchingExercise({
   };
 
   const handleNext = () => {
-    cancelSpeak();
+    window.speechSynthesis.cancel();
     setSelected(null);
     setShowFeedback(false);
     setFeedback("");
@@ -231,7 +228,6 @@ export default function MatchingExercise({
               <div className="flex items-start gap-2 mt-2 max-w-xl mx-auto">
                 <button
                   onClick={() => {
-                    cancelSpeak();
                     speakSmart(question.phrase, {
                       lang: learningLanguage?.code || "de-DE",
                     });
