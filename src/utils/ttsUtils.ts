@@ -302,7 +302,7 @@ async function speakInternal(
     lang = DEFAULT_LANG,
     rate = 0.85,
     pitch = 1.0,
-    volume = 1.0,
+    volume = 0.95,
     voiceName,
     onEnd,
     onError,
