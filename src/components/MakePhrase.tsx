@@ -277,11 +277,11 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
         <div
           ref={dropZoneRef}
           className={[
-            "min-h-[64px] p-3 mb-4 rounded-xl border flex flex-wrap gap-2 items-center transition-colors",
+            "p-3 mb-4 rounded-xl border flex flex-wrap gap-2 items-start transition-colors",
             isSuccessPause
               ? "bg-green-50 border-green-300 animate-pulse"
               : "bg-white shadow border-blue-100",
-            "min-h-[4.5em] sm:min-h-[5.2em] items-start", // ДОДАНО: мінімальна висота для 2 рядків
+            "min-h-[6.2em] sm:min-h-[7em]", // ← Збільшено висоту для 2 рядків
           ].join(" ")}
           tabIndex={0}
           onKeyDown={onDropZoneKeyDown}
