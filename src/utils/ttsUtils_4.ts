@@ -1,48 +1,40 @@
 // src/utils/ttsUtils.ts
 // ======================
 // Публічний API:
-//   - preloadTTS(lang?: string): Promise<boolean>  (тихий preload без озвучення)
-//   - initTTS(lang?: string): Promise<boolean>     (warm-up після першої взаємодії користувача)
-//   - speakSmart(text: string, opts?: SpeakOptions): void
+//   - initTTS(lang?: string): Promise<boolean>
+//   - speakSmart(text: string, opts?: { lang?: string; rate?: number; pitch?: number; volume?: number; voiceName?: string; onEnd?: () => void; onError?: () => void }): void
 //   - cancelSpeak(): void
 //
-// Стратегія:
-//   1. На старті застосунку (без кліку) викликаємо preloadTTS для мов (learning + interface) — це підвантажує та кешує голоси без звуку.
-//   2. При першій взаємодії користувача (pointerdown / keydown / touchstart) викликаємо initTTS(currentLearningLang).
-//   3. Надалі speakSmart працює без затримок і без «ковтання» першого слова (особливо на iOS).
-//
 // Особливості:
-//   • iOS: warm-up лише після взаємодії; preload не програє звук (не блокується).
-//   • Кеш голосу з TTL (30 днів), валідація при кожному запуску.
-//   • cancelSpeak() інвалідовує попередні колбеки (race-safe).
-//   • Без дублюючих програвань; кожен новий speak повністю замінює попередній.
-//   • Швидка повторна озвучка (мінімальні очікування).
-//
-// Backward-compatible: існуючі виклики speakSmart() не треба міняти.
+//   • Явний pre-warm через initTTS() (рекомендовано викликати ОДИН раз після кліку "Увімкнути озвучення")
+//   • Кешування обраного голосу в localStorage (з валідацією)
+//   • Коректна робота з iOS (warm-up), Android/Chrome (Google-voices), уникнення "ковтання" першого слова
+//   • Гарантія: новий speak зупиняє попередній; ніяких дубльованих програвань
+//   • Зворотна сумісність зі старими викликами (параметри lang/rate/onEnd/onError ті самі)
 
 type SpeakOptions = {
-  lang?: string;
-  rate?: number;
-  pitch?: number;
-  volume?: number;
-  voiceName?: string;
+  lang?: string; // BCP-47, напр. "de-DE"
+  rate?: number; // 0.5–1.2 (оптимально ~0.9–1.0 для iOS)
+  pitch?: number; // 0–2 (1 = дефолт)
+  volume?: number; // 0–1
+  voiceName?: string; // форсувати голос за назвою
   onEnd?: () => void;
   onError?: () => void;
 };
 
 const DEFAULT_LANG = "de-DE";
 const LS_KEY_PREFIX = "mp_tts_voice_";
-const LS_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const LS_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 днів
 
-let warmedUpLangs = new Set<string>(); // Мови з виконаним warm-up
-let preloadedLangs = new Set<string>(); // Мови, де робили preload
+let warmedUpLangs = new Set<string>();
 let currentUtterance: SpeechSynthesisUtterance | null = null;
-let currentPlayId = 0;
-let loadedOnce = false;
+let currentPlayId = 0; // маркер поточного відтворення (щоб не спрацьовували старі колбеки)
+let loadedOnce = false; // чи вже підвантажували голоси хоча б раз
 
 function isIOS(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
+  // iPhone/iPad, включно з iPadOS, що інколи репортує себе як Mac
   const iOSLike =
     /iPad|iPhone|iPod/.test(ua) ||
     (ua.includes("Mac") &&
@@ -74,6 +66,7 @@ function onVoicesChangedOnce(): Promise<SpeechSynthesisVoice[]> {
   });
 }
 
+/** Дочекатися, поки браузер реально підвантажить голоси */
 async function loadVoices(timeoutMs = 2000): Promise<SpeechSynthesisVoice[]> {
   let voices = safeGetVoices();
   if (voices.length > 0) {
@@ -120,7 +113,7 @@ function writeCachedVoice(v: CachedVoice) {
   try {
     localStorage.setItem(getCacheKey(v.lang), JSON.stringify(v));
   } catch {
-    // ignore
+    // ignore (Safari private mode etc.)
   }
 }
 
@@ -128,6 +121,7 @@ function validateCachedVoice(
   voices: SpeechSynthesisVoice[],
   cache: CachedVoice
 ): SpeechSynthesisVoice | null {
+  // Спочатку за voiceURI (більш стабільний), потім за (name+lang)
   if (cache.voiceURI) {
     const byUri = voices.find((v) => (v as any).voiceURI === cache.voiceURI);
     if (byUri) return byUri;
@@ -140,38 +134,39 @@ function validateCachedVoice(
   return byNameLang || null;
 }
 
+/** Вибір найкращого доступного голосу під мову/платформу, з урахуванням кешу та форсованої назви */
 function pickBestVoice(
   voices: SpeechSynthesisVoice[],
   lang: string,
   forcedName?: string
 ): SpeechSynthesisVoice | undefined {
-  if (!voices.length) return;
   const langLower = lang.toLowerCase();
-  const prefix = langLower.slice(0, 2);
+  const langPrefix = langLower.slice(0, 2);
 
-  // Cache first
+  // 0) Кеш
   const cached = readCachedVoice(lang);
   if (cached) {
     const valid = validateCachedVoice(voices, cached);
     if (valid) return valid;
   }
 
-  // Forced
+  // 1) Форсована назва
   if (forcedName) {
     const exact = voices.find(
       (v) =>
         v.name.toLowerCase() === forcedName.toLowerCase() &&
-        v.lang.toLowerCase().startsWith(prefix)
+        v.lang.toLowerCase().startsWith(langPrefix)
     );
     if (exact) return exact;
   }
 
   const sameLocale = voices.filter((v) => v.lang.toLowerCase() === langLower);
   const sameLang = voices.filter((v) =>
-    v.lang.toLowerCase().startsWith(prefix)
+    v.lang.toLowerCase().startsWith(langPrefix)
   );
 
   if (isIOS()) {
+    // iOS: шукати Siri/Enhanced/преміальні
     const prefer = (list: SpeechSynthesisVoice[]) =>
       list.find(
         (v) =>
@@ -183,6 +178,7 @@ function pickBestVoice(
     const p2 = prefer(sameLang);
     if (p2) return p2;
   } else {
+    // Chrome/Android: Google-voices зазвичай найкращі
     const preferGoogle = (list: SpeechSynthesisVoice[]) =>
       list.find((v) => /google/i.test(v.name));
     const g1 = preferGoogle(sameLocale);
@@ -191,12 +187,14 @@ function pickBestVoice(
     if (g2) return g2;
   }
 
-  if (sameLocale.length) return sameLocale[0];
-  if (sameLang.length) return sameLang[0];
+  // Далі — перший з точним локалем, або з тим самим префіксом
+  if (sameLocale.length > 0) return sameLocale[0];
+  if (sameLang.length > 0) return sameLang[0];
+
   return voices[0];
 }
 
-/** Тихий iOS warm-up */
+/** iOS warm-up: коротка тиха фраза, щоб "розбудити" синтезатор */
 async function primeIOS(
   voice: SpeechSynthesisVoice | undefined,
   lang: string
@@ -205,64 +203,32 @@ async function primeIOS(
     const u = new SpeechSynthesisUtterance(".");
     u.lang = lang;
     if (voice) u.voice = voice;
-    u.rate = 1;
-    u.pitch = 1;
-    u.volume = 0;
+    u.rate = 1.0;
+    u.pitch = 1.0;
+    u.volume = 0; // беззвучно
     u.onend = () => resolve();
-    u.onerror = () => resolve();
+    u.onerror = () => resolve(); // не блокуємо
     window.speechSynthesis.speak(u);
   });
 }
 
-/** Тихий preload (без фактичного програвання контенту) */
-export async function preloadTTS(
-  lang: string = DEFAULT_LANG
-): Promise<boolean> {
-  try {
-    if (typeof window === "undefined" || !("speechSynthesis" in window))
-      return false;
-    if (preloadedLangs.has(lang.toLowerCase())) return true;
-    const voices = await loadVoices(2000);
-    const best = pickBestVoice(voices, lang);
-    if (best) {
-      writeCachedVoice({
-        name: best.name,
-        voiceURI: (best as any).voiceURI,
-        lang,
-        ts: Date.now(),
-      });
-    }
-    preloadedLangs.add(lang.toLowerCase());
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** Warm-up (звукова ініціалізація) — викликаємо тільки після першої взаємодії користувача */
+/** Явний pre-warm: викликається ОДИН раз після кліку користувача */
 export async function initTTS(lang: string = DEFAULT_LANG): Promise<boolean> {
   try {
     if (typeof window === "undefined" || !("speechSynthesis" in window))
       return false;
-    const langLower = lang.toLowerCase();
-    if (warmedUpLangs.has(langLower)) return true;
 
+    // дочекатися голосів
     const voices = await loadVoices(2000);
     const best = pickBestVoice(voices, lang);
 
+    // iOS warm-up
     if (isIOS()) {
       await primeIOS(best, lang);
       await wait(40);
-    } else {
-      // Легкий "mute" прогін, щоб уникнути першого пропуску (Chrome інколи)
-      const dummy = new SpeechSynthesisUtterance(".");
-      dummy.lang = lang;
-      if (best) dummy.voice = best;
-      dummy.volume = 0;
-      window.speechSynthesis.speak(dummy);
-      await wait(30);
     }
 
+    // закешувати, якщо зрозумілий голос
     if (best) {
       writeCachedVoice({
         name: best.name,
@@ -272,17 +238,17 @@ export async function initTTS(lang: string = DEFAULT_LANG): Promise<boolean> {
       });
     }
 
-    warmedUpLangs.add(langLower);
+    warmedUpLangs.add(lang.toLowerCase());
     return true;
   } catch {
     return false;
   }
 }
 
-/** Скасування/зупинка поточного відтворення */
+/** Зовнішня зупинка (можеш викликати сам у будь-який момент) */
 export function cancelSpeak() {
   try {
-    currentPlayId++;
+    currentPlayId++; // інвалідовуємо колбеки попереднього відтворення
     if (currentUtterance) {
       currentUtterance.onend = null;
       currentUtterance.onerror = null;
@@ -300,7 +266,7 @@ async function speakInternal(
   text: string,
   {
     lang = DEFAULT_LANG,
-    rate = 0.85,
+    rate = 0.95,
     pitch = 1.0,
     volume = 1.0,
     voiceName,
@@ -310,38 +276,42 @@ async function speakInternal(
 ): Promise<void> {
   const langLower = lang.toLowerCase();
 
-  // Якщо warm-up ще не робився — для не-iOS можемо спробувати preload→warm-up inline
-  if (!warmedUpLangs.has(langLower) && !isIOS()) {
-    await preloadTTS(lang);
-    await initTTS(lang);
-  }
-
+  // Зупинити все попереднє і "дати видихнути"
   cancelSpeak();
-  await wait(40);
+  await wait(60);
 
   if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-    onEnd && setTimeout(onEnd, 10);
+    if (onEnd) setTimeout(onEnd, 600);
     return;
   }
 
   const synth = window.speechSynthesis;
-  const voices = loadedOnce ? safeGetVoices() : await loadVoices(1200);
+
+  // Завантажити голоси (якщо ще ні)
+  const voices = loadedOnce ? safeGetVoices() : await loadVoices(2000);
+
+  // Вибрати найкращий голос (з урахуванням кешу/форсу)
   const best = pickBestVoice(voices, lang, voiceName);
 
-  // iOS fallback warm-up (якщо не був)
+  // Якщо ініціалізації не було — зробимо легкий warm-up на iOS,
+  // але лише один раз (щоб не "подвійно" програвати)
   if (isIOS() && !warmedUpLangs.has(langLower)) {
     await primeIOS(best, lang);
     warmedUpLangs.add(langLower);
-    await wait(30);
+    await wait(40);
   }
 
+  // Підготувати utterance
   const utter = new SpeechSynthesisUtterance(text.trim());
   utter.lang = lang;
   if (best) utter.voice = best;
-  utter.rate = Math.min(Math.max(rate, 0.7), 1.2);
-  utter.pitch = Math.min(Math.max(pitch, 0.7), 1.3);
-  utter.volume = Math.min(Math.max(volume, 0), 1);
 
+  // Обережні межі — Safari інколи спотворює на екстремальних значеннях
+  utter.rate = Math.min(Math.max(rate, 0.75), 1.15);
+  utter.pitch = Math.min(Math.max(pitch, 0.8), 1.2);
+  utter.volume = Math.min(Math.max(volume, 0.0), 1.0);
+
+  // Зберегти вибраний голос у кеш (актуалізація)
   if (best) {
     writeCachedVoice({
       name: best.name,
@@ -351,40 +321,32 @@ async function speakInternal(
     });
   }
 
+  // Конкурентність: маркер відтворення
   const myId = ++currentPlayId;
   currentUtterance = utter;
 
+  // Колбеки — спрацьовують ТІЛЬКИ якщо це найновіше відтворення
   utter.onend = () => {
-    if (myId !== currentPlayId) return;
+    if (myId !== currentPlayId) return; // застарілий колбек
     currentUtterance = null;
     onEnd && onEnd();
   };
   utter.onerror = () => {
-    if (myId !== currentPlayId) return;
+    if (myId !== currentPlayId) return; // застарілий колбек
     currentUtterance = null;
     onError && onError();
+    // ВАЖЛИВО: не викликаємо жодних "fallback speak" тут,
+    // щоб не спричиняти дубльовані програвання.
   };
 
-  // Невелика пауза для стабільності Chrome/Android
-  await wait(10);
+  // Коротка затримка перед стартом — допомагає Android/Chrome
+  await wait(20);
+
+  // Остаточний старт (додатковий cancel НЕ робимо, щоб уникати race)
   synth.speak(utter);
 }
 
-/** Публічна функція озвучення */
+/** Публічна функція: повертає void (для сумісності зі старим кодом) */
 export function speakSmart(text: string, opts?: SpeakOptions): void {
-  if (!text || !text.trim()) return;
   void speakInternal(text, opts);
-}
-
-/** Допоміжне: чи warmed */
-export function isLangWarmed(lang?: string): boolean {
-  if (!lang) return false;
-  return warmedUpLangs.has(lang.toLowerCase());
-}
-
-/** Примусове гарантоване warm-up (наприклад після зміни мови навчання) */
-export async function ensureWarm(lang: string): Promise<void> {
-  if (!isLangWarmed(lang)) {
-    await initTTS(lang);
-  }
 }

@@ -6,6 +6,7 @@ import { AppProvider, useAppContext } from "./AppContext";
 import { User } from "./types";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { preloadTTS, initTTS } from "./utils/ttsUtils";
 
 function AppContent() {
   const { t } = useTranslation();
@@ -63,6 +64,45 @@ function AppContent() {
     }
     // eslint-disable-next-line
   }, []);
+
+  // --- TTS preload для мов ---
+  useEffect(() => {
+    if (learningLanguage?.code) {
+      preloadTTS(learningLanguage.code);
+    }
+    if (interfaceLanguage?.code) {
+      preloadTTS(interfaceLanguage.code);
+    }
+  }, [learningLanguage?.code, interfaceLanguage?.code]);
+
+  // --- TTS warm-up після першої взаємодії ---
+  useEffect(() => {
+    let done = false;
+    const handler = async () => {
+      if (done) return;
+      done = true;
+      if (learningLanguage?.code) {
+        await initTTS(learningLanguage.code);
+      }
+      if (
+        interfaceLanguage?.code &&
+        interfaceLanguage.code !== learningLanguage?.code
+      ) {
+        await initTTS(interfaceLanguage.code);
+      }
+      window.removeEventListener("pointerdown", handler);
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("touchstart", handler);
+    };
+    window.addEventListener("pointerdown", handler, { once: true });
+    window.addEventListener("keydown", handler, { once: true });
+    window.addEventListener("touchstart", handler, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", handler);
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("touchstart", handler);
+    };
+  }, [learningLanguage?.code, interfaceLanguage?.code]);
 
   const handleRegisterSuccess = async (newUser: User) => {
     setUser(newUser);

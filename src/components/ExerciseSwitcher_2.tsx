@@ -5,7 +5,6 @@ import MakePhrase from "./MakePhrase";
 import PronunciationBlock from "./PronunciationBlock";
 import WritingExercise from "./WritingExercise";
 import { useTranslation } from "react-i18next";
-import { cancelSpeak } from "../utils/ttsUtils";
 
 export interface Phrase extends Question {
   id: number;
@@ -89,11 +88,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setFullyCompleted(false);
     setMakePhraseIdx(0);
   }, [exerciseData]);
-
-  useEffect(() => {
-    cancelSpeak(); // при зміні режиму зупинити поточне TTS
-  }, [mode]);
-  // і в cleanup вже не треба manual window.speechSynthesis.cancel()
 
   function handleAnswer(option: string | null) {
     if (option === null) {
