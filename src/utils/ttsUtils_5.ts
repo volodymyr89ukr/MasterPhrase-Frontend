@@ -5,13 +5,18 @@
 //   - initTTS(lang?: string): Promise<boolean>     (warm-up після першої взаємодії користувача)
 //   - speakSmart(text: string, opts?: SpeakOptions): void
 //   - cancelSpeak(): void
-//   - getBestVoice(lang: string, voiceName?: string): Promise<SpeechSynthesisVoice | undefined>
 //
 // Стратегія:
-//   1. На старті застосунку (без кліку) викликаємо preloadTTS для мов (learning + interface).
-//   2. На першій взаємодії користувача — initTTS(currentLearningLang).
-//   3. Для iOS: віддаємо пріоритет Siri/Enhanced/Premium, уникаємо Compact-варіантів.
-//   4. В рідері (і в інших компонентах) використовуйте getBestVoice/speakSmart.
+//   1. На старті застосунку (без кліку) викликаємо preloadTTS для мов (learning + interface) — це підвантажує та кешує голоси без звуку.
+//   2. При першій взаємодії користувача (pointerdown / keydown / touchstart) викликаємо initTTS(currentLearningLang).
+//   3. Надалі speakSmart працює без затримок і без «ковтання» першого слова (особливо на iOS).
+//
+// Особливості:
+//   • iOS: warm-up лише після взаємодії; preload не програє звук (не блокується).
+//   • Кеш голосу з TTL (30 днів), валідація при кожному запуску.
+//   • cancelSpeak() інвалідовує попередні колбеки (race-safe).
+//   • Без дублюючих програвань; кожен новий speak повністю замінює попередній.
+//   • Швидка повторна озвучка (мінімальні очікування).
 //
 // Backward-compatible: існуючі виклики speakSmart() не треба міняти.
 
@@ -29,8 +34,8 @@ const DEFAULT_LANG = "de-DE";
 const LS_KEY_PREFIX = "mp_tts_voice_";
 const LS_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-let warmedUpLangs = new Set<string>();
-let preloadedLangs = new Set<string>();
+let warmedUpLangs = new Set<string>(); // Мови з виконаним warm-up
+let preloadedLangs = new Set<string>(); // Мови, де робили preload
 let currentUtterance: SpeechSynthesisUtterance | null = null;
 let currentPlayId = 0;
 let loadedOnce = false;
@@ -119,21 +124,6 @@ function writeCachedVoice(v: CachedVoice) {
   }
 }
 
-// Переваги по іменах для iOS (за спаданням пріоритету)
-const IOS_PREF_MAP: Record<string, RegExp[]> = {
-  de: [/siri/i, /anna/i, /yannick/i, /helena/i],
-  en: [/siri/i, /samantha/i, /alex/i, /karen/i, /daniel/i],
-  es: [/siri/i, /monica/i, /jorge/i],
-  fr: [/siri/i, /thomas/i, /am[eé]lie/i, /aur[eé]lie/i],
-  it: [/siri/i, /alice/i, /luca/i],
-  pt: [/siri/i, /joana/i, /luciana/i],
-  ru: [/siri/i, /milena/i],
-  pl: [/siri/i, /ewa/i, /zosia/i, /ania/i],
-  tr: [/siri/i, /y[iı]ld[iı]z/i, /cem/i],
-  uk: [/siri/i, /lesia/i, /mykola/i],
-  ar: [/siri/i, /tarik/i, /maged/i],
-};
-
 function validateCachedVoice(
   voices: SpeechSynthesisVoice[],
   cache: CachedVoice
@@ -148,33 +138,6 @@ function validateCachedVoice(
       v.lang.toLowerCase() === cache.lang.toLowerCase()
   );
   return byNameLang || null;
-}
-
-function scoreIosVoice(v: SpeechSynthesisVoice, lang: string): number {
-  const langLower = lang.toLowerCase();
-  const prefix = langLower.slice(0, 2);
-  const vLang = (v.lang || "").toLowerCase();
-  const uri = String((v as any).voiceURI || "");
-  const name = (v.name || "").toLowerCase();
-
-  let s = 0;
-  if (vLang === langLower) s += 40;
-  else if (vLang.startsWith(prefix)) s += 25;
-
-  if (/siri/i.test(name) || /siri/i.test(uri)) s += 45;
-  if (/(enhanced|premium)/i.test(name) || /(enhanced|premium)/i.test(uri))
-    s += 25;
-  if (/compact/i.test(name) || /compact/i.test(uri)) s -= 30;
-
-  const prefs = IOS_PREF_MAP[prefix] || [];
-  const idx = prefs.findIndex((rx) => rx.test(name));
-  if (idx >= 0) s += Math.max(0, 35 - idx * 5);
-
-  // невеликий бонус за чоловічий/жіночий варіант у відповідності до Siri (не критично)
-  if (/female/i.test(name) || /fem/i.test(uri)) s += 2;
-  if (/male/i.test(name) || /masc/i.test(uri)) s += 1;
-
-  return s;
 }
 
 function pickBestVoice(
@@ -203,30 +166,23 @@ function pickBestVoice(
     if (exact) return exact;
   }
 
-  const sameLocale = voices.filter((v) => v.lang?.toLowerCase() === langLower);
+  const sameLocale = voices.filter((v) => v.lang.toLowerCase() === langLower);
   const sameLang = voices.filter((v) =>
-    v.lang?.toLowerCase().startsWith(prefix)
+    v.lang.toLowerCase().startsWith(prefix)
   );
-  const candidates = sameLocale.length
-    ? sameLocale
-    : sameLang.length
-    ? sameLang
-    : voices;
 
   if (isIOS()) {
-    // На iOS використовуємо скоринг із пріоритетом Siri/Enhanced/Premium, уникаємо Compact
-    let best: SpeechSynthesisVoice | undefined;
-    let bestScore = -1e9;
-    for (const v of candidates) {
-      const s = scoreIosVoice(v, lang);
-      if (s > bestScore) {
-        bestScore = s;
-        best = v;
-      }
-    }
-    if (best) return best;
+    const prefer = (list: SpeechSynthesisVoice[]) =>
+      list.find(
+        (v) =>
+          /siri|enhanced|premium/i.test(v.name) ||
+          /com\.apple\.ttsbundle/i.test((v as any).voiceURI || "")
+      ) || list.find((v) => /(anna|marlene|helena|yannick)/i.test(v.name));
+    const p1 = prefer(sameLocale);
+    if (p1) return p1;
+    const p2 = prefer(sameLang);
+    if (p2) return p2;
   } else {
-    // Chrome/Android: надаємо перевагу Google voices
     const preferGoogle = (list: SpeechSynthesisVoice[]) =>
       list.find((v) => /google/i.test(v.name));
     const g1 = preferGoogle(sameLocale);
@@ -291,19 +247,20 @@ export async function initTTS(lang: string = DEFAULT_LANG): Promise<boolean> {
     const langLower = lang.toLowerCase();
     if (warmedUpLangs.has(langLower)) return true;
 
-    const voices = await loadVoices(2200);
+    const voices = await loadVoices(2000);
     const best = pickBestVoice(voices, lang);
 
     if (isIOS()) {
       await primeIOS(best, lang);
-      await wait(50);
+      await wait(40);
     } else {
+      // Легкий "mute" прогін, щоб уникнути першого пропуску (Chrome інколи)
       const dummy = new SpeechSynthesisUtterance(".");
       dummy.lang = lang;
       if (best) dummy.voice = best;
       dummy.volume = 0;
       window.speechSynthesis.speak(dummy);
-      await wait(35);
+      await wait(30);
     }
 
     if (best) {
@@ -320,17 +277,6 @@ export async function initTTS(lang: string = DEFAULT_LANG): Promise<boolean> {
   } catch {
     return false;
   }
-}
-
-/** Надати найкращий голос для мови (з урахуванням платформи та кешу) */
-export async function getBestVoice(
-  lang: string,
-  voiceName?: string
-): Promise<SpeechSynthesisVoice | undefined> {
-  if (typeof window === "undefined" || !("speechSynthesis" in window))
-    return undefined;
-  const voices = loadedOnce ? safeGetVoices() : await loadVoices(1500);
-  return pickBestVoice(voices, lang, voiceName);
 }
 
 /** Скасування/зупинка поточного відтворення */
@@ -352,26 +298,19 @@ export function cancelSpeak() {
 
 async function speakInternal(
   text: string,
-  opts: SpeakOptions = {}
-): Promise<void> {
-  let {
+  {
     lang = DEFAULT_LANG,
-    rate,
-    pitch,
-    volume,
+    rate = 0.85,
+    pitch = 1.0,
+    volume = 0.95,
     voiceName,
     onEnd,
     onError,
-  } = opts;
-
-  // Платформо-залежні дефолти (лише якщо не задано користувачем)
-  if (rate == null) rate = isIOS() ? 0.95 : 0.85;
-  if (pitch == null) pitch = 1.0;
-  if (volume == null) volume = 0.95;
-
+  }: SpeakOptions = {}
+): Promise<void> {
   const langLower = lang.toLowerCase();
 
-  // Якщо warm-up ще не робився — для не-iOS можемо виконати inline
+  // Якщо warm-up ще не робився — для не-iOS можемо спробувати preload→warm-up inline
   if (!warmedUpLangs.has(langLower) && !isIOS()) {
     await preloadTTS(lang);
     await initTTS(lang);
@@ -385,6 +324,7 @@ async function speakInternal(
     return;
   }
 
+  const synth = window.speechSynthesis;
   const voices = loadedOnce ? safeGetVoices() : await loadVoices(1200);
   const best = pickBestVoice(voices, lang, voiceName);
 
@@ -398,8 +338,8 @@ async function speakInternal(
   const utter = new SpeechSynthesisUtterance(text.trim());
   utter.lang = lang;
   if (best) utter.voice = best;
-  utter.rate = Math.min(Math.max(rate, 0.75), 1.1);
-  utter.pitch = Math.min(Math.max(pitch, 0.85), 1.2);
+  utter.rate = Math.min(Math.max(rate, 0.7), 1.2);
+  utter.pitch = Math.min(Math.max(pitch, 0.7), 1.3);
   utter.volume = Math.min(Math.max(volume, 0), 1);
 
   if (best) {
@@ -425,8 +365,9 @@ async function speakInternal(
     onError && onError();
   };
 
+  // Невелика пауза для стабільності Chrome/Android
   await wait(10);
-  window.speechSynthesis.speak(utter);
+  synth.speak(utter);
 }
 
 /** Публічна функція озвучення */
@@ -441,7 +382,7 @@ export function isLangWarmed(lang?: string): boolean {
   return warmedUpLangs.has(lang.toLowerCase());
 }
 
-/** Примусове warm-up (наприклад після зміни мови навчання) */
+/** Примусове гарантоване warm-up (наприклад після зміни мови навчання) */
 export async function ensureWarm(lang: string): Promise<void> {
   if (!isLangWarmed(lang)) {
     await initTTS(lang);

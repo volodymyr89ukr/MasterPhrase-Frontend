@@ -1,12 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useAppContext } from "../AppContext";
 import { useTranslation } from "react-i18next";
-import {
-  preloadTTS,
-  ensureWarm,
-  getBestVoice,
-  cancelSpeak,
-} from "../utils/ttsUtils";
 
 const REFERENCE_LENGTH = 30;
 const PRE_SENTENCE_DELAY = 200;
@@ -148,6 +142,7 @@ export default function TextSpeechHighlighter({
   const [showTranslation, setShowTranslation] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Якщо немає глобальних налаштувань — дефолт
   const readingRate = ttsSettings?.readingRate ?? 0.85;
   const pauseBase = ttsSettings?.pauseBase ?? 1;
 
@@ -170,17 +165,18 @@ export default function TextSpeechHighlighter({
         wakeLockRef.current = await (navigator as any).wakeLock.request(
           "screen"
         );
-      } catch {
+      } catch (e) {
         // ignore
       }
     }
   };
+
   const releaseWakeLock = async () => {
     if (wakeLockRef.current) {
       try {
         await wakeLockRef.current.release();
         wakeLockRef.current = null;
-      } catch {
+      } catch (e) {
         // ignore
       }
     }
@@ -204,6 +200,7 @@ export default function TextSpeechHighlighter({
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       releaseWakeLock();
@@ -223,9 +220,13 @@ export default function TextSpeechHighlighter({
     }
   }, [currentSentenceIndex, text]);
 
-  // На маунті лише preload голосів (без звуку)
   useEffect(() => {
-    preloadTTS(LANG);
+    if ("speechSynthesis" in window) {
+      const utter = new window.SpeechSynthesisUtterance(" .");
+      utter.lang = LANG;
+      utter.volume = 0;
+      window.speechSynthesis.speak(utter);
+    }
   }, [LANG]);
 
   function getPauseForSentence(sentence: string): number {
@@ -236,86 +237,110 @@ export default function TextSpeechHighlighter({
     return pause;
   }
 
-  const playTextFrom = async (
+  const playTextFrom = (
     startIdx = 0,
     rate = readingRate,
     pause = pauseBase
   ) => {
     if (!sentences.length || startIdx >= sentences.length) return;
-
-    // Warm-up після взаємодії — критично для iOS, щоб отримати Siri/Enhanced
-    await ensureWarm(LANG);
-
     stopRequestedRef.current = false;
     setIsPaused(false);
     setCurrentSentenceIndex(startIdx);
-    await requestWakeLock();
 
-    const speakNext = async (idx: number) => {
+    requestWakeLock();
+
+    const speakNext = (idx: number) => {
       if (stopRequestedRef.current || idx >= sentences.length) {
         setIsPaused(true);
         setCurrentSentenceIndex(
           idx < sentences.length ? idx : sentences.length - 1
         );
-        await releaseWakeLock();
+        releaseWakeLock();
         return;
       }
-
       const sentence = sentences[idx].trim();
       if (!sentence) {
-        await speakNext(idx + 1);
+        speakNext(idx + 1);
         return;
       }
 
-      setTimeout(async () => {
+      const dummy = new window.SpeechSynthesisUtterance(" ");
+      dummy.lang = LANG;
+      dummy.volume = 0;
+      window.speechSynthesis.speak(dummy);
+
+      setTimeout(() => {
         const utterance = new SpeechSynthesisUtterance(sentence);
         utterance.lang = LANG;
         utterance.rate = rate;
 
-        try {
-          const best = await getBestVoice(LANG);
-          if (best) utterance.voice = best;
-        } catch {
-          // ignore, буде системний дефолт
-        }
+        const assignVoiceAndSpeak = () => {
+          const voices = window.speechSynthesis.getVoices();
+          const googleVoice = voices.find(
+            (v) =>
+              v.lang.toLowerCase().startsWith(LANG.toLowerCase().slice(0, 2)) &&
+              v.name.toLowerCase().includes("google")
+          );
+          const langVoice = voices.find((v) =>
+            v.lang.toLowerCase().startsWith(LANG.toLowerCase().slice(0, 2))
+          );
+          utterance.voice = googleVoice || langVoice || voices[0];
 
-        utterance.onend = () => {
-          const pauseMs = getPauseForSentence(sentence);
-          pauseTimeoutRef.current = window.setTimeout(async () => {
-            pauseTimeoutRef.current = null;
-            if (!stopRequestedRef.current) {
-              setCurrentSentenceIndex(idx + 1);
-              await speakNext(idx + 1);
-            }
-          }, Math.max(0, Math.min(pauseMs, MAX_PAUSE)) * 1000);
-        };
-        utterance.onerror = () => {
-          setIsPaused(true);
+          utterance.onend = () => {
+            const pauseMs = getPauseForSentence(sentence);
+            pauseTimeoutRef.current = window.setTimeout(() => {
+              pauseTimeoutRef.current = null;
+              if (!stopRequestedRef.current) {
+                setCurrentSentenceIndex(idx + 1);
+                speakNext(idx + 1);
+              }
+            }, Math.max(0, Math.min(pauseMs, MAX_PAUSE)) * 1000);
+          };
+          utterance.onerror = () => {
+            setIsPaused(true);
+            setCurrentSentenceIndex(idx);
+            releaseWakeLock();
+          };
+
+          window.speechSynthesis.cancel();
+          window.speechSynthesis.speak(utterance);
+          utteranceRef.current = utterance;
           setCurrentSentenceIndex(idx);
-          releaseWakeLock();
         };
 
-        cancelSpeak();
-        window.speechSynthesis.speak(utterance);
-        utteranceRef.current = utterance;
-        setCurrentSentenceIndex(idx);
+        const voices = window.speechSynthesis.getVoices();
+        if (voices && voices.length > 0) {
+          assignVoiceAndSpeak();
+        } else {
+          const handleVoicesChanged = () => {
+            assignVoiceAndSpeak();
+            window.speechSynthesis.removeEventListener(
+              "voiceschanged",
+              handleVoicesChanged
+            );
+          };
+          window.speechSynthesis.addEventListener(
+            "voiceschanged",
+            handleVoicesChanged
+          );
+        }
       }, PRE_SENTENCE_DELAY);
     };
 
-    await speakNext(startIdx);
+    speakNext(startIdx);
   };
 
-  const handlePlayPause = async () => {
+  const handlePlayPause = () => {
     if (isPaused) {
       const startIndex =
         currentSentenceIndex == null ? 0 : currentSentenceIndex;
       stopRequestedRef.current = false;
-      await playTextFrom(startIndex, readingRate, pauseBase);
+      playTextFrom(startIndex, readingRate, pauseBase);
     } else {
       stopRequestedRef.current = true;
-      cancelSpeak();
+      window.speechSynthesis.cancel();
       setIsPaused(true);
-      await releaseWakeLock();
+      releaseWakeLock();
       if (pauseTimeoutRef.current) {
         clearTimeout(pauseTimeoutRef.current);
         pauseTimeoutRef.current = null;
@@ -323,26 +348,26 @@ export default function TextSpeechHighlighter({
     }
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     const nextIndex =
       currentSentenceIndex === null
         ? 0
         : Math.min(sentences.length - 1, currentSentenceIndex + 1);
     stopRequestedRef.current = true;
-    cancelSpeak();
+    window.speechSynthesis.cancel();
     setIsPaused(true);
     setCurrentSentenceIndex(nextIndex);
-    await releaseWakeLock();
+    releaseWakeLock();
   };
 
-  const handlePrev = async () => {
+  const handlePrev = () => {
     const prevIndex =
       currentSentenceIndex === null ? 0 : Math.max(0, currentSentenceIndex - 1);
     stopRequestedRef.current = true;
-    cancelSpeak();
+    window.speechSynthesis.cancel();
     setIsPaused(true);
     setCurrentSentenceIndex(prevIndex);
-    await releaseWakeLock();
+    releaseWakeLock();
   };
 
   useEffect(() => {
@@ -358,11 +383,12 @@ export default function TextSpeechHighlighter({
 
   useEffect(() => {
     return () => {
-      cancelSpeak();
+      window.speechSynthesis.cancel();
       releaseWakeLock();
     };
   }, []);
 
+  // --- Зберігаємо налаштування глобально через AppContext ---
   const handleSettingsConfirm = (newRate: number, newPause: number) => {
     setSettingsOpen(false);
     if (setTtsSettings) {
@@ -370,9 +396,9 @@ export default function TextSpeechHighlighter({
     }
     if (!isPaused) {
       stopRequestedRef.current = true;
-      cancelSpeak();
+      window.speechSynthesis.cancel();
       setTimeout(() => {
-        void playTextFrom(
+        playTextFrom(
           currentSentenceIndex == null ? 0 : currentSentenceIndex,
           newRate,
           newPause
@@ -450,7 +476,7 @@ export default function TextSpeechHighlighter({
           <div className="flex items-center justify-center gap-4 sm:gap-8 mt-2">
             <div className="flex items-center gap-3 sm:gap-6">
               <button
-                onClick={() => void handlePrev()}
+                onClick={handlePrev}
                 title={t("previous")}
                 className="text-gray-700 hover:text-black p-2 rounded-full"
                 style={{
@@ -462,7 +488,7 @@ export default function TextSpeechHighlighter({
                 ◀️
               </button>
               <button
-                onClick={() => void handlePlayPause()}
+                onClick={handlePlayPause}
                 title={isPaused ? t("play") : t("pause")}
                 className="text-green-600 hover:text-green-800 p-2 rounded-full shadow-md"
                 style={{
@@ -474,7 +500,7 @@ export default function TextSpeechHighlighter({
                 {isPaused ? "▶️" : "⏸"}
               </button>
               <button
-                onClick={() => void handleNext()}
+                onClick={handleNext}
                 title={t("next")}
                 className="text-gray-700 hover:text-black p-2 rounded-full"
                 style={{
