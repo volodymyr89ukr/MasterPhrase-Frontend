@@ -22,7 +22,7 @@ interface MakePhraseProps {
 }
 
 // ── Timing: пауза після коректного складання (озвучення стартує одразу)
-const NEXT_SET_DELAY_MS = 1500; // підібрано під середню фразу ~7 слів і темп 0.85
+const NEXT_SET_DELAY_MS = 3000; // підібрано під середню фразу ~7 слів і темп 0.85
 
 // Stable seeded RNG (mulberry32)
 function mulberry32(seed: number) {
