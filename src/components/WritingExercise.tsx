@@ -23,7 +23,7 @@ interface WritingExerciseProps {
   onComplete?: () => void;
 }
 
-const WRITING_NEXT_DELAY_MS = 3400;
+const WRITING_NEXT_DELAY_MS = 3000;
 
 function getWordByIndex(str: string, idx: number): string {
   const words = str.split(/\s+/);
