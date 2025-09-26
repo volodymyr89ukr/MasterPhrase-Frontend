@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { User } from "./types";
-import i18n from "./i18n"; // Додаємо імпорт i18n
+import i18n from "./i18n";
+import { preloadTTS } from "./utils/ttsUtils";
 
 export interface Language {
-  // ← Додаємо export
   id: number;
   code: string;
   name: string;
@@ -48,6 +48,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       i18n.changeLanguage(interfaceLanguage.code);
     }
   }, [interfaceLanguage]);
+
+  // Тихий preload TTS для навчальної мови при зміні
+  useEffect(() => {
+    if (learningLanguage?.code) {
+      preloadTTS(learningLanguage.code);
+    }
+  }, [learningLanguage]);
 
   return (
     <AppContext.Provider

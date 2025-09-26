@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import BackButton from "./BackButton";
@@ -115,8 +115,7 @@ export default function Block1({
   const navigate = useNavigate();
   const { thousandId, setId } = useParams();
   const location = useLocation();
-  const { interfaceLanguage, knownWordIds, toggleKnownWord, isWordKnown } =
-    useAppContext();
+  const { interfaceLanguage } = useAppContext();
 
   // State
   const [thousands, setThousands] = useState<Thousand[]>([]);
@@ -139,10 +138,6 @@ export default function Block1({
   const [loadingExerciseDetails, setLoadingExerciseDetails] =
     useState<boolean>(false);
   const [showConfirmExit, setShowConfirmExit] = useState<boolean>(false);
-
-  // Додаткові стани для вкладки "words"
-  const [markKnownMode, setMarkKnownMode] = useState<boolean>(false);
-  const [hideKnown, setHideKnown] = useState<boolean>(false);
 
   // Loading & error
   const [loadingThousands, setLoadingThousands] = useState<boolean>(true);
@@ -277,18 +272,7 @@ export default function Block1({
           }`
         );
         const data = await res.json();
-
-        // Фільтрація фраз за knownWordIds (по поточній мові навчання)
-        const knownSet = new Set(knownWordIds);
-        const filtered = Array.isArray(data?.data)
-          ? data.data.filter((item: any) => {
-              const wid =
-                item?.word_id ?? item?.wordId ?? item?.word?.id ?? null;
-              return !(typeof wid === "number" && knownSet.has(wid));
-            })
-          : [];
-
-        setExerciseDetails({ ...data, data: filtered });
+        setExerciseDetails(data);
       } catch {
         setExerciseDetails({
           error: t("failed_to_load_exercise"),
@@ -311,18 +295,6 @@ export default function Block1({
     setExerciseDetails(null);
     setLoadingExerciseDetails(false);
   };
-
-  // Похідні для вкладки words
-  const wordsForList = useMemo(() => {
-    if (!hideKnown) return allWords;
-    return allWords.filter((w) => {
-      if (typeof w === "string") return true; // рядки не ховаємо
-      if (typeof (w as any)?.id === "number") {
-        return !isWordKnown((w as any).id);
-      }
-      return true;
-    });
-  }, [allWords, hideKnown, isWordKnown, knownWordIds]);
 
   // --- Render logic by route ---
   // 1. Головна: вибір тисяч
@@ -473,99 +445,34 @@ export default function Block1({
         {/* Tabs content */}
         {activeTab === "words" && (
           <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
-            {/* Панель керування */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-              <div className="text-center sm:text-left text-sm text-gray-700">
-                {t("select_known_words", "Обери слова, які ти вже вивчив")}
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  onClick={() => setMarkKnownMode((v) => !v)}
-                  className={`px-3 py-1 rounded-lg text-sm font-semibold border shadow-sm transition
-                    ${
-                      markKnownMode
-                        ? "bg-blue-500 text-white border-blue-600"
-                        : "bg-gray-100 text-blue-900 border-blue-100 hover:bg-blue-50"
-                    }`}
-                  title={t(
-                    "toggle_mark_known_mode",
-                    "Перемкнути режим “Позначати відомі”"
-                  )}
-                >
-                  {markKnownMode
-                    ? t("mark_known_on", "Позначати відомі: Увімкн.")
-                    : t("mark_known_off", "Позначати відомі: Вимкн.")}
-                </button>
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="accent-blue-500"
-                    checked={hideKnown}
-                    onChange={(e) => setHideKnown(e.target.checked)}
-                  />
-                  <span>{t("hide_known", "Сховати відомі")}</span>
-                </label>
-              </div>
-            </div>
-
             <div className="flex-1">
               {loadingWords ? (
                 <div className="text-gray-400 text-center">{t("loading")}</div>
               ) : (
                 <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {wordsForList.map((w: any, idx) => {
-                    const id = typeof w === "object" ? w.id : undefined;
-                    const known =
-                      typeof id === "number" ? isWordKnown(id) : false;
-                    const clickable = markKnownMode && typeof id === "number";
-                    return (
-                      <li
-                        key={id ?? idx}
-                        onClick={() => {
-                          if (clickable) toggleKnownWord(id as number);
-                        }}
-                        className={[
-                          "px-3 py-2 rounded text-center shadow-sm border flex flex-col items-center justify-center min-h-[56px] select-none transition",
-                          known
-                            ? "bg-gray-200 text-gray-500 border-gray-300 opacity-80"
-                            : "bg-blue-50 text-blue-900 border-blue-100",
-                          clickable
-                            ? "cursor-pointer hover:bg-blue-100"
-                            : "cursor-default",
-                        ].join(" ")}
-                        title={
-                          typeof id === "number"
-                            ? known
-                              ? t(
-                                  "click_to_mark_unknown",
-                                  "Натисни, щоб повернути у навчання"
-                                )
-                              : t(
-                                  "click_to_mark_known",
-                                  "Натисни, щоб позначити як відоме"
-                                )
-                            : t("no_id_for_word", "ID слова відсутній")
-                        }
-                      >
-                        {typeof w === "string" ? (
-                          <span className="text-lg font-semibold leading-tight">
-                            {w}
+                  {allWords.map((w: any, idx) => (
+                    <li
+                      key={w.id || idx}
+                      className="px-3 py-2 rounded bg-blue-50 text-center shadow-sm border border-blue-100 flex flex-col items-center justify-center min-h-[56px]"
+                    >
+                      {typeof w === "string" ? (
+                        <span className="text-lg font-semibold text-blue-900 leading-tight">
+                          {w}
+                        </span>
+                      ) : (
+                        <>
+                          <span className="text-lg font-bold text-blue-900 leading-tight">
+                            {w.word}
                           </span>
-                        ) : (
-                          <>
-                            <span className="text-lg font-bold leading-tight">
-                              {w.word}
+                          {w.translation && (
+                            <span className="text-base text-blue-600 opacity-80 mt-0.5 leading-tight">
+                              {w.translation}
                             </span>
-                            {w.translation && (
-                              <span className="text-base text-blue-600 opacity-80 mt-0.5 leading-tight">
-                                {w.translation}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </li>
-                    );
-                  })}
+                          )}
+                        </>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               )}
             </div>
