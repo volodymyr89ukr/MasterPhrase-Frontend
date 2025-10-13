@@ -68,12 +68,15 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   const [matchingPool, setMatchingPool] = useState<Phrase[]>([]);
   const [mode, setMode] = useState<
     | "matching"
-    | "transition"
+    | "transition-to-make-phrase"
     | "make-phrase"
+    | "transition-to-pairs"
     | "pairs"
+    | "transition-to-pronunciation"
     | "pronunciation"
+    | "transition-to-writing"
     | "writing"
-    | "writing-finish"
+    | "transition-back-to-matching"
     | "finished"
   >("matching");
   const [pairsKey, setPairsKey] = useState<number>(1);
@@ -94,6 +97,30 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     cancelSpeak(); // при зміні режиму зупинити поточне TTS
   }, [mode]);
   // і в cleanup вже не треба manual window.speechSynthesis.cancel()
+  // Автоматичний перехід із transition-екранів через 2500 мс
+  useEffect(() => {
+    let timer: number | undefined;
+
+    if (mode === "transition-to-make-phrase") {
+      timer = window.setTimeout(() => setMode("make-phrase"), 2500);
+    } else if (mode === "transition-to-pairs") {
+      timer = window.setTimeout(() => setMode("pairs"), 2500);
+    } else if (mode === "transition-to-pronunciation") {
+      timer = window.setTimeout(() => setMode("pronunciation"), 2500);
+    } else if (mode === "transition-to-writing") {
+      timer = window.setTimeout(() => setMode("writing"), 2500);
+    } else if (mode === "transition-back-to-matching") {
+      timer = window.setTimeout(() => {
+        setQuestions((qArr) => shuffleArray(qArr));
+        setCurrentIdx(0);
+        setMode("matching");
+      }, 2500);
+    }
+
+    return () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [mode]);
 
   function handleAnswer(option: string | null) {
     if (option === null) {
@@ -114,10 +141,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       if (updatedQuestions.length === 0) {
         setQuestions(updatedQuestions);
         setMatchingPool(pool);
-        // run MakePhrase phase over the pool before pairs
         setMakePhraseIdx(0);
-        setMode("transition");
-        setTimeout(() => setMode("make-phrase"), TRANSITION_DELAY_MS);
+        setMode("transition-to-make-phrase");
         return;
       }
       updatedIdx = Math.min(currentIdx, updatedQuestions.length - 1);
@@ -141,23 +166,18 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setMatchingPool(pool);
 
     if (pool.length >= 6) {
-      // Start MakePhrase phase when we have a full pool
       setMakePhraseIdx(0);
-      setMode("transition");
-      setTimeout(() => setMode("make-phrase"), TRANSITION_DELAY_MS);
+      setMode("transition-to-make-phrase");
       return;
     }
   }
 
   function handlePairsComplete() {
-    // small delay for smooth transition
-    setMode("transition");
-    setTimeout(() => setMode("pronunciation"), TRANSITION_DELAY_MS);
+    setMode("transition-to-pronunciation");
   }
 
   function handlePronunciationComplete() {
-    setMode("transition");
-    setTimeout(() => setMode("writing"), TRANSITION_DELAY_MS);
+    setMode("transition-to-writing");
   }
 
   function handleWritingComplete() {
@@ -167,9 +187,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       setMode("finished");
       return;
     }
-    // Показати модальне вікно про успіх перед поверненням до matching
-    setMode("writing-finish");
-    // Повернення до matching буде після натискання кнопки або таймера (див. нижче)
+    setMode("transition-back-to-matching");
   }
 
   function handleFullReset() {
@@ -180,18 +198,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setPairsKey((k) => k + 1);
     setFullyCompleted(false);
   }
-
-  // Додаємо обробку переходу з writing-finish до matching
-  useEffect(() => {
-    if (mode === "writing-finish") {
-      const timer = setTimeout(() => {
-        setQuestions((qArr) => shuffleArray(qArr));
-        setCurrentIdx(0);
-        setMode("matching");
-      }, 1200);
-      return () => clearTimeout(timer);
-    }
-  }, [mode]);
 
   useEffect(() => {
     return () => {
@@ -226,38 +232,73 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     );
   }
 
-  if (mode === "transition") {
+  // Transition екрани
+  if (mode === "transition-to-make-phrase") {
     return (
       <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
         <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
           <div className="text-3xl mb-4 text-green-600">✔️</div>
           <div className="text-xl font-bold mb-2">
-            {t("great_find_phrases")}
+            {t("great_make_phrase", "Чудово! Тепер склади фрази зі слів.")}
           </div>
         </div>
       </div>
     );
   }
 
-  // Модальне вікно після WritingExercise
-  if (mode === "writing-finish") {
+  if (mode === "transition-to-pairs") {
     return (
       <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
         <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
           <div className="text-3xl mb-4 text-green-600">✔️</div>
           <div className="text-xl font-bold mb-2">
-            {t("great_match_right_answer")}
+            {t(
+              "great_find_phrases",
+              "Чудово! Тепер знайди фрази та їх переклади."
+            )}
           </div>
-          <button
-            className="mt-6 py-2 px-8 rounded-xl bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 transition"
-            onClick={() => {
-              setQuestions((qArr) => shuffleArray(qArr));
-              setCurrentIdx(0);
-              setMode("matching");
-            }}
-          >
-            {t("next")}
-          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "transition-to-pronunciation") {
+    return (
+      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
+          <div className="text-3xl mb-4 text-green-600">✔️</div>
+          <div className="text-xl font-bold mb-2">
+            {t("great_pronunciation", "Відмінно! Тепер повтори фрази вголос.")}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "transition-to-writing") {
+    return (
+      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
+          <div className="text-3xl mb-4 text-green-600">✔️</div>
+          <div className="text-xl font-bold mb-2">
+            {t("great_writing", "Супер! Тепер напиши слова з фраз.")}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === "transition-back-to-matching") {
+    return (
+      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
+          <div className="text-3xl mb-4 text-green-600">✔️</div>
+          <div className="text-xl font-bold mb-2">
+            {t(
+              "great_match_right_answer",
+              "Чудово! Тепер обери правильну відповідь."
+            )}
+          </div>
         </div>
       </div>
     );
@@ -297,12 +338,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
               if (nextIdx < matchingPool.length) {
                 setMakePhraseIdx(nextIdx);
               } else {
-                // proceed to pairs
-                setMode("transition");
-                setTimeout(() => {
-                  setMode("pairs");
-                  setPairsKey((k) => k + 1);
-                }, TRANSITION_DELAY_MS);
+                setMode("transition-to-pairs");
+                setPairsKey((k) => k + 1);
               }
             }}
           />

@@ -122,14 +122,12 @@ export default function MatchingPairsExercise({
 
   useEffect(() => {
     if (matched.length === cards.length && cards.length > 0 && !isFinished) {
-      // ✅ Чекаємо завершення анімації + TTS останньої фрази
-      (async () => {
-        await new Promise((r) => setTimeout(r, 700)); // анімація
+      setTimeout(() => {
         setIsFinished(true);
-        await new Promise((r) => setTimeout(r, 1500)); // показ результату
-        // TTS уже завершено в попередньому useEffect (рядок 115)
-        if (onComplete) onComplete();
-      })();
+        setTimeout(() => {
+          if (onComplete) onComplete();
+        }, 1500);
+      }, 700);
     }
   }, [matched, cards, isFinished, onComplete]);
 

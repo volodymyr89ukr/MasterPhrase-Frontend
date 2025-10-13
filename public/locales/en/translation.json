@@ -37,7 +37,6 @@
   "data_not_found": "Exercise data not found!",
   "congratulations_finished": "Congratulations! You have completed all questions and exercises!",
   "start_over": "Start over",
-  "great_find_phrases": "Great! Next — find phrases and their translations.",
   "great_match_right_answer": "Great! Now choose the right answer.",
   "back": "← Back",
   "close": "Close",
@@ -117,5 +116,9 @@
   "check": "Check",
   "hint": "Hint",
   "skip": "Skip",
-  "clear": "Clear"
+  "clear": "Clear",
+  "great_find_phrases": "Great! Next — find phrases and their translations.",
+  "great_make_phrase": "Great! Now assemble phrases from words.",
+  "great_pronunciation": "Excellent! Now repeat phrases aloud.",
+  "great_writing": "Super! Now write words from phrases."
 }
