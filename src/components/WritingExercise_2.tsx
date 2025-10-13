@@ -6,7 +6,7 @@ import React, {
   KeyboardEvent,
 } from "react";
 import { useAppContext } from "../AppContext";
-import { speakSmartAsync, cancelSpeak } from "../utils/ttsUtils";
+import { speakSmart } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
 interface Phrase {
@@ -22,6 +22,8 @@ interface WritingExerciseProps {
   phrases: Phrase[];
   onComplete?: () => void;
 }
+
+const WRITING_NEXT_DELAY_MS = 3000;
 
 function getWordByIndex(str: string, idx: number): string {
   const words = str.split(/\s+/);
@@ -248,7 +250,6 @@ export default function WritingExercise({
       if (fixHintTimeoutRef.current) {
         window.clearTimeout(fixHintTimeoutRef.current);
       }
-      cancelSpeak(); // ✅ cleanup TTS при unmount
     };
   }, []);
 
@@ -334,7 +335,6 @@ export default function WritingExercise({
       }
       return;
     }
-
     const userNorm = normalizeText(userInput);
     if (targetNorm.startsWith(userNorm)) {
       setInputStatus("default");
@@ -345,18 +345,11 @@ export default function WritingExercise({
         // If this was the last target for this phrase — move to next phrase
         const isLastTarget = targetPos >= targetIndices.length - 1;
         if (isLastTarget) {
-          // ✅ async wrapper для await
-          (async () => {
-            try {
-              await speakSmartAsync(obj.phrase, {
-                lang: learningLanguage?.code || "de-DE",
-              });
-            } catch {
-              // ignore TTS errors
-            }
-            // ✅ мінімальна пауза після озвучення
-            await new Promise((r) => setTimeout(r, 800));
-
+          speakSmart(obj.phrase, { lang: learningLanguage?.code || "de-DE" });
+          if (feedbackTimeoutRef.current) {
+            window.clearTimeout(feedbackTimeoutRef.current);
+          }
+          feedbackTimeoutRef.current = window.setTimeout(() => {
             if (currentIdx < phrases.length - 1) {
               setCurrentIdx((idx) => idx + 1);
               setTargetPos(0);
@@ -367,7 +360,7 @@ export default function WritingExercise({
               setCompleted(true);
               if (onComplete) onComplete();
             }
-          })();
+          }, WRITING_NEXT_DELAY_MS);
         } else {
           // Move to next target within the same phrase
           if (feedbackTimeoutRef.current) {
@@ -419,18 +412,11 @@ export default function WritingExercise({
         setHintLevel(0);
         const isLastTarget = targetPos >= targetIndices.length - 1;
         if (isLastTarget) {
-          // ✅ async wrapper для await
-          (async () => {
-            try {
-              await speakSmartAsync(obj.phrase, {
-                lang: learningLanguage?.code || "de-DE",
-              });
-            } catch {
-              // ignore TTS errors
-            }
-            // ✅ мінімальна пауза після озвучення
-            await new Promise((r) => setTimeout(r, 800));
-
+          speakSmart(obj.phrase, { lang: learningLanguage?.code || "de-DE" });
+          if (feedbackTimeoutRef.current) {
+            window.clearTimeout(feedbackTimeoutRef.current);
+          }
+          feedbackTimeoutRef.current = window.setTimeout(() => {
             if (currentIdx < phrases.length - 1) {
               setCurrentIdx((idx) => idx + 1);
               setTargetPos(0);
@@ -441,7 +427,7 @@ export default function WritingExercise({
               setCompleted(true);
               if (onComplete) onComplete();
             }
-          })();
+          }, WRITING_NEXT_DELAY_MS);
         } else {
           if (feedbackTimeoutRef.current) {
             window.clearTimeout(feedbackTimeoutRef.current);

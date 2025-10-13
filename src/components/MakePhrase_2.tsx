@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useAppContext } from "../AppContext";
-import { speakSmart, speakSmartAsync, cancelSpeak } from "../utils/ttsUtils";
+import { speakSmart } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
 // Reuse the shape used in MatchingExercise
@@ -139,7 +139,6 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
         window.clearTimeout(pauseTimerRef.current);
         pauseTimerRef.current = null;
       }
-      cancelSpeak(); // ✅ явний cleanup TTS
     };
   }, []);
 
@@ -185,7 +184,7 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
     setFocusedDropIdx(null);
   }
 
-  async function handleCheck() {
+  function handleCheck() {
     if (interactionsLocked) return;
 
     // Validate selection vs correct tokens
@@ -201,22 +200,22 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
 
     const ok = compareTokens(selected, correctTokens);
     if (ok) {
-      // 1) вмикаємо "успішну" паузу із зеленим акцентом/анімацією
+      // 1) одразу запускаємо озвучення
+      speakSmart(question.phrase, { lang: langCode });
+
+      // 2) вмикаємо "успішну" паузу із зеленим акцентом/анімацією
       setIsSuccessPause(true);
 
-      // 2) чекаємо завершення озвучення
-      try {
-        await speakSmartAsync(question.phrase, { lang: langCode });
-      } catch {
-        // ignore TTS errors
+      // 3) після фіксованої паузи — переходимо далі
+      if (pauseTimerRef.current) {
+        window.clearTimeout(pauseTimerRef.current);
+        pauseTimerRef.current = null;
       }
+      pauseTimerRef.current = window.setTimeout(() => {
+        setIsSuccessPause(false);
+        onComplete({ id: question.id, result: "done" });
+      }, NEXT_SET_DELAY_MS) as unknown as number;
 
-      // 3) додаємо мінімальну паузу для плавності (800 мс)
-      await new Promise((r) => setTimeout(r, 800));
-
-      // 4) переходимо далі
-      setIsSuccessPause(false);
-      onComplete({ id: question.id, result: "done" });
       return;
     }
   }

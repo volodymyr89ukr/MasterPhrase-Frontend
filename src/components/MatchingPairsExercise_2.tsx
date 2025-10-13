@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAppContext } from "../AppContext";
-import { speakSmartAsync, cancelSpeak } from "../utils/ttsUtils";
+import { speakSmart } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
 interface Phrase {
@@ -90,27 +90,18 @@ export default function MatchingPairsExercise({
         return;
       }
       if (first.pairId === second.pairId && first.type !== second.type) {
-        // ✅ async wrapper для await
-        (async () => {
-          await new Promise((r) => setTimeout(r, 600));
+        setTimeout(() => {
           setMatched((m) => [...m, first.id, second.id]);
           setOpened([]);
+          setLock(false);
 
           const phraseCard = [first, second].find((c) => c.type === "phrase");
           if (phraseCard) {
-            try {
-              await speakSmartAsync(phraseCard.content, {
-                lang: learningLanguage?.code || "de-DE",
-              });
-            } catch {
-              // ignore TTS errors
-            }
+            speakSmart(phraseCard.content, {
+              lang: learningLanguage?.code || "de-DE",
+            });
           }
-
-          // ✅ мінімальна пауза після озвучення
-          await new Promise((r) => setTimeout(r, 500));
-          setLock(false);
-        })();
+        }, 600);
       } else {
         setTimeout(() => {
           setOpened([]);
@@ -130,12 +121,6 @@ export default function MatchingPairsExercise({
       }, 700);
     }
   }, [matched, cards, isFinished, onComplete]);
-
-  useEffect(() => {
-    return () => {
-      cancelSpeak(); // ✅ cleanup TTS при unmount
-    };
-  }, []);
 
   function handleCardClick(id: string) {
     if (lock) return;

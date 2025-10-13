@@ -435,27 +435,6 @@ export function speakSmart(text: string, opts?: SpeakOptions): void {
   void speakInternal(text, opts);
 }
 
-/** Promise-версія speakSmart для чекання завершення озвучення */
-export async function speakSmartAsync(
-  text: string,
-  opts?: SpeakOptions
-): Promise<void> {
-  if (!text || !text.trim()) return;
-  return new Promise((resolve, reject) => {
-    speakInternal(text, {
-      ...opts,
-      onEnd: () => {
-        opts?.onEnd?.();
-        resolve();
-      },
-      onError: () => {
-        opts?.onError?.();
-        reject();
-      },
-    });
-  });
-}
-
 /** Допоміжне: чи warmed */
 export function isLangWarmed(lang?: string): boolean {
   if (!lang) return false;

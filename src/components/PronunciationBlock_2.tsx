@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAppContext } from "../AppContext";
-import { speakSmart, cancelSpeak } from "../utils/ttsUtils";
+import { speakSmart } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
 interface Phrase {
@@ -137,7 +137,7 @@ export default function PronunciationBlock({
 
   useEffect(() => {
     return () => {
-      cancelSpeak(); // ✅ централізований cleanup
+      window.speechSynthesis.cancel();
       setRecordedBlob(null);
       setIsRecording(false);
     };
