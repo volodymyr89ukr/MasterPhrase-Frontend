@@ -37,7 +37,6 @@
   "data_not_found": "Egzersiz verisi bulunamadı!",
   "congratulations_finished": "Tebrikler! Tüm soruları ve egzersizleri tamamladınız!",
   "start_over": "Baştan başla",
-  "great_find_phrases": "Harika! Şimdi ifadeleri ve çevirilerini bulun.",
   "great_match_right_answer": "Harika! Şimdi doğru cevabı seç.",
   "back": "← Geri",
   "close": "Kapat",
@@ -116,5 +115,9 @@
   "check": "Kontrol et",
   "hint": "İpucu",
   "skip": "Atla",
-  "clear": "Temizle"
+  "clear": "Temizle",
+  "great_find_phrases": "Harika! Şimdi ifadeleri ve çevirilerini bulun.",
+  "great_make_phrase": "Harika! Şimdi kelimelerden ifadeler oluşturun.",
+  "great_pronunciation": "Mükemmel! Şimdi ifadeleri yüksek sesle tekrarlayın.",
+  "great_writing": "Süper! Şimdi ifadelerdeki kelimeleri yazın."
 }

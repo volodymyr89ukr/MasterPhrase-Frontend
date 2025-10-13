@@ -37,7 +37,6 @@
   "data_not_found": "Données de l'exercice introuvables !",
   "congratulations_finished": "Félicitations ! Vous avez terminé toutes les questions et exercices !",
   "start_over": "Recommencer",
-  "great_find_phrases": "Super ! Ensuite — trouvez les phrases et leurs traductions.",
   "great_match_right_answer": "Super ! Maintenant, choisis la bonne réponse.",
   "back": "← Retour",
   "close": "Fermer",
@@ -116,5 +115,9 @@
   "check": "Vérifier",
   "hint": "Indice",
   "skip": "Passer",
-  "clear": "Effacer"
+  "clear": "Effacer",
+  "great_find_phrases": "Génial ! Maintenant, trouvez les phrases et leurs traductions.",
+  "great_make_phrase": "Génial ! Maintenant, assemblez les phrases à partir des mots.",
+  "great_pronunciation": "Excellent ! Maintenant, répétez les phrases à voix haute.",
+  "great_writing": "Super ! Maintenant, écrivez les mots des phrases."
 }

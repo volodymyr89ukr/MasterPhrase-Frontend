@@ -126,7 +126,7 @@ export default function MatchingPairsExercise({
       (async () => {
         await new Promise((r) => setTimeout(r, 700)); // анімація
         setIsFinished(true);
-        await new Promise((r) => setTimeout(r, 2500)); // показ результату
+        await new Promise((r) => setTimeout(r, 1500)); // показ результату
         // TTS уже завершено в попередньому useEffect (рядок 115)
         if (onComplete) onComplete();
       })();

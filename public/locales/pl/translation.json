@@ -37,7 +37,6 @@
   "data_not_found": "Nie znaleziono danych ćwiczenia!",
   "congratulations_finished": "Gratulacje! Ukończyłeś wszystkie pytania i ćwiczenia!",
   "start_over": "Zacznij od nowa",
-  "great_find_phrases": "Świetnie! Teraz znajdź frazy i ich tłumaczenia.",
   "great_match_right_answer": "Świetnie! Teraz wybierz poprawną odpowiedź.",
   "back": "← Wstecz",
   "close": "Zamknij",
@@ -116,5 +115,9 @@
   "check": "Sprawdź",
   "hint": "Podpowiedź",
   "skip": "Pomiń",
-  "clear": "Wyczyść"
+  "clear": "Wyczyść",
+  "great_find_phrases": "Świetnie! Teraz znajdź zwroty i ich tłumaczenia.",
+  "great_make_phrase": "Świetnie! Teraz ułóż zwroty ze słów.",
+  "great_pronunciation": "Doskonale! Teraz powtórz zwroty na głos.",
+  "great_writing": "Super! Teraz napisz słowa ze zwrotów."
 }

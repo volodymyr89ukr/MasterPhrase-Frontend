@@ -37,7 +37,6 @@
   "data_not_found": "A gyakorlat adatai nem találhatók!",
   "congratulations_finished": "Gratulálunk! Minden kérdést és gyakorlatot teljesített!",
   "start_over": "Újrakezdés",
-  "great_find_phrases": "Nagyszerű! Most keresse meg a kifejezéseket és azok fordításait.",
   "great_match_right_answer": "Nagyszerű! Most válassza ki a helyes választ.",
   "back": "← Vissza",
   "close": "Bezárás",
@@ -117,5 +116,9 @@
   "check": "Ellenőrzés",
   "hint": "Segítség",
   "skip": "Kihagyás",
-  "clear": "Törlés"
+  "clear": "Törlés",
+  "great_find_phrases": "Nagyszerű! Most keresd meg a kifejezéseket és a fordításukat.",
+  "great_make_phrase": "Nagyszerű! Most állítsd össze a kifejezéseket a szavakból.",
+  "great_pronunciation": "Kiváló! Most ismételd meg a kifejezéseket hangosan.",
+  "great_writing": "Szuper! Most írd le a szavakat a kifejezésekből."
 }

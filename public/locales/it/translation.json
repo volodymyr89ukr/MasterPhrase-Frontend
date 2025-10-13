@@ -37,7 +37,6 @@
   "data_not_found": "Dati esercizio non trovati!",
   "congratulations_finished": "Congratulazioni! Hai completato tutte le domande e gli esercizi!",
   "start_over": "Ricominciamo",
-  "great_find_phrases": "Ottimo! Ora trova le frasi e le loro traduzioni.",
   "great_match_right_answer": "Ottimo! Ora scegli la risposta giusta.",
   "back": "← Indietro",
   "close": "Chiudi",
@@ -116,5 +115,9 @@
   "check": "Controlla",
   "hint": "Suggerimento",
   "skip": "Salta",
-  "clear": "Cancella"
+  "clear": "Cancella",
+  "great_find_phrases": "Ottimo! Ora trova le frasi e le loro traduzioni.",
+  "great_make_phrase": "Ottimo! Ora componi le frasi con le parole.",
+  "great_pronunciation": "Eccellente! Ora ripeti le frasi ad alta voce.",
+  "great_writing": "Super! Ora scrivi le parole delle frasi."
 }
