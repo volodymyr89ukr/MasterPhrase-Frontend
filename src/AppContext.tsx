@@ -60,14 +60,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     pauseBase: 1,
   });
 
-  // ✅ Кількість фраз для переходу між блоками (default: 6)
+  // ✅ Кількість фраз для переходу між блоками (default: 4)
   const [poolSize, setPoolSize] = useState<number>(() => {
     try {
       const raw = localStorage.getItem("mp_pool_size");
-      const val = raw ? parseInt(raw, 10) : 6;
-      return val >= 3 && val <= 6 ? val : 6;
+      const val = raw ? parseInt(raw, 10) : 4;
+      return val >= 3 && val <= 6 ? val : 4;
     } catch {
-      return 6;
+      return 4;
     }
   });
 
