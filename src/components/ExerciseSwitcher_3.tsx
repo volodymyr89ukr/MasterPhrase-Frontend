@@ -6,7 +6,6 @@ import PronunciationBlock from "./PronunciationBlock";
 import WritingExercise from "./WritingExercise";
 import { useTranslation } from "react-i18next";
 import { cancelSpeak } from "../utils/ttsUtils";
-import { useAppContext } from "../AppContext";
 
 export interface Phrase extends Question {
   id: number;
@@ -55,7 +54,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   title,
 }) => {
   const { t } = useTranslation();
-  const { poolSize } = useAppContext();
 
   if (!Array.isArray(exerciseData) || exerciseData.length === 0) {
     return (
@@ -137,7 +135,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     let pool = [...matchingPool];
 
     if (isCorrect) {
-      pool = deduplicatePhrases([{ ...currQ }, ...pool]).slice(0, poolSize);
+      pool = deduplicatePhrases([{ ...currQ }, ...pool]).slice(0, 6);
       updatedQuestions.splice(currentIdx, 1);
 
       if (updatedQuestions.length === 0) {
@@ -167,7 +165,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setCurrentIdx(updatedIdx);
     setMatchingPool(pool);
 
-    if (pool.length >= poolSize) {
+    if (pool.length >= 6) {
       setMakePhraseIdx(0);
       setMode("transition-to-make-phrase");
       return;

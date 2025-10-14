@@ -115,14 +115,8 @@ export default function Block1({
   const navigate = useNavigate();
   const { thousandId, setId } = useParams();
   const location = useLocation();
-  const {
-    interfaceLanguage,
-    knownWordIds,
-    toggleKnownWord,
-    isWordKnown,
-    poolSize,
-    setPoolSize,
-  } = useAppContext();
+  const { interfaceLanguage, knownWordIds, toggleKnownWord, isWordKnown } =
+    useAppContext();
 
   // State
   const [thousands, setThousands] = useState<Thousand[]>([]);
@@ -642,36 +636,6 @@ export default function Block1({
         )}
         {activeTab === "exercises" && (
           <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
-            {/* ✅ Налаштування poolSize */}
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <span className="text-sm font-semibold text-blue-900">
-                  {t(
-                    "pool_size_setting",
-                    "Кількість фраз для переходу між блоками:"
-                  )}
-                </span>
-                <div className="flex items-center gap-3">
-                  {[3, 4, 5, 6].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => {
-                        const { setPoolSize } = useAppContext();
-                        setPoolSize(size);
-                      }}
-                      className={`px-4 py-2 rounded-lg font-semibold border-2 transition ${
-                        poolSize === size
-                          ? "bg-blue-500 text-white border-blue-600"
-                          : "bg-white text-blue-900 border-blue-300 hover:bg-blue-100"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </label>
-            </div>
-
             <div className="flex-1">
               {loadingExercises ? (
                 <div className="text-gray-400 text-center">{t("loading")}</div>

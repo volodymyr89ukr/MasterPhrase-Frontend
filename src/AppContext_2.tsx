@@ -35,10 +35,6 @@ interface AppContextProps {
   setKnownWordIds: (ids: number[], langCode?: string) => void;
   toggleKnownWord: (id: number, langCode?: string) => void;
   isWordKnown: (id: number, langCode?: string) => boolean;
-
-  // ✅ Кількість фраз для переходу між блоками (3-6)
-  poolSize: number;
-  setPoolSize: (size: number) => void;
 }
 
 const STORAGE_KEY_KNOWN = "mp_known_words_by_lang_v1";
@@ -59,26 +55,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     readingRate: 0.85,
     pauseBase: 1,
   });
-
-  // ✅ Кількість фраз для переходу між блоками (default: 6)
-  const [poolSize, setPoolSize] = useState<number>(() => {
-    try {
-      const raw = localStorage.getItem("mp_pool_size");
-      const val = raw ? parseInt(raw, 10) : 6;
-      return val >= 3 && val <= 6 ? val : 6;
-    } catch {
-      return 6;
-    }
-  });
-
-  // Зберігати poolSize в localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("mp_pool_size", String(poolSize));
-    } catch {
-      // ignore
-    }
-  }, [poolSize]);
 
   // Стан відомих слів: Record<langCodeLower, number[]>
   const [knownWordIdsByLang, setKnownWordIdsByLang] = useState<
@@ -169,8 +145,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         setKnownWordIds,
         toggleKnownWord,
         isWordKnown,
-        poolSize,
-        setPoolSize,
       }}
     >
       {children}

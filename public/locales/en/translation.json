@@ -120,5 +120,6 @@
   "great_find_phrases": "Great! Next — find phrases and their translations.",
   "great_make_phrase": "Great! Now assemble phrases from words.",
   "great_pronunciation": "Excellent! Now repeat phrases aloud.",
-  "great_writing": "Super! Now write words from phrases."
+  "great_writing": "Super! Now write words from phrases.",
+  "pool_size_setting": "Number of phrases for transition between blocks:"
 }
