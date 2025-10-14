@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import Block1 from "./components/Block1";
 import LoginModal from "./components/LoginModal";
 import LanguageSelection from "./components/LanguageSelection";
-import { AppProvider, useAppContext } from "./AppContext";
+import { AppProvider } from "./AppContext";
+import { useAuth } from "./contexts/AuthContext";
+import { useSettings } from "./contexts/SettingsContext";
 import { User } from "./types";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
@@ -12,14 +14,13 @@ function AppContent() {
   const { t } = useTranslation();
   const [showLogin, setShowLogin] = useState(false);
   const [showLanguageSelection, setShowLanguageSelection] = useState(false);
+  const { user, setUser } = useAuth();
   const {
-    user,
-    setUser,
     learningLanguage,
     setLearningLanguage,
     interfaceLanguage,
     setInterfaceLanguage,
-  } = useAppContext();
+  } = useSettings();
 
   useEffect(() => {
     const token = localStorage.getItem("token");

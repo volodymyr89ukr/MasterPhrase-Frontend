@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useAppContext } from "../AppContext";
+import { useSettings, Language } from "../contexts/SettingsContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
-
-interface Language {
-  id: number;
-  code: string;
-  name: string;
-}
 
 interface LanguageSelectionProps {
   onClose?: () => void;
@@ -15,13 +10,13 @@ interface LanguageSelectionProps {
 export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
   const { t } = useTranslation();
 
+  const { user } = useAuth();
   const {
-    user,
     interfaceLanguage,
     setInterfaceLanguage,
     learningLanguage,
     setLearningLanguage,
-  } = useAppContext();
+  } = useSettings();
 
   const [interfaceLanguages, setInterfaceLanguages] = useState<Language[]>([]);
   const [learningLanguages, setLearningLanguages] = useState<Language[]>([]);

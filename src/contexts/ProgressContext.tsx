@@ -5,56 +5,26 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-import { User } from "./types";
-import i18n from "./i18n";
-import { preloadTTS } from "./utils/ttsUtils";
+import { useSettings } from "./SettingsContext";
 
-export interface Language {
-  id: number;
-  code: string;
-  name: string;
-}
+const STORAGE_KEY_KNOWN = "mp_known_words_by_lang_v1";
 
-interface TTSSettings {
-  readingRate: number;
-  pauseBase: number;
-}
-
-interface AppContextProps {
-  user: User | null;
-  setUser: (u: User | null) => void;
-  interfaceLanguage: Language | null;
-  setInterfaceLanguage: (l: Language | null) => void;
-  learningLanguage: Language | null;
-  setLearningLanguage: (l: Language | null) => void;
-  ttsSettings: TTSSettings;
-  setTtsSettings: (s: TTSSettings) => void;
-
-  // Відомі слова, скоуплені по мові навчання
+interface ProgressContextProps {
   knownWordIds: number[]; // для поточної learningLanguage.code
   setKnownWordIds: (ids: number[], langCode?: string) => void;
   toggleKnownWord: (id: number, langCode?: string) => void;
   isWordKnown: (id: number, langCode?: string) => boolean;
+  knownWordIdsSet: Set<number>; // ✅ O(1) lookup
 }
 
-const STORAGE_KEY_KNOWN = "mp_known_words_by_lang_v1";
+const ProgressContext = createContext<ProgressContextProps | undefined>(
+  undefined
+);
 
-const AppContext = createContext<AppContextProps | undefined>(undefined);
-
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
+export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [interfaceLanguage, setInterfaceLanguage] = useState<Language | null>(
-    null
-  );
-  const [learningLanguage, setLearningLanguage] = useState<Language | null>(
-    null
-  );
-  const [ttsSettings, setTtsSettings] = useState<TTSSettings>({
-    readingRate: 0.85,
-    pauseBase: 1,
-  });
+  const { learningLanguage } = useSettings();
 
   // Стан відомих слів: Record<langCodeLower, number[]>
   const [knownWordIdsByLang, setKnownWordIdsByLang] = useState<
@@ -69,20 +39,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       return {};
     }
   });
-
-  // Синхронізуємо зміну мови інтерфейсу з i18next
-  useEffect(() => {
-    if (interfaceLanguage?.code) {
-      i18n.changeLanguage(interfaceLanguage.code);
-    }
-  }, [interfaceLanguage]);
-
-  // Тихий preload TTS для навчальної мови при зміні
-  useEffect(() => {
-    if (learningLanguage?.code) {
-      preloadTTS(learningLanguage.code);
-    }
-  }, [learningLanguage]);
 
   // Зберігаємо knownWordIdsByLang у localStorage
   useEffect(() => {
@@ -101,6 +57,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   const knownWordIds = useMemo(() => {
     return currentLang ? knownWordIdsByLang[currentLang] || [] : [];
   }, [knownWordIdsByLang, currentLang]);
+
+  // ✅ Set для O(1) lookup
+  const knownWordIdsSet = useMemo(() => new Set(knownWordIds), [knownWordIds]);
 
   const setKnownWordIds = (ids: number[], langCode?: string) => {
     const lang = (langCode || currentLang || "").toLowerCase();
@@ -130,30 +89,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     return arr.includes(id);
   };
 
+  const value = useMemo(
+    () => ({
+      knownWordIds,
+      setKnownWordIds,
+      toggleKnownWord,
+      isWordKnown,
+      knownWordIdsSet,
+    }),
+    [knownWordIds, knownWordIdsSet] // eslint-disable-line react-hooks/exhaustive-deps
+  );
+
   return (
-    <AppContext.Provider
-      value={{
-        user,
-        setUser,
-        interfaceLanguage,
-        setInterfaceLanguage,
-        learningLanguage,
-        setLearningLanguage,
-        ttsSettings,
-        setTtsSettings,
-        knownWordIds,
-        setKnownWordIds,
-        toggleKnownWord,
-        isWordKnown,
-      }}
-    >
+    <ProgressContext.Provider value={value}>
       {children}
-    </AppContext.Provider>
+    </ProgressContext.Provider>
   );
 };
 
-export function useAppContext() {
-  const ctx = useContext(AppContext);
-  if (!ctx) throw new Error("useAppContext must be used within AppProvider");
+export function useProgress() {
+  const ctx = useContext(ProgressContext);
+  if (!ctx) throw new Error("useProgress must be used within ProgressProvider");
   return ctx;
 }

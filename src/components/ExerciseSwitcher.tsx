@@ -6,7 +6,7 @@ import PronunciationBlock from "./PronunciationBlock";
 import WritingExercise from "./WritingExercise";
 import { useTranslation } from "react-i18next";
 import { cancelSpeak } from "../utils/ttsUtils";
-import { useAppContext } from "../AppContext";
+import { useSettings } from "../contexts/SettingsContext";
 
 export interface Phrase extends Question {
   id: number;
@@ -55,7 +55,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   title,
 }) => {
   const { t } = useTranslation();
-  const { poolSize } = useAppContext();
+  const { poolSize } = useSettings();
 
   if (!Array.isArray(exerciseData) || exerciseData.length === 0) {
     return (

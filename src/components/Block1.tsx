@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 import BackButton from "./BackButton";
 import ExerciseBlockContainer from "./ExerciseBlockContainer";
 import TextSpeechHighlighter from "./TextSpeechHighlighter";
-import { useAppContext } from "../AppContext";
+import { useSettings } from "../contexts/SettingsContext";
+import { useProgress } from "../contexts/ProgressContext";
 
 interface Thousand {
   id: number;
@@ -115,14 +116,10 @@ export default function Block1({
   const navigate = useNavigate();
   const { thousandId, setId } = useParams();
   const location = useLocation();
-  const {
-    interfaceLanguage,
-    knownWordIds,
-    toggleKnownWord,
-    isWordKnown,
-    poolSize,
-    setPoolSize,
-  } = useAppContext();
+  const { interfaceLanguage } = useSettings();
+  const { knownWordIds, toggleKnownWord, isWordKnown, knownWordIdsSet } =
+    useProgress();
+  const { poolSize, setPoolSize } = useSettings();
 
   // State
   const [thousands, setThousands] = useState<Thousand[]>([]);
