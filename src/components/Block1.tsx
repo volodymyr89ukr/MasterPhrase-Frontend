@@ -655,10 +655,7 @@ export default function Block1({
                   {[3, 4, 5, 6].map((size) => (
                     <button
                       key={size}
-                      onClick={() => {
-                        const { setPoolSize } = useAppContext();
-                        setPoolSize(size);
-                      }}
+                      onClick={() => setPoolSize(size)}
                       className={`px-4 py-2 rounded-lg font-semibold border-2 transition ${
                         poolSize === size
                           ? "bg-blue-500 text-white border-blue-600"
