@@ -119,5 +119,6 @@
   "great_find_phrases": "Ótimo! Agora, encontre as frases e suas traduções.",
   "great_make_phrase": "Ótimo! Agora, monte as frases com as palavras.",
   "great_pronunciation": "Excelente! Agora, repita as frases em voz alta.",
-  "great_writing": "Super! Agora, escreva as palavras das frases."
+  "great_writing": "Super! Agora, escreva as palavras das frases.",
+  "pool_size_setting": "Número de frases para a transição entre blocos:"
 }

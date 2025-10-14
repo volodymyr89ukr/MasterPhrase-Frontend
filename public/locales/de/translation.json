@@ -119,5 +119,6 @@
   "great_find_phrases": "Super! Als Nächstes – finde die Sätze und ihre Übersetzungen.",
   "great_make_phrase": "Super! Bilde jetzt Sätze aus den Wörtern.",
   "great_pronunciation": "Ausgezeichnet! Wiederhole nun die Sätze laut.",
-  "great_writing": "Klasse! Schreibe jetzt die Wörter aus den Sätzen."
+  "great_writing": "Klasse! Schreibe jetzt die Wörter aus den Sätzen.",
+  "pool_size_setting": "Anzahl der Sätze für den Übergang zwischen den Blöcken:"
 }
