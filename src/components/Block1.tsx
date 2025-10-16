@@ -331,7 +331,7 @@ export default function Block1({
   // 1. Головна: вибір тисяч
   if (!thousandId) {
     return (
-      <div className="p-4 max-w-3xl mx-auto">
+      <div className="w-full h-full overflow-y-auto p-4 max-w-3xl mx-auto">
         <h2 className="text-xl font-bold mb-4">{t("select_thousand_words")}</h2>
         {loadingThousands ? (
           <div>{t("loading")}</div>
@@ -369,7 +369,7 @@ export default function Block1({
   // 2. Вибір комплекту в тисячі
   if (thousandId && !setId) {
     return (
-      <div className="p-4 max-w-3xl mx-auto">
+      <div className="w-full h-full overflow-y-auto p-4 max-w-3xl mx-auto">
         <div className="flex items-center gap-2 mb-4">
           <BackButton to="/" />
           <h2 className="text-xl font-bold">{t("select_word_set")}</h2>
@@ -407,7 +407,7 @@ export default function Block1({
     // Exercise details view
     if (selectedExerciseId && exerciseDetails) {
       return (
-        <div className="p-2 sm:p-4 w-full max-w-3xl min-w-[360px] mx-auto flex flex-col min-h-[60vh] justify-between">
+        <div className="w-full h-full overflow-y-auto p-2 sm:p-4 max-w-3xl min-w-[360px] mx-auto flex flex-col justify-between">
           <div className="flex justify-end mb-6">
             <button
               onClick={handleRequestExitExercise}
@@ -446,7 +446,7 @@ export default function Block1({
 
     // --- Tabs unified container ---
     return (
-      <div className="p-0 sm:p-4 w-full max-w-3xl min-w-[320px] mx-auto">
+      <div className="w-full h-full overflow-y-auto p-0 sm:p-4 max-w-3xl min-w-[320px] mx-auto">
         <div className="flex items-center gap-2 mb-4 px-4 pt-4">
           <BackButton to={`/thousand/${thousandId}`} />
           <div className="flex gap-1 sm:gap-2 bg-gray-100 rounded-lg p-1 shadow-sm">

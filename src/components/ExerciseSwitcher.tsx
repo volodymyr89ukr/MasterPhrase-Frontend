@@ -209,7 +209,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   if (mode === "finished" || fullyCompleted) {
     return (
-      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
         <div className="max-w-lg w-full p-6 rounded-xl shadow bg-white text-center">
           <div className="text-4xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold mb-4">
@@ -237,7 +237,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   // Transition екрани
   if (mode === "transition-to-make-phrase") {
     return (
-      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
         <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
           <div className="text-3xl mb-4 text-green-600">✔️</div>
           <div className="text-xl font-bold mb-2">
@@ -250,7 +250,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   if (mode === "transition-to-pairs") {
     return (
-      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
         <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
           <div className="text-3xl mb-4 text-green-600">✔️</div>
           <div className="text-xl font-bold mb-2">
@@ -266,7 +266,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   if (mode === "transition-to-pronunciation") {
     return (
-      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
         <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
           <div className="text-3xl mb-4 text-green-600">✔️</div>
           <div className="text-xl font-bold mb-2">
@@ -279,7 +279,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   if (mode === "transition-to-writing") {
     return (
-      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
         <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
           <div className="text-3xl mb-4 text-green-600">✔️</div>
           <div className="text-xl font-bold mb-2">
@@ -292,7 +292,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   if (mode === "transition-back-to-matching") {
     return (
-      <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
         <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
           <div className="text-3xl mb-4 text-green-600">✔️</div>
           <div className="text-xl font-bold mb-2">
@@ -307,7 +307,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }
 
   return (
-    <div className="fullscreen-fix bg-blue-50 flex flex-col">
+    <div className="w-full h-full bg-blue-50 flex flex-col overflow-y-auto">
       {title && (
         <div className="text-center text-lg font-bold mt-2 mb-1 text-blue-700">
           {title}
@@ -354,7 +354,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
           />
         )}
         {mode === "pairs" && matchingPool.length < 2 && (
-          <div className="fullscreen-fix flex flex-col items-center justify-center bg-blue-50">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
             <div className="max-w-lg w-full p-6 rounded-xl shadow bg-white text-center">
               <div className="text-4xl mb-4">🎉</div>
               <h2 className="text-2xl font-bold mb-4">

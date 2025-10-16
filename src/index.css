@@ -1,34 +1,29 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ✅ Глобальні стилі для запобігання зайвому скролу */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: #f0f6ff;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 @media (max-width: 359px) {
   .explanation-xs-font {
     font-size: 0.9rem !important;
   }
-}
-/* Динамічний viewport для мобільних (обхід 100vh бага) */
-:root {
-  --app-vh: 100vh;
-}
-.fullscreen-fix {
-  height: calc(var(--app-vh, 1vh) * 100);
-  min-height: calc(var(--app-vh, 1vh) * 100);
-}
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  overscroll-behavior-y: contain;
-  background: #f0f6ff;
-  overflow-x: hidden;
-}
-
-body {
-  overscroll-behavior-y: contain; /* Не дозволяє сторінці прокручуватись зайве */
-  background: #f0f6ff; /* Або той самий колір, що у Tailwind */
 }
 
 @keyframes successPulse {
@@ -52,6 +47,7 @@ body {
 .animate-successPulse {
   animation: successPulse 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 @keyframes errorPulse {
   0% {
     background: #fff;
