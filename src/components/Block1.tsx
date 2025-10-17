@@ -95,7 +95,7 @@ function ConfirmModal({
             {t("cancel")}
           </button>
           <button
-            className="px-4 py-2 rounded bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 border border-blue-200"
+            className="px-4 py-2 rounded bg-blue-100 text-muted-foreground font-semibold hover:bg-blue-200 border border-input"
             onClick={onConfirm}
           >
             {t("exit")}
@@ -347,7 +347,7 @@ export default function Block1({
                   renderThousandItem(th)
                 ) : (
                   <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition select-none p-3">
-                    <div className="text-lg font-bold text-blue-700 text-center">
+                    <div className="text-lg font-bold text-muted-foreground text-center">
                       {th.name}
                     </div>
                     {th.description && (
@@ -388,7 +388,7 @@ export default function Block1({
                   renderWordSetItem(ws)
                 ) : (
                   <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition select-none p-3">
-                    <div className="text-lg font-bold text-blue-700 text-center">
+                    <div className="text-lg font-bold text-muted-foreground text-center">
                       {ws.name || ws.word_set}
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export default function Block1({
           <div className="flex justify-end mb-6">
             <button
               onClick={handleRequestExitExercise}
-              className="px-3 py-2 rounded-xl bg-blue-100 text-blue-700 font-semibold hover:bg-blue-200 border border-blue-200 shadow text-sm"
+              className="px-3 py-2 rounded-xl bg-blue-100 text-muted-foreground font-semibold hover:bg-blue-200 border border-input shadow text-sm"
             >
               {t("finish_exercise")}
             </button>
@@ -456,8 +456,8 @@ export default function Block1({
                 className={`px-3 py-1 rounded-md text-base font-semibold transition-colors duration-200
                   ${
                     activeTab === tab
-                      ? "bg-blue-500 text-white shadow"
-                      : "bg-transparent text-blue-700 hover:bg-blue-100"
+                      ? "bg-background0 text-white shadow"
+                      : "bg-transparent text-muted-foreground hover:bg-blue-100"
                   }
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
                 `}
@@ -487,8 +487,8 @@ export default function Block1({
                   className={`px-3 py-1 rounded-lg text-sm font-semibold border shadow-sm transition
                     ${
                       markKnownMode
-                        ? "bg-blue-500 text-white border-blue-600"
-                        : "bg-gray-100 text-blue-900 border-blue-100 hover:bg-blue-50"
+                        ? "bg-background0 text-white border-blue-600"
+                        : "bg-gray-100 text-foreground border-blue-100 hover:bg-background"
                     }`}
                   title={t(
                     "toggle_mark_known_mode",
@@ -531,7 +531,7 @@ export default function Block1({
                           "px-3 py-2 rounded text-center shadow-sm border flex flex-col items-center justify-center min-h-[56px] select-none transition",
                           known
                             ? "bg-gray-200 text-gray-500 border-gray-300 opacity-80"
-                            : "bg-blue-50 text-blue-900 border-blue-100",
+                            : "bg-background text-foreground border-blue-100",
                           clickable
                             ? "cursor-pointer hover:bg-blue-100"
                             : "cursor-default",
@@ -640,9 +640,9 @@ export default function Block1({
         {activeTab === "exercises" && (
           <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
             {/* ✅ Налаштування poolSize */}
-            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-input">
               <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <span className="text-sm font-semibold text-blue-900">
+                <span className="text-sm font-semibold text-foreground">
                   {t(
                     "pool_size_setting",
                     "Кількість фраз для переходу між блоками:"
@@ -655,8 +655,8 @@ export default function Block1({
                       onClick={() => setPoolSize(size)}
                       className={`px-4 py-2 rounded-lg font-semibold border-2 transition ${
                         poolSize === size
-                          ? "bg-blue-500 text-white border-blue-600"
-                          : "bg-white text-blue-900 border-blue-300 hover:bg-blue-100"
+                          ? "bg-primary text-white border-blue-600"
+                          : "bg-white text-foreground border-border hover:bg-blue-100"
                       }`}
                     >
                       {size}
@@ -674,7 +674,7 @@ export default function Block1({
                   {exercisesMeta.map((ex) => (
                     <li
                       key={ex.id}
-                      className="px-4 py-2 rounded border bg-blue-50 text-blue-900 shadow text-left cursor-pointer hover:bg-blue-100"
+                      className="px-4 py-2 rounded border bg-blue-50 text-foreground shadow text-left cursor-pointer hover:bg-blue-100"
                       onClick={() => handleSelectExercise(ex.id)}
                     >
                       {ex.exercise_name || ex.name || ex.title || ex.id}

@@ -1,5 +1,14 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/Card";
 
 interface LoginModalProps {
   open: boolean;
@@ -152,10 +161,10 @@ export default function LoginModal({
 
   // --- RENDER FORM ---
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white w-full max-w-xs mx-auto rounded-2xl shadow-xl p-6 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 overflow-y-auto p-4">
+      <Card className="w-full max-w-md relative animate-fade-in">
         <button
-          className="absolute right-2 top-2 text-gray-400 hover:text-gray-700 text-2xl"
+          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground text-2xl transition-colors focus-ring rounded"
           onClick={onClose}
           aria-label={t("close")}
           tabIndex={0}
@@ -164,204 +173,213 @@ export default function LoginModal({
           ×
         </button>
 
-        <h2 className="text-xl font-bold mb-3 text-center">
-          {forgot
-            ? t("password_recovery")
-            : isRegister
-            ? t("registration")
-            : t("login")}
-        </h2>
+        <CardHeader>
+          <CardTitle className="text-center">
+            {forgot
+              ? t("password_recovery")
+              : isRegister
+              ? t("registration")
+              : t("login")}
+          </CardTitle>
+          {!forgot && (
+            <CardDescription className="text-center">
+              {isRegister
+                ? t("register_subtitle", "Створіть обліковий запис")
+                : t("login_subtitle", "Увійдіть, щоб продовжити навчання")}
+            </CardDescription>
+          )}
+        </CardHeader>
 
-        {forgot ? (
-          <form onSubmit={handleForgotSubmit} className="flex flex-col gap-3">
-            {step === 1 ? (
-              <>
-                <input
+        <CardContent>
+          {forgot ? (
+            <form onSubmit={handleForgotSubmit} className="flex flex-col gap-4">
+              {step === 1 ? (
+                <>
+                  <Input
+                    type="email"
+                    name="email"
+                    placeholder={t("email")}
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                    autoComplete="email"
+                    autoFocus
+                  />
+                  {info && (
+                    <div className="text-success text-sm text-center bg-success/10 p-2 rounded-md">
+                      {info}
+                    </div>
+                  )}
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t("wait") : t("send_code")}
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {info && (
+                    <div className="text-success text-sm text-center bg-success/10 p-2 rounded-md">
+                      {info}
+                    </div>
+                  )}
+                  <Input
+                    type="text"
+                    name="token"
+                    placeholder={t("enter_code", "Введіть код")}
+                    value={form.token}
+                    onChange={handleChange}
+                    required
+                    autoFocus
+                  />
+                  <Input
+                    type="password"
+                    name="password"
+                    placeholder={t("new_password", "Новий пароль")}
+                    value={form.password}
+                    onChange={handleChange}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                  />
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? t("wait") : t("change_password")}
+                  </Button>
+                </>
+              )}
+              {error && (
+                <div className="text-destructive text-sm text-center bg-destructive/10 p-2 rounded-md">
+                  {error}
+                </div>
+              )}
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => {
+                    setForgot(false);
+                    setStep(1);
+                    setInfo("");
+                    setForm({
+                      email: "",
+                      password: "",
+                      username: "",
+                      token: "",
+                    });
+                    setError("");
+                  }}
+                  className="text-sm"
+                >
+                  {t("back_to_login")}
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <Input
                   type="email"
                   name="email"
                   placeholder={t("email")}
                   value={form.email}
                   onChange={handleChange}
                   required
-                  className="p-2 rounded border w-full"
                   autoComplete="email"
                   autoFocus
                 />
-                {info && (
-                  <div className="text-green-600 text-sm text-center">
-                    {info}
-                  </div>
+                {isRegister && (
+                  <Input
+                    type="text"
+                    name="username"
+                    placeholder={t("username")}
+                    value={form.username}
+                    onChange={handleChange}
+                    required
+                    minLength={2}
+                    autoComplete="username"
+                  />
                 )}
-                <button
-                  type="submit"
-                  className="w-full py-2 rounded-xl font-semibold bg-blue-500 text-white mt-2"
-                  disabled={loading}
-                >
-                  {loading ? t("wait") : t("send_code")}
-                </button>
-              </>
-            ) : (
-              <>
-                {info && (
-                  <div className="text-green-600 text-sm text-center">
-                    {info}
-                  </div>
-                )}
-                <input
-                  type="text"
-                  name="token"
-                  placeholder={t("code_sent_info")}
-                  value={form.token}
-                  onChange={handleChange}
-                  className="p-2 rounded border w-full"
-                  required
-                  autoFocus
-                />
-                <input
+                <Input
                   type="password"
                   name="password"
                   placeholder={t("password")}
                   value={form.password}
                   onChange={handleChange}
-                  className="p-2 rounded border w-full"
                   required
-                  minLength={6}
-                  autoComplete="new-password"
+                  autoComplete={
+                    isRegister ? "new-password" : "current-password"
+                  }
                 />
-                <button
-                  type="submit"
-                  className="w-full py-2 rounded-xl font-semibold bg-blue-500 text-white mt-2"
-                  disabled={loading}
-                >
-                  {loading ? t("wait") : t("change_password")}
-                </button>
-              </>
-            )}
-            {error && (
-              <div className="text-red-600 text-sm text-center">{error}</div>
-            )}
-            <div className="text-center mt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setForgot(false);
-                  setStep(1);
-                  setInfo("");
-                  setForm({ email: "", password: "", username: "", token: "" });
-                  setError("");
-                }}
-                className="text-xs text-gray-500 hover:underline"
-              >
-                {t("back_to_login")}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input
-                type="email"
-                name="email"
-                placeholder={t("email")}
-                value={form.email}
-                onChange={handleChange}
-                required
-                className="p-2 rounded border w-full"
-                autoComplete="email"
-                autoFocus
-              />
-              {isRegister && (
-                <input
-                  type="text"
-                  name="username"
-                  placeholder={t("username")}
-                  value={form.username}
-                  onChange={handleChange}
-                  required
-                  minLength={2}
-                  className="p-2 rounded border w-full"
-                  autoComplete="username"
-                />
-              )}
-              <input
-                type="password"
-                name="password"
-                placeholder={t("password")}
-                value={form.password}
-                onChange={handleChange}
-                required
-                className="p-2 rounded border w-full"
-                autoComplete={isRegister ? "new-password" : "current-password"}
-              />
-              {error && (
-                <div className="text-red-600 text-sm text-center">{error}</div>
-              )}
-              <button
-                type="submit"
-                className={`w-full py-2 rounded-xl font-semibold bg-blue-500 text-white mt-2 ${
-                  loading
-                    ? "opacity-60 cursor-not-allowed"
-                    : "hover:bg-blue-600"
-                }`}
-                disabled={loading}
-              >
-                {loading ? t("wait") : isRegister ? t("register") : t("login")}
-              </button>
-            </form>
-            <div className="text-center mt-3 text-sm">
-              {isRegister ? (
-                <>
-                  {t("already_have_account")}{" "}
-                  <button
-                    className="text-blue-600 hover:underline"
-                    type="button"
-                    onClick={() => {
-                      setIsRegister(false);
-                      setError("");
-                    }}
-                  >
-                    {t("login")}
-                  </button>
-                </>
-              ) : (
-                <>
-                  {t("no_account")}{" "}
-                  <button
-                    className="text-blue-600 hover:underline"
-                    type="button"
-                    onClick={() => {
-                      setIsRegister(true);
-                      setError("");
-                    }}
-                  >
-                    {t("register")}
-                  </button>
-                  <br />
-                  <button
-                    className="text-blue-600 hover:underline mt-2"
-                    type="button"
-                    style={{ fontSize: "0.85em" }}
-                    onClick={() => {
-                      setForgot(true);
-                      setError("");
-                      setInfo("");
-                      setStep(1);
-                      setForm({
-                        email: "",
-                        password: "",
-                        username: "",
-                        token: "",
-                      });
-                    }}
-                  >
-                    {t("forgot_password")}
-                  </button>
-                </>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+                {error && (
+                  <div className="text-destructive text-sm text-center bg-destructive/10 p-2 rounded-md">
+                    {error}
+                  </div>
+                )}
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading
+                    ? t("wait")
+                    : isRegister
+                    ? t("register")
+                    : t("login")}
+                </Button>
+              </form>
+
+              <div className="text-center mt-4 text-sm space-y-2">
+                {isRegister ? (
+                  <p className="text-muted-foreground">
+                    {t("already_have_account")}{" "}
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto font-normal"
+                      type="button"
+                      onClick={() => {
+                        setIsRegister(false);
+                        setError("");
+                      }}
+                    >
+                      {t("login")}
+                    </Button>
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground">
+                      {t("no_account")}{" "}
+                      <Button
+                        variant="link"
+                        className="p-0 h-auto font-normal"
+                        type="button"
+                        onClick={() => {
+                          setIsRegister(true);
+                          setError("");
+                        }}
+                      >
+                        {t("register")}
+                      </Button>
+                    </p>
+                    <Button
+                      variant="link"
+                      className="p-0 h-auto font-normal text-xs"
+                      type="button"
+                      onClick={() => {
+                        setForgot(true);
+                        setError("");
+                        setInfo("");
+                        setStep(1);
+                        setForm({
+                          email: "",
+                          password: "",
+                          username: "",
+                          token: "",
+                        });
+                      }}
+                    >
+                      {t("forgot_password")}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

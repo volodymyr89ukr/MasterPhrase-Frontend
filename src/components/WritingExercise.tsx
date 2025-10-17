@@ -5,7 +5,7 @@ import React, {
   ChangeEvent,
   KeyboardEvent,
 } from "react";
-import { useAppContext } from "../AppContext";
+import { useSettings } from "../contexts/SettingsContext";
 import { speakSmartAsync, cancelSpeak } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
@@ -26,7 +26,7 @@ interface WritingExerciseProps {
 function getWordByIndex(str: string, idx: number): string {
   const words = str.split(/\s+/);
   if (idx < 1 || idx > words.length) return "";
-  return words[idx - 1].replace(/[.,?!;:"“”]/g, "");
+  return words[idx - 1].replace(/[.,?!;:"""]/g, "");
 }
 
 function maskWord(word: string): string {
@@ -65,7 +65,7 @@ export default function WritingExercise({
   onComplete,
 }: WritingExerciseProps) {
   const { t } = useTranslation();
-  const { learningLanguage } = useAppContext();
+  const { learningLanguage } = useSettings();
   const [currentIdx, setCurrentIdx] = useState(0);
   // index of current target within the normalized indices list
   const [targetPos, setTargetPos] = useState(0);
@@ -254,8 +254,8 @@ export default function WritingExercise({
 
   if (!phrases.length)
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50">
-        <div className="text-xl text-gray-700">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+        <div className="text-xl text-muted-foreground">
           {t("no_phrases_for_writing")}
         </div>
       </div>
@@ -263,7 +263,7 @@ export default function WritingExercise({
 
   if (completed)
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-blue-50">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-background">
         <div className="text-4xl mb-3">🎉</div>
         <div className="text-2xl font-bold mb-3">
           {t("writing_block_completed")}
@@ -278,7 +278,7 @@ export default function WritingExercise({
             setShowFixHint(false);
             if (onComplete) onComplete();
           }}
-          className="mt-2 py-3 px-8 rounded-2xl bg-blue-500 text-white text-lg font-semibold shadow hover:bg-blue-600 transition"
+          className="mt-2 py-3 px-8 rounded-2xl bg-primary text-primary-foreground text-lg font-semibold shadow hover:bg-primary/90 transition-colors"
         >
           {t("proceed_to_next_block")}
         </button>
@@ -490,15 +490,15 @@ export default function WritingExercise({
 
   const inputColorClass =
     inputStatus === "correct"
-      ? "border-green-400 bg-green-50"
+      ? "border-success bg-success/10"
       : inputStatus === "wrong"
-      ? "border-red-400 bg-red-50 animate-shake"
-      : "border-blue-300 bg-blue-50 focus:border-blue-500";
+      ? "border-destructive bg-destructive/10 animate-shake"
+      : "border-input bg-card focus:border-ring";
 
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-white flex flex-col items-center">
-        <div className="text-base sm:text-lg text-gray-600 italic text-center min-h-[2em]">
+      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
+        <div className="text-base sm:text-lg text-muted-foreground italic text-center min-h-[2em]">
           {obj.translation}
         </div>
         <div
@@ -531,7 +531,7 @@ export default function WritingExercise({
                 key={ch}
                 type="button"
                 aria-label={`Insert ${ch}`}
-                className="min-w-[40px] h-10 px-2 py-2 rounded-xl border bg-gray-100 hover:bg-blue-100 text-base md:text-lg font-semibold text-blue-900 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 select-none"
+                className="min-w-[40px] h-10 px-2 py-2 rounded-xl border bg-secondary hover:bg-accent text-base md:text-lg font-semibold text-secondary-foreground shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none transition-colors"
                 onClick={() => handleInsertChar(ch)}
               >
                 {ch}
@@ -543,7 +543,7 @@ export default function WritingExercise({
           <button
             onClick={handleHintPart}
             disabled={hintLevel >= 1}
-            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-gray-100 hover:bg-blue-100 text-base transition ${
+            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-colors ${
               hintLevel >= 1 ? "opacity-60 cursor-not-allowed" : ""
             }`}
           >
@@ -552,7 +552,7 @@ export default function WritingExercise({
           <button
             onClick={handleHintAll}
             disabled={hintLevel >= 2}
-            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-gray-100 hover:bg-blue-100 text-base transition ${
+            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-colors ${
               hintLevel >= 2 ? "opacity-60 cursor-not-allowed" : ""
             }`}
           >
@@ -573,7 +573,7 @@ export default function WritingExercise({
           `}
         </style>
       </div>
-      <div className="py-3 text-gray-600 text-base font-medium text-center select-none">
+      <div className="py-3 text-muted-foreground text-base font-medium text-center select-none">
         {t("phrases_count", {
           current: currentIdx + 1,
           total: phrases.length,

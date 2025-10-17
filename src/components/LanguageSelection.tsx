@@ -142,7 +142,7 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
       <div className="p-4 text-center text-red-600">
         {error}
         <button
-          className="ml-4 px-3 py-1 bg-blue-500 text-white rounded"
+          className="ml-4 px-3 py-1 bg-background0 text-white rounded"
           onClick={() => window.location.reload()}
         >
           {t("retry")}

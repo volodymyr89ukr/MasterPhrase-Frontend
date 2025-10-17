@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAppContext } from "../AppContext";
+import { useSettings } from "../contexts/SettingsContext";
 import { speakSmartAsync, cancelSpeak } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
@@ -54,7 +54,7 @@ export default function MatchingPairsExercise({
   onReset,
 }: MatchingPairsExerciseProps) {
   const { t } = useTranslation();
-  const { learningLanguage } = useAppContext();
+  const { learningLanguage } = useSettings();
   const [cards, setCards] = useState<Card[]>(() => buildCards(phrases));
   const [opened, setOpened] = useState<string[]>([]); // id карт
   const [matched, setMatched] = useState<string[]>([]); // id карт
@@ -147,18 +147,18 @@ export default function MatchingPairsExercise({
   }
 
   return (
-    <div className="flex flex-col h-full items-stretch w-full max-w-lg mx-auto min-h-[420px] p-2 sm:p-4 rounded-xl shadow bg-white relative">
-      <div className="mb-2 text-center text-sm text-gray-600">
+    <div className="flex flex-col h-full items-stretch w-full max-w-lg mx-auto min-h-[420px] p-2 sm:p-4 rounded-xl shadow bg-card relative">
+      <div className="mb-2 text-center text-sm text-muted-foreground">
         {t("find_all_pairs")}
       </div>
-      <div className="mb-2 text-center text-xs text-gray-500 flex items-center justify-center gap-3 flex-wrap">
+      <div className="mb-2 text-center text-xs text-muted-foreground flex items-center justify-center gap-3 flex-wrap">
         <span>
           {t("attempts")}: {moves}
         </span>
 
         {/* Легкий, непомітний текст-легенда; ховаємо на xs, показуємо з sm */}
         <span
-          className="hidden sm:inline text-[11px] leading-snug text-gray-400/80 select-none"
+          className="hidden sm:inline text-[11px] leading-snug text-muted-foreground/60 select-none"
           aria-label="Stars scoring rules"
         >
           0–12 = 3★ · 13–18 = 2★ · 19–24 = 1★
@@ -197,13 +197,13 @@ export default function MatchingPairsExercise({
                 transition-all duration-300
                 ${
                   isMatched
-                    ? "bg-green-200 border-green-400 text-green-700"
+                    ? "bg-success/20 border-success text-success-foreground"
                     : isOpen
-                    ? "bg-white border-blue-400"
-                    : "bg-blue-100 border-blue-300"
+                    ? "bg-card border-primary"
+                    : "bg-accent border-border"
                 }
                 outline-none
-                focus:ring-2 focus:ring-blue-400
+                focus:ring-2 focus:ring-ring
                 overflow-hidden
               `}
               style={{
@@ -247,7 +247,7 @@ export default function MatchingPairsExercise({
                   transform: isOpen ? "rotateY(180deg)" : "rotateY(0deg)",
                   backfaceVisibility: "hidden",
                   fontSize: "1.3rem",
-                  color: "#3b82f6",
+                  color: "hsl(var(--primary))",
                   fontWeight: 700,
                   opacity: isOpen ? 0 : 1,
                   pointerEvents: "none",
@@ -265,8 +265,8 @@ export default function MatchingPairsExercise({
       </div>
 
       {isFinished && (
-        <div className="absolute left-0 top-0 w-full h-full flex items-center justify-center bg-white bg-opacity-90 z-20">
-          <div className="p-8 rounded-2xl shadow-xl bg-green-100 text-center max-w-xs mx-auto">
+        <div className="absolute left-0 top-0 w-full h-full flex items-center justify-center bg-background/90 z-20">
+          <div className="p-8 rounded-2xl shadow-xl bg-success/20 text-center max-w-xs mx-auto">
             <div className="text-4xl mb-2">🎉</div>
             <div className="flex items-center justify-center gap-1 mb-3">
               {Array.from({ length: 3 }).map((_, i) => {
@@ -285,7 +285,7 @@ export default function MatchingPairsExercise({
             </div>
             <div className="font-bold text-xl mb-2">{t("congratulations")}</div>
             <div className="mb-2">{t("all_pairs_found")}</div>
-            <div className="text-sm text-gray-600 mb-2">
+            <div className="text-sm text-muted-foreground mb-2">
               {t("attempts")}: {moves}
             </div>
           </div>

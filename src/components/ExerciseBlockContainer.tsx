@@ -30,13 +30,15 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
           </button>
         )}
         {title && (
-          <h2 className="text-xl font-bold mb-3 text-blue-700">{title}</h2>
+          <h2 className="text-xl font-bold mb-3 text-muted-foreground">
+            {title}
+          </h2>
         )}
         {theoryText && (
           <div className="whitespace-pre-line mb-4">{theoryText}</div>
         )}
         <button
-          className="px-6 py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600"
+          className="px-6 py-2 rounded-xl bg-background0 text-white font-semibold hover:bg-blue-600"
           onClick={() => setShowTheory(false)}
         >
           {t("start_exercise")}

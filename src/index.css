@@ -2,70 +2,150 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ✅ Глобальні стилі для запобігання зайвому скролу */
-html,
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-  background: #f0f6ff;
-}
+@layer base {
+  :root {
+    /* Light theme */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-#root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
 
-@media (max-width: 359px) {
-  .explanation-xs-font {
-    font-size: 0.9rem !important;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body {
+    @apply bg-background text-foreground;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  #root {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
 }
 
+/* Focus-visible для a11y */
+@layer utilities {
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  /* Mobile text size adjustment */
+  @media (max-width: 359px) {
+    .explanation-xs-font {
+      font-size: 0.9rem !important;
+    }
+  }
+}
+
+/* Success/Error animations (legacy support - migrating to Tailwind) */
 @keyframes successPulse {
   0% {
-    background: #fff;
-    border-color: #fff;
+    background: hsl(var(--background));
+    border-color: hsl(var(--border));
   }
   30% {
-    background: #6ee7b7;
-    border-color: #047857;
+    background: hsl(142.1 76.2% 36.3%);
+    border-color: hsl(142.1 76.2% 26.3%);
   }
   60% {
-    background: #bbf7d0;
-    border-color: #047857;
+    background: hsl(142.1 76.2% 46.3%);
+    border-color: hsl(142.1 76.2% 26.3%);
   }
   100% {
-    background: #fff;
-    border-color: #fff;
+    background: hsl(var(--background));
+    border-color: hsl(var(--border));
   }
-}
-.animate-successPulse {
-  animation: successPulse 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes errorPulse {
   0% {
-    background: #fff;
-    border-color: #fff;
+    background: hsl(var(--background));
+    border-color: hsl(var(--border));
   }
   30% {
-    background: #fca5a5;
-    border-color: #b91c1c;
+    background: hsl(0 84.2% 60.2%);
+    border-color: hsl(0 84.2% 40.2%);
   }
   60% {
-    background: #fecaca;
-    border-color: #b91c1c;
+    background: hsl(0 84.2% 70.2%);
+    border-color: hsl(0 84.2% 40.2%);
   }
   100% {
-    background: #fff;
-    border-color: #fff;
+    background: hsl(var(--background));
+    border-color: hsl(var(--border));
   }
 }
+
+.animate-successPulse {
+  animation: successPulse 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .animate-errorPulse {
   animation: errorPulse 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }

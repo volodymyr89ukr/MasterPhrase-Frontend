@@ -7,10 +7,12 @@ import WritingExercise from "./WritingExercise";
 import { useTranslation } from "react-i18next";
 import { cancelSpeak } from "../utils/ttsUtils";
 import { useSettings } from "../contexts/SettingsContext";
+import { TransitionScreen } from "./ui/TransitionScreen";
+import { Button } from "./ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 
 export interface Phrase extends Question {
   id: number;
-  // accept array or scalar (backward-compat)
   writing_exercise?: string | number | Array<string | number>;
   [key: string]: any;
 }
@@ -22,7 +24,7 @@ interface ExerciseSwitcherProps {
 }
 
 // Centralized transition delay between exercise blocks (ms)
-const TRANSITION_DELAY_MS = 1500;
+const TRANSITION_DELAY_MS = 2500;
 
 function shuffleArray<T>(array: T[]): T[] {
   const arr = [...array];
@@ -59,7 +61,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   if (!Array.isArray(exerciseData) || exerciseData.length === 0) {
     return (
-      <div className="p-8 text-red-500 text-center">{t("data_not_found")}</div>
+      <div className="p-8 text-destructive text-center">
+        {t("data_not_found")}
+      </div>
     );
   }
 
@@ -96,27 +100,33 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }, [exerciseData]);
 
   useEffect(() => {
-    cancelSpeak(); // при зміні режиму зупинити поточне TTS
+    cancelSpeak();
   }, [mode]);
-  // і в cleanup вже не треба manual window.speechSynthesis.cancel()
-  // Автоматичний перехід із transition-екранів через 2500 мс
+
+  // Автоматичний перехід із transition-екранів
   useEffect(() => {
     let timer: number | undefined;
 
     if (mode === "transition-to-make-phrase") {
-      timer = window.setTimeout(() => setMode("make-phrase"), 2500);
+      timer = window.setTimeout(
+        () => setMode("make-phrase"),
+        TRANSITION_DELAY_MS
+      );
     } else if (mode === "transition-to-pairs") {
-      timer = window.setTimeout(() => setMode("pairs"), 2500);
+      timer = window.setTimeout(() => setMode("pairs"), TRANSITION_DELAY_MS);
     } else if (mode === "transition-to-pronunciation") {
-      timer = window.setTimeout(() => setMode("pronunciation"), 2500);
+      timer = window.setTimeout(
+        () => setMode("pronunciation"),
+        TRANSITION_DELAY_MS
+      );
     } else if (mode === "transition-to-writing") {
-      timer = window.setTimeout(() => setMode("writing"), 2500);
+      timer = window.setTimeout(() => setMode("writing"), TRANSITION_DELAY_MS);
     } else if (mode === "transition-back-to-matching") {
       timer = window.setTimeout(() => {
         setQuestions((qArr) => shuffleArray(qArr));
         setCurrentIdx(0);
         setMode("matching");
-      }, 2500);
+      }, TRANSITION_DELAY_MS);
     }
 
     return () => {
@@ -125,10 +135,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }, [mode]);
 
   function handleAnswer(option: string | null) {
-    if (option === null) {
-      // Optionally ignore or handle null option
-      return;
-    }
+    if (option === null) return;
+
     const currQ = questions[currentIdx];
     let updatedQuestions = [...questions];
     let updatedIdx = currentIdx;
@@ -207,121 +215,110 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     };
   }, []);
 
+  // Finished screen
   if (mode === "finished" || fullyCompleted) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
-        <div className="max-w-lg w-full p-6 rounded-xl shadow bg-white text-center">
-          <div className="text-4xl mb-4">🎉</div>
-          <h2 className="text-2xl font-bold mb-4">
-            {t("congratulations_finished")}
-          </h2>
-          <button
-            className="mt-6 py-2 px-8 rounded-xl bg-green-500 text-white font-semibold shadow hover:bg-green-600 transition"
-            onClick={handleFullReset}
-          >
-            {t("start_over")}
-          </button>
-          {onBack && (
-            <button
-              className="mt-3 ml-3 py-2 px-6 rounded-xl bg-gray-200 text-gray-800 font-semibold shadow hover:bg-gray-300 transition"
-              onClick={onBack}
-            >
-              {t("back_to_exercise_selection")}
-            </button>
-          )}
-        </div>
+      <div className="w-full h-full flex flex-col items-center justify-center bg-background overflow-y-auto p-4">
+        <Card className="max-w-lg w-full text-center animate-fade-in">
+          <CardHeader>
+            <div className="text-6xl mb-4">🎉</div>
+            <CardTitle className="text-3xl">
+              {t("congratulations_finished")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button size="lg" className="w-full" onClick={handleFullReset}>
+              {t("start_over")}
+            </Button>
+            {onBack && (
+              <Button
+                variant="secondary"
+                size="lg"
+                className="w-full"
+                onClick={onBack}
+              >
+                {t("back_to_exercise_selection")}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  // Transition екрани
+  // Transition screens
   if (mode === "transition-to-make-phrase") {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
-        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
-          <div className="text-3xl mb-4 text-green-600">✔️</div>
-          <div className="text-xl font-bold mb-2">
-            {t("great_make_phrase", "Чудово! Тепер склади фрази зі слів.")}
-          </div>
-        </div>
-      </div>
+      <TransitionScreen
+        icon="✔️"
+        title={t("great_make_phrase", "Чудово! Тепер склади фрази зі слів.")}
+      />
     );
   }
 
   if (mode === "transition-to-pairs") {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
-        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
-          <div className="text-3xl mb-4 text-green-600">✔️</div>
-          <div className="text-xl font-bold mb-2">
-            {t(
-              "great_find_phrases",
-              "Чудово! Тепер знайди фрази та їх переклади."
-            )}
-          </div>
-        </div>
-      </div>
+      <TransitionScreen
+        icon="✔️"
+        title={t(
+          "great_find_phrases",
+          "Чудово! Тепер знайди фрази та їх переклади."
+        )}
+      />
     );
   }
 
   if (mode === "transition-to-pronunciation") {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
-        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
-          <div className="text-3xl mb-4 text-green-600">✔️</div>
-          <div className="text-xl font-bold mb-2">
-            {t("great_pronunciation", "Відмінно! Тепер повтори фрази вголос.")}
-          </div>
-        </div>
-      </div>
+      <TransitionScreen
+        icon="✔️"
+        title={t(
+          "great_pronunciation",
+          "Відмінно! Тепер повтори фрази вголос."
+        )}
+      />
     );
   }
 
   if (mode === "transition-to-writing") {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
-        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
-          <div className="text-3xl mb-4 text-green-600">✔️</div>
-          <div className="text-xl font-bold mb-2">
-            {t("great_writing", "Супер! Тепер напиши слова з фраз.")}
-          </div>
-        </div>
-      </div>
+      <TransitionScreen
+        icon="✔️"
+        title={t("great_writing", "Супер! Тепер напиши слова з фраз.")}
+      />
     );
   }
 
   if (mode === "transition-back-to-matching") {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
-        <div className="max-w-lg w-full p-8 rounded-xl shadow bg-white text-center">
-          <div className="text-3xl mb-4 text-green-600">✔️</div>
-          <div className="text-xl font-bold mb-2">
-            {t(
-              "great_match_right_answer",
-              "Чудово! Тепер обери правильну відповідь."
-            )}
-          </div>
-        </div>
-      </div>
+      <TransitionScreen
+        icon="✔️"
+        title={t(
+          "great_match_right_answer",
+          "Чудово! Тепер обери правильну відповідь."
+        )}
+      />
     );
   }
 
   return (
-    <div className="w-full h-full bg-blue-50 flex flex-col overflow-y-auto">
+    <div className="w-full h-full bg-background flex flex-col overflow-y-auto">
       {title && (
-        <div className="text-center text-lg font-bold mt-2 mb-1 text-blue-700">
+        <div className="text-center text-lg font-semibold mt-4 mb-2 text-muted-foreground">
           {title}
         </div>
       )}
       {onBack && (
-        <button
-          className="self-start ml-3 mt-2 mb-2 px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 transition"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="self-start ml-4 mt-2 mb-2"
           onClick={onBack}
         >
-          {t("back")}
-        </button>
+          ← {t("back")}
+        </Button>
       )}
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center p-4">
         {mode === "matching" && questions[currentIdx] && (
           <MatchingExercise
             question={questions[currentIdx]}
@@ -354,27 +351,30 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
           />
         )}
         {mode === "pairs" && matchingPool.length < 2 && (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50 overflow-y-auto">
-            <div className="max-w-lg w-full p-6 rounded-xl shadow bg-white text-center">
-              <div className="text-4xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold mb-4">
-                {t("congratulations_finished")}
-              </h2>
-              <button
-                className="mt-6 py-2 px-8 rounded-xl bg-green-500 text-white font-semibold shadow hover:bg-green-600 transition"
-                onClick={handleFullReset}
-              >
-                {t("start_over")}
-              </button>
-              {onBack && (
-                <button
-                  className="mt-3 ml-3 py-2 px-6 rounded-xl bg-gray-200 text-gray-800 font-semibold shadow hover:bg-gray-300 transition"
-                  onClick={onBack}
-                >
-                  {t("back_to_exercise_selection")}
-                </button>
-              )}
-            </div>
+          <div className="w-full h-full flex flex-col items-center justify-center bg-background overflow-y-auto p-4">
+            <Card className="max-w-lg w-full text-center animate-fade-in">
+              <CardHeader>
+                <div className="text-6xl mb-4">🎉</div>
+                <CardTitle className="text-3xl">
+                  {t("congratulations_finished")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button size="lg" className="w-full" onClick={handleFullReset}>
+                  {t("start_over")}
+                </Button>
+                {onBack && (
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                    onClick={onBack}
+                  >
+                    {t("back_to_exercise_selection")}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
 

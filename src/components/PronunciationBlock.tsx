@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useAppContext } from "../AppContext";
+import { useSettings } from "../contexts/SettingsContext";
 import { speakSmart, cancelSpeak } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
@@ -22,7 +22,7 @@ export default function PronunciationBlock({
   onComplete,
 }: PronunciationBlockProps) {
   const { t } = useTranslation();
-  const { learningLanguage } = useAppContext();
+  const { learningLanguage } = useSettings();
   const [currentIdx, setCurrentIdx] = useState(0);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -146,18 +146,20 @@ export default function PronunciationBlock({
   if (!phrases.length) {
     return (
       <div className="flex flex-col items-center justify-center h-96">
-        <div className="text-gray-600 text-lg">{t("no_phrases_available")}</div>
+        <div className="text-muted-foreground text-lg">
+          {t("no_phrases_available")}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-white flex flex-col items-center">
-        <div className="mb-3 text-base text-gray-500 font-semibold">
+      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
+        <div className="mb-3 text-base text-muted-foreground font-semibold">
           {t("repeat_phrase_after_audio")}
         </div>
-        <div className="mb-2 text-center text-sm text-gray-500">
+        <div className="mb-2 text-center text-sm text-muted-foreground">
           {currentIdx + 1}/{phrases.length} {t("phrase")}
         </div>
 
@@ -166,7 +168,7 @@ export default function PronunciationBlock({
         </div>
 
         {showTranslation && (
-          <div className="text-lg text-gray-700 text-center italic mb-2 min-h-[2em]">
+          <div className="text-lg text-muted-foreground text-center italic mb-2 min-h-[2em]">
             {translation}
           </div>
         )}
@@ -175,7 +177,7 @@ export default function PronunciationBlock({
           <button
             onClick={speakPhraseTTS}
             title={t("listen_to_phrase")}
-            className="text-green-600 hover:text-green-800 p-2 rounded-full shadow-md border bg-white"
+            className="text-success hover:text-success/80 p-2 rounded-full shadow-md border bg-card transition-colors"
             style={{ fontSize: "2.2rem", minWidth: 48 }}
             tabIndex={0}
           >
@@ -184,10 +186,10 @@ export default function PronunciationBlock({
 
           <button
             onClick={isRecording ? stopRecording : startRecording}
-            className={`p-2 rounded-full shadow-md border font-bold text-white ${
+            className={`p-2 rounded-full shadow-md border font-bold text-white transition-colors ${
               isRecording
-                ? "bg-red-500 animate-pulse"
-                : "bg-blue-500 hover:bg-blue-600"
+                ? "bg-destructive animate-pulse"
+                : "bg-primary hover:bg-primary/90"
             }`}
             style={{ fontSize: "2.2rem", minWidth: 48 }}
             tabIndex={0}
@@ -199,7 +201,7 @@ export default function PronunciationBlock({
           {recordedBlob && (
             <button
               onClick={playRecording}
-              className="text-purple-700 hover:text-purple-900 p-2 rounded-full shadow-md border bg-white"
+              className="text-primary hover:text-primary/80 p-2 rounded-full shadow-md border bg-card transition-colors"
               title={t("play_recording")}
               style={{ fontSize: "2.2rem", minWidth: 48 }}
               tabIndex={0}
@@ -210,7 +212,7 @@ export default function PronunciationBlock({
         </div>
 
         {mediaError && (
-          <div className="text-red-600 text-sm text-center mb-2 max-w-xs">
+          <div className="text-destructive text-sm text-center mb-2 max-w-xs">
             {mediaError}
           </div>
         )}
@@ -221,13 +223,13 @@ export default function PronunciationBlock({
               type="checkbox"
               checked={showTranslation}
               onChange={() => setShowTranslation((s) => !s)}
-              className="accent-blue-500 mr-2"
+              className="accent-primary mr-2"
             />
             {t("show_translation")}
           </label>
           <button
             onClick={handleRepeat}
-            className="px-3 py-1 rounded bg-gray-200 hover:bg-blue-200 text-sm"
+            className="px-3 py-1 rounded bg-secondary hover:bg-accent text-secondary-foreground text-sm transition-colors"
           >
             {t("repeat")}
           </button>
@@ -236,7 +238,7 @@ export default function PronunciationBlock({
         <div className="flex justify-center mt-6">
           <button
             onClick={handleNext}
-            className="px-6 py-2 rounded bg-green-500 text-white font-semibold hover:bg-green-600 shadow"
+            className="px-6 py-2 rounded bg-success text-success-foreground font-semibold hover:bg-success/90 shadow transition-colors"
             style={{ fontSize: "1.2rem" }}
           >
             {currentIdx < phrases.length - 1 ? t("next") : t("finish")}

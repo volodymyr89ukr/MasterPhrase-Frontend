@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useAppContext } from "../AppContext";
+import { useSettings } from "../contexts/SettingsContext";
 import { speakSmart, cancelSpeak } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
 
@@ -58,7 +58,7 @@ export default function MatchingExercise({
   isTransitioning = false,
 }: MatchingExerciseProps) {
   const { t } = useTranslation();
-  const { learningLanguage } = useAppContext();
+  const { learningLanguage } = useSettings();
   const [selected, setSelected] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -81,13 +81,11 @@ export default function MatchingExercise({
     if (speakTimeoutRef.current !== null)
       window.clearTimeout(speakTimeoutRef.current);
     cancelSpeak();
-    // window.speechSynthesis.cancel(); // замінено на cancelSpeak()
 
     return () => {
       if (speakTimeoutRef.current !== null)
         window.clearTimeout(speakTimeoutRef.current);
       cancelSpeak();
-      // window.speechSynthesis.cancel(); // замінено на cancelSpeak()
     };
   }, [question]);
 
@@ -109,7 +107,7 @@ export default function MatchingExercise({
               🥳
             </span>
           </div>
-          <div className="text-2xl mt-6 text-blue-700 font-bold">
+          <div className="text-2xl mt-6 text-muted-foreground font-bold">
             {t("great_find_correct_translation")}
           </div>
         </div>
@@ -130,7 +128,6 @@ export default function MatchingExercise({
     setFeedback(isCorrect ? t("correct") : t("wrong"));
     setShowFeedback(true);
 
-    // Озвучуємо повну правильну фразу (без підстановок)
     setIsSpeaking(true);
     if (speakTimeoutRef.current !== null)
       window.clearTimeout(speakTimeoutRef.current);
@@ -161,10 +158,10 @@ export default function MatchingExercise({
 
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-white">
+      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card">
         {/* Phrase with multiple blanks */}
         <div
-          className="mb-2 text-2xl text-center font-medium min-h-[3.6em] max-h-[4.5em] overflow-hidden flex items-center justify-center"
+          className="mb-2 text-2xl text-center font-medium min-h-[3.6em] max-h-[4.5em] overflow-hidden flex items-center justify-center text-card-foreground"
           style={{ lineHeight: "1.2" }}
         >
           {maskedPhrase}
@@ -172,7 +169,7 @@ export default function MatchingExercise({
 
         {/* Translation */}
         <div
-          className="mb-6 text-base text-center text-gray-500 italic min-h-[2.4em] max-h-[3em] overflow-hidden flex items-center justify-center"
+          className="mb-6 text-base text-center text-muted-foreground italic min-h-[2.4em] max-h-[3em] overflow-hidden flex items-center justify-center"
           style={{ lineHeight: "1.2" }}
         >
           {question.translation}
@@ -188,15 +185,15 @@ export default function MatchingExercise({
             <button
               key={i}
               disabled={selected !== null}
-              className={`py-2 px-4 rounded-xl shadow border 
+              className={`py-2 px-4 rounded-xl shadow border transition-colors
               ${
                 selected === option
                   ? option === question.answer
-                    ? "bg-green-200 border-green-500"
-                    : "bg-red-200 border-red-500"
-                  : "bg-gray-50 border-gray-200"
+                    ? "bg-success/20 border-success"
+                    : "bg-destructive/20 border-destructive"
+                  : "bg-card border-border"
               }
-              hover:bg-blue-100 transition
+              hover:bg-accent
               ${
                 shuffledOptions.length === 3 && i === 2
                   ? "col-span-2 mx-auto w-2/3"
@@ -223,7 +220,9 @@ export default function MatchingExercise({
             <div className="w-full">
               <div
                 className={`text-lg font-bold mb-2 ${
-                  feedback === t("correct") ? "text-green-600" : "text-red-600"
+                  feedback === t("correct")
+                    ? "text-success"
+                    : "text-destructive"
                 }`}
               >
                 {feedback}
@@ -237,7 +236,7 @@ export default function MatchingExercise({
                     });
                   }}
                   title={t("listen_again")}
-                  className="text-blue-600 hover:text-blue-800 focus:outline-none text-2xl mt-1"
+                  className="text-primary hover:text-primary/80 focus:outline-none text-2xl mt-1 transition-colors"
                   aria-label={t("listen_again")}
                 >
                   🔊
@@ -250,13 +249,13 @@ export default function MatchingExercise({
                     overflow: "hidden",
                     wordBreak: "break-word",
                   }}
-                  className="flex items-center text-base text-gray-700 bg-gray-50 border-l-4 border-blue-400 p-1 rounded-md shadow-sm text-left flex-1 explanation-xs-font"
+                  className="flex items-center text-base text-muted-foreground bg-muted border-l-4 border-primary p-1 rounded-md shadow-sm text-left flex-1 explanation-xs-font"
                 >
                   {question.explanation}
                 </div>
               </div>
               <button
-                className="mt-4 py-2 px-6 rounded-xl bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 transition"
+                className="mt-4 py-2 px-6 rounded-xl bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition-colors"
                 onClick={handleNext}
                 autoFocus
               >
@@ -267,15 +266,15 @@ export default function MatchingExercise({
           )}
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-3 mt-6 mb-2">
+        <div className="w-full bg-secondary rounded-full h-3 mt-6 mb-2">
           <div
-            className="bg-blue-500 h-3 rounded-full transition-all duration-300"
+            className="bg-primary h-3 rounded-full transition-all duration-300"
             style={{
               width: `${((progress ?? 0) / (total || 1)) * 100}%`,
             }}
           ></div>
         </div>
-        <div className="text-sm text-gray-700 text-right mb-4">
+        <div className="text-sm text-muted-foreground text-right mb-4">
           {progress ?? 0}/{total} {t("learned")}
         </div>
       </div>

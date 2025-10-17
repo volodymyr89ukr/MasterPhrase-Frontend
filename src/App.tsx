@@ -9,8 +9,10 @@ import { User } from "./types";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { preloadTTS, initTTS } from "./utils/ttsUtils";
+import { useTheme } from "./contexts/ThemeContext";
 
 function AppContent() {
+  const { theme, toggleTheme } = useTheme();
   const { t } = useTranslation();
   const [showLogin, setShowLogin] = useState(false);
   const [showLanguageSelection, setShowLanguageSelection] = useState(false);
@@ -172,18 +174,18 @@ function AppContent() {
   const isHome = location.pathname === "/";
 
   return (
-    <div className="w-screen h-screen overflow-y-auto flex flex-col bg-blue-50">
+    <div className="w-screen h-screen overflow-y-auto flex flex-col bg-background">
       {/* Назва додатку окремим рядком по центру на головній */}
       {isHome && (
         <div className="w-full flex flex-col items-center mt-6 mb-2">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-blue-700 tracking-tight text-center mb-2 select-none">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-muted-foreground tracking-tight text-center mb-2 select-none">
             MasterPhrase
           </h1>
           <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowLanguageSelection(true)}
-                className="text-lg sm:text-xl text-blue-700 hover:text-blue-900 underline font-semibold transition"
+                className="text-lg sm:text-xl text-muted-foreground hover:text-foreground underline font-semibold transition"
                 title={t("change_language_title")}
               >
                 {t("change_language")}
@@ -191,7 +193,7 @@ function AppContent() {
             </div>
             {user ? (
               <div className="flex items-center gap-2">
-                <span className="text-blue-900 text-lg sm:text-xl font-semibold">
+                <span className="text-foreground text-lg sm:text-xl font-semibold">
                   {user.username
                     ? t("profile_user", { username: user.username })
                     : user.email}
@@ -202,7 +204,7 @@ function AppContent() {
                     localStorage.removeItem("user");
                     setUser(null);
                   }}
-                  className="py-2 px-5 rounded-lg bg-blue-100 text-blue-700 font-bold hover:bg-blue-200 transition text-base sm:text-lg"
+                  className="py-2 px-5 rounded-lg bg-blue-100 text-muted-foreground font-bold hover:bg-blue-200 transition text-base sm:text-lg"
                 >
                   {t("logout")}
                 </button>
@@ -210,11 +212,22 @@ function AppContent() {
             ) : (
               <button
                 onClick={() => setShowLogin(true)}
-                className="py-2 px-5 rounded-lg bg-blue-500 text-white font-bold hover:bg-blue-600 transition text-base sm:text-lg"
+                className="py-2 px-5 rounded-lg bg-background0 text-white font-bold hover:bg-blue-600 transition text-base sm:text-lg"
               >
                 {t("login")}
               </button>
             )}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-md hover:bg-muted transition"
+              aria-label={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
+            >
+              {theme === "dark" ? "☀️" : "🌙"}
+            </button>
           </div>
         </div>
       )}
@@ -235,7 +248,7 @@ function AppContent() {
               // Додаємо проп для кастомного рендера тисяч/комплектів
               renderThousandItem={(thousand) => (
                 <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-blue-700 text-center">
+                  <div className="text-lg font-bold text-muted-foreground text-center">
                     {thousand.name}
                   </div>
                   {thousand.description && (
@@ -247,7 +260,7 @@ function AppContent() {
               )}
               renderWordSetItem={(set) => (
                 <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-blue-700 text-center">
+                  <div className="text-lg font-bold text-muted-foreground text-center">
                     {set.word_set || set.name || `Set #${set.id}`}
                   </div>
                 </div>
@@ -263,7 +276,7 @@ function AppContent() {
               learningLanguage={learningLanguage}
               renderWordSetItem={(set) => (
                 <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-blue-700 text-center">
+                  <div className="text-lg font-bold text-muted-foreground text-center">
                     {set.word_set || set.name || `Set #${set.id}`}
                   </div>
                 </div>

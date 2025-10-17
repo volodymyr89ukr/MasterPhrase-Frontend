@@ -63,7 +63,7 @@ function SettingsMenu({
               className={`py-1 px-3 rounded font-bold transition
                 ${
                   localReadingRate === rate.value
-                    ? "bg-blue-500 text-white shadow"
+                    ? "bg-background0 text-white shadow"
                     : "bg-gray-200 text-gray-700 hover:bg-blue-100"
                 }`}
               title={rate.desc}
@@ -106,7 +106,7 @@ function SettingsMenu({
         </button>
         <button
           onClick={() => onConfirm(localReadingRate, localPauseBase)}
-          className="py-1 px-4 rounded bg-blue-500 text-white font-semibold hover:bg-blue-600"
+          className="py-1 px-4 rounded bg-background0 text-white font-semibold hover:bg-blue-600"
         >
           {t("ok")}
         </button>
@@ -394,7 +394,7 @@ export default function TextSpeechHighlighter({
   }
 
   return (
-    <div className="fullscreen-fix overflow-hidden flex flex-col bg-blue-50 relative">
+    <div className="fullscreen-fix overflow-hidden flex flex-col bg-background relative">
       <div className="flex-1 overflow-auto px-4 py-2">
         <div className="max-w-xl w-full mx-auto rounded-xl shadow bg-white flex flex-col items-center p-4">
           {/* Текст */}
