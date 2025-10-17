@@ -1,10 +1,11 @@
 import { useNavigate } from "react-router-dom";
+
 export default function BackButton({ to }: { to: string }) {
   const navigate = useNavigate();
   return (
     <button
       onClick={() => navigate(to)}
-      className="p-2 rounded-full hover:bg-gray-200 focus:outline-none"
+      className="p-2 rounded-full bg-secondary hover:bg-secondary/80 text-secondary-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors"
       aria-label="Назад"
     >
       <svg

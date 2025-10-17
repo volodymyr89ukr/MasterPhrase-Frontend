@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { useAppContext } from "../AppContext";
+import { useSettings } from "../contexts/SettingsContext";
 import { useTranslation } from "react-i18next";
 import {
   preloadTTS,
@@ -52,19 +52,21 @@ function SettingsMenu({
   if (!isOpen) return null;
 
   return (
-    <div className="absolute right-4 top-16 bg-white border border-gray-300 rounded-md shadow-md p-4 z-10 text-sm w-72">
+    <div className="absolute right-4 top-16 bg-card border border-border rounded-md shadow-md p-4 z-10 text-sm w-72">
       <div className="mb-4">
-        <div className="font-semibold mb-1">{t("reading_speed")}</div>
+        <div className="font-semibold mb-1 text-foreground">
+          {t("reading_speed")}
+        </div>
         <div className="flex gap-3">
           {rates.map((rate) => (
             <button
               key={rate.value}
               onClick={() => setLocalReadingRate(rate.value)}
-              className={`py-1 px-3 rounded font-bold transition
+              className={`py-1 px-3 rounded font-bold transition-colors
                 ${
                   localReadingRate === rate.value
-                    ? "bg-background0 text-white shadow"
-                    : "bg-gray-200 text-gray-700 hover:bg-blue-100"
+                    ? "bg-primary text-primary-foreground shadow"
+                    : "bg-secondary text-secondary-foreground hover:bg-accent"
                 }`}
               title={rate.desc}
             >
@@ -74,11 +76,13 @@ function SettingsMenu({
         </div>
       </div>
       <div className="mb-3">
-        <div className="font-semibold mb-1 flex items-center">
+        <div className="font-semibold mb-1 flex items-center text-foreground">
           {t("pause_after_sentence")}
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500 w-6 text-right">0</span>
+          <span className="text-xs text-muted-foreground w-6 text-right">
+            0
+          </span>
           <input
             type="range"
             min={0}
@@ -86,27 +90,27 @@ function SettingsMenu({
             step={0.05}
             value={localPauseBase}
             onChange={(e) => setLocalPauseBase(Number(e.target.value))}
-            className="w-full accent-blue-500"
+            className="w-full accent-primary"
             style={{ verticalAlign: "middle" }}
           />
-          <span className="text-xs text-gray-500 w-7 text-left">
+          <span className="text-xs text-muted-foreground w-7 text-left">
             {localPauseBase.toFixed(2)}
           </span>
         </div>
-        <div className="text-xs text-gray-400 mt-1">
+        <div className="text-xs text-muted-foreground mt-1">
           {t("longer_sentences_longer_pause")}
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-2">
         <button
           onClick={onClose}
-          className="py-1 px-4 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+          className="py-1 px-4 rounded bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
         >
           {t("cancel")}
         </button>
         <button
           onClick={() => onConfirm(localReadingRate, localPauseBase)}
-          className="py-1 px-4 rounded bg-background0 text-white font-semibold hover:bg-blue-600"
+          className="py-1 px-4 rounded bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
         >
           {t("ok")}
         </button>
@@ -132,15 +136,11 @@ export default function TextSpeechHighlighter({
   translation,
 }: TextSpeechHighlighterProps) {
   const { t } = useTranslation();
-  const { learningLanguage, ttsSettings, setTtsSettings } =
-    useAppContext() as ReturnType<typeof useAppContext> & {
-      ttsSettings?: { readingRate: number; pauseBase: number };
-      setTtsSettings?: (s: { readingRate: number; pauseBase: number }) => void;
-    };
+  const { learningLanguage, ttsSettings, setTtsSettings } = useSettings();
 
   const LANG = getTTSLang(learningLanguage?.code);
 
-  // --- Використовуємо глобальні налаштування з AppContext ---
+  // --- Використовуємо глобальні налаштування з SettingsContext ---
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState<
     number | null
   >(null);
@@ -387,7 +387,7 @@ export default function TextSpeechHighlighter({
 
   if (!text) {
     return (
-      <div className="text-gray-500 italic text-center py-8">
+      <div className="text-muted-foreground italic text-center py-8">
         {t("no_text_available")}
       </div>
     );
@@ -396,10 +396,10 @@ export default function TextSpeechHighlighter({
   return (
     <div className="fullscreen-fix overflow-hidden flex flex-col bg-background relative">
       <div className="flex-1 overflow-auto px-4 py-2">
-        <div className="max-w-xl w-full mx-auto rounded-xl shadow bg-white flex flex-col items-center p-4">
+        <div className="max-w-xl w-full mx-auto rounded-xl shadow bg-card flex flex-col items-center p-4">
           {/* Текст */}
           <div
-            className="text-xl w-full text-left leading-snug mb-4 overflow-x-hidden px-2"
+            className="text-xl w-full text-left leading-snug mb-4 overflow-x-hidden px-2 text-foreground"
             style={{
               wordBreak: "break-word",
               minHeight: "10.8em",
@@ -413,7 +413,7 @@ export default function TextSpeechHighlighter({
                   if (el) sentenceRefs.current[i] = el;
                 }}
                 className={`transition px-1 rounded-sm ${
-                  i === currentSentenceIndex ? "bg-yellow-200" : ""
+                  i === currentSentenceIndex ? "bg-accent" : ""
                 }`}
                 style={{ display: "inline" }}
               >
@@ -424,7 +424,7 @@ export default function TextSpeechHighlighter({
 
           {/* Блок перекладу */}
           <div
-            className="mb-4 text-gray-700 text-lg text-center italic px-2 overflow-hidden flex items-center justify-center"
+            className="mb-4 text-foreground text-lg text-center italic px-2 overflow-hidden flex items-center justify-center"
             style={{ minHeight: "6.8em", maxHeight: "6.8em" }}
           >
             {showTranslation &&
@@ -435,12 +435,12 @@ export default function TextSpeechHighlighter({
           </div>
 
           <div className="mb-4 w-full flex items-center justify-center">
-            <label className="flex items-center cursor-pointer text-sm">
+            <label className="flex items-center cursor-pointer text-sm text-foreground">
               <input
                 type="checkbox"
                 checked={showTranslation}
                 onChange={(e) => setShowTranslation(e.target.checked)}
-                className="accent-blue-500 mr-2"
+                className="accent-primary mr-2"
               />
               {t("show_translation")}
             </label>
@@ -452,7 +452,7 @@ export default function TextSpeechHighlighter({
               <button
                 onClick={() => void handlePrev()}
                 title={t("previous")}
-                className="text-gray-700 hover:text-black p-2 rounded-full"
+                className="text-foreground hover:text-primary p-2 rounded-full transition-colors"
                 style={{
                   fontSize: "clamp(2rem, 6vw, 2.7rem)",
                   minWidth: "clamp(40px, 10vw, 56px)",
@@ -464,7 +464,7 @@ export default function TextSpeechHighlighter({
               <button
                 onClick={() => void handlePlayPause()}
                 title={isPaused ? t("play") : t("pause")}
-                className="text-green-600 hover:text-green-800 p-2 rounded-full shadow-md"
+                className="text-success hover:opacity-80 p-2 rounded-full shadow-md transition-opacity"
                 style={{
                   fontSize: "clamp(2.2rem, 7vw, 3rem)",
                   minWidth: "clamp(48px, 12vw, 64px)",
@@ -476,7 +476,7 @@ export default function TextSpeechHighlighter({
               <button
                 onClick={() => void handleNext()}
                 title={t("next")}
-                className="text-gray-700 hover:text-black p-2 rounded-full"
+                className="text-foreground hover:text-primary p-2 rounded-full transition-colors"
                 style={{
                   fontSize: "clamp(2rem, 6vw, 2.7rem)",
                   minWidth: "clamp(40px, 10vw, 56px)",
@@ -490,7 +490,7 @@ export default function TextSpeechHighlighter({
             <button
               onClick={() => setSettingsOpen(true)}
               title={t("settings")}
-              className="text-gray-700 hover:text-black p-2 rounded-full"
+              className="text-foreground hover:text-primary p-2 rounded-full transition-colors"
               style={{
                 fontSize: "clamp(2rem, 6vw, 2.7rem)",
                 minWidth: "clamp(40px, 10vw, 56px)",
