@@ -80,22 +80,22 @@ function ConfirmModal({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-card rounded-2xl p-6 shadow-xl w-80 max-w-full">
-        <h3 className="font-bold text-lg mb-4 text-center text-card-foreground">
+      <div className="bg-white rounded-2xl p-6 shadow-xl w-80 max-w-full">
+        <h3 className="font-bold text-lg mb-4 text-center">
           {t("confirm_exit_title")}
         </h3>
-        <div className="mb-4 text-muted-foreground text-center">
+        <div className="mb-4 text-gray-700 text-center">
           {t("confirm_exit_text")}
         </div>
         <div className="flex justify-end gap-4">
           <button
-            className="px-4 py-2 rounded bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-colors"
+            className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
             onClick={onCancel}
           >
             {t("cancel")}
           </button>
           <button
-            className="px-4 py-2 rounded bg-primary text-primary-foreground font-semibold hover:bg-primary/90 border border-input transition-colors"
+            className="px-4 py-2 rounded bg-blue-100 text-muted-foreground font-semibold hover:bg-blue-200 border border-input"
             onClick={onConfirm}
           >
             {t("exit")}
@@ -332,11 +332,9 @@ export default function Block1({
   if (!thousandId) {
     return (
       <div className="w-full h-full overflow-y-auto p-4 max-w-3xl mx-auto">
-        <h2 className="text-xl font-bold mb-4 text-foreground">
-          {t("select_thousand_words")}
-        </h2>
+        <h2 className="text-xl font-bold mb-4">{t("select_thousand_words")}</h2>
         {loadingThousands ? (
-          <div className="text-muted-foreground">{t("loading")}</div>
+          <div>{t("loading")}</div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {thousands.map((th) => (
@@ -348,12 +346,12 @@ export default function Block1({
                 {renderThousandItem ? (
                   renderThousandItem(th)
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors select-none p-3">
-                    <div className="text-lg font-bold text-card-foreground text-center">
+                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition select-none p-3">
+                    <div className="text-lg font-bold text-muted-foreground text-center">
                       {th.name}
                     </div>
                     {th.description && (
-                      <div className="text-xs text-muted-foreground text-center mt-1">
+                      <div className="text-xs text-gray-500 text-center mt-1">
                         {th.description}
                       </div>
                     )}
@@ -363,7 +361,7 @@ export default function Block1({
             ))}
           </div>
         )}
-        {error && <div className="text-destructive">{error}</div>}
+        {error && <div className="text-red-500">{error}</div>}
       </div>
     );
   }
@@ -374,12 +372,10 @@ export default function Block1({
       <div className="w-full h-full overflow-y-auto p-4 max-w-3xl mx-auto">
         <div className="flex items-center gap-2 mb-4">
           <BackButton to="/" />
-          <h2 className="text-xl font-bold text-foreground">
-            {t("select_word_set")}
-          </h2>
+          <h2 className="text-xl font-bold">{t("select_word_set")}</h2>
         </div>
         {loadingWordSets ? (
-          <div className="text-muted-foreground">{t("loading")}</div>
+          <div>{t("loading")}</div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {wordSets.map((ws) => (
@@ -391,8 +387,8 @@ export default function Block1({
                 {renderWordSetItem ? (
                   renderWordSetItem(ws)
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors select-none p-3">
-                    <div className="text-lg font-bold text-card-foreground text-center">
+                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition select-none p-3">
+                    <div className="text-lg font-bold text-muted-foreground text-center">
                       {ws.name || ws.word_set}
                     </div>
                   </div>
@@ -401,7 +397,7 @@ export default function Block1({
             ))}
           </div>
         )}
-        {error && <div className="text-destructive">{error}</div>}
+        {error && <div className="text-red-500">{error}</div>}
       </div>
     );
   }
@@ -415,18 +411,18 @@ export default function Block1({
           <div className="flex justify-end mb-6">
             <button
               onClick={handleRequestExitExercise}
-              className="px-3 py-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 border border-input shadow text-sm transition-colors"
+              className="px-3 py-2 rounded-xl bg-blue-100 text-muted-foreground font-semibold hover:bg-blue-200 border border-input shadow text-sm"
             >
               {t("finish_exercise")}
             </button>
           </div>
           <div className="flex-1">
             {loadingExerciseDetails ? (
-              <div className="text-muted-foreground text-center my-6">
+              <div className="text-gray-400 text-center my-6">
                 {t("loading_exercise")}
               </div>
             ) : exerciseDetails.error ? (
-              <div className="text-destructive">{exerciseDetails.error}</div>
+              <div className="text-red-500">{exerciseDetails.error}</div>
             ) : (
               <ExerciseBlockContainer
                 theoryText={exerciseDetails.theory}
@@ -453,17 +449,17 @@ export default function Block1({
       <div className="w-full h-full overflow-y-auto p-0 sm:p-4 max-w-3xl min-w-[320px] mx-auto">
         <div className="flex items-center gap-2 mb-4 px-4 pt-4">
           <BackButton to={`/thousand/${thousandId}`} />
-          <div className="flex gap-1 sm:gap-2 bg-secondary rounded-lg p-1 shadow-sm">
+          <div className="flex gap-1 sm:gap-2 bg-gray-100 rounded-lg p-1 shadow-sm">
             {(["words", "reading", "exercises"] as const).map((tab) => (
               <button
                 key={tab}
                 className={`px-3 py-1 rounded-md text-base font-semibold transition-colors duration-200
                   ${
                     activeTab === tab
-                      ? "bg-primary text-primary-foreground shadow"
-                      : "bg-transparent text-secondary-foreground hover:bg-accent"
+                      ? "bg-background0 text-white shadow"
+                      : "bg-transparent text-muted-foreground hover:bg-blue-100"
                   }
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
                 `}
                 style={{ minWidth: 0 }}
                 onClick={() => setActiveTab(tab)}
@@ -479,24 +475,24 @@ export default function Block1({
         </div>
         {/* Tabs content */}
         {activeTab === "words" && (
-          <div className="bg-card rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
+          <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
             {/* Панель керування */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-              <div className="text-center sm:text-left text-sm text-muted-foreground">
+              <div className="text-center sm:text-left text-sm text-gray-700">
                 {t("select_known_words", "Обери слова, які ти вже вивчив")}
               </div>
               <div className="flex items-center justify-center gap-2">
                 <button
                   onClick={() => setMarkKnownMode((v) => !v)}
-                  className={`px-3 py-1 rounded-lg text-sm font-semibold border shadow-sm transition-colors
+                  className={`px-3 py-1 rounded-lg text-sm font-semibold border shadow-sm transition
                     ${
                       markKnownMode
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-secondary text-secondary-foreground border-border hover:bg-accent"
+                        ? "bg-background0 text-white border-blue-600"
+                        : "bg-gray-100 text-foreground border-blue-100 hover:bg-background"
                     }`}
                   title={t(
                     "toggle_mark_known_mode",
-                    'Перемкнути режим "Позначати відомі"'
+                    "Перемкнути режим “Позначати відомі”"
                   )}
                 >
                   {markKnownMode
@@ -506,22 +502,18 @@ export default function Block1({
                 <label className="flex items-center gap-2 text-sm cursor-pointer">
                   <input
                     type="checkbox"
-                    className="accent-primary"
+                    className="accent-blue-500"
                     checked={hideKnown}
                     onChange={(e) => setHideKnown(e.target.checked)}
                   />
-                  <span className="text-foreground">
-                    {t("hide_known", "Сховати відомі")}
-                  </span>
+                  <span>{t("hide_known", "Сховати відомі")}</span>
                 </label>
               </div>
             </div>
 
             <div className="flex-1">
               {loadingWords ? (
-                <div className="text-muted-foreground text-center">
-                  {t("loading")}
-                </div>
+                <div className="text-gray-400 text-center">{t("loading")}</div>
               ) : (
                 <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {wordsForList.map((w: any, idx) => {
@@ -536,12 +528,12 @@ export default function Block1({
                           if (clickable) toggleKnownWord(id as number);
                         }}
                         className={[
-                          "px-3 py-2 rounded text-center shadow-sm border flex flex-col items-center justify-center min-h-[56px] select-none transition-colors",
+                          "px-3 py-2 rounded text-center shadow-sm border flex flex-col items-center justify-center min-h-[56px] select-none transition",
                           known
-                            ? "bg-muted text-muted-foreground border-border opacity-80"
-                            : "bg-card text-card-foreground border-border",
+                            ? "bg-gray-200 text-gray-500 border-gray-300 opacity-80"
+                            : "bg-background text-foreground border-blue-100",
                           clickable
-                            ? "cursor-pointer hover:bg-accent"
+                            ? "cursor-pointer hover:bg-blue-100"
                             : "cursor-default",
                         ].join(" ")}
                         title={
@@ -568,7 +560,7 @@ export default function Block1({
                               {w.word}
                             </span>
                             {w.translation && (
-                              <span className="text-base text-primary opacity-80 mt-0.5 leading-tight">
+                              <span className="text-base text-blue-600 opacity-80 mt-0.5 leading-tight">
                                 {w.translation}
                               </span>
                             )}
@@ -585,7 +577,7 @@ export default function Block1({
         {activeTab === "reading" && (
           <div className="w-full">
             {loadingReadings ? (
-              <div className="text-muted-foreground text-center bg-card rounded-xl shadow p-4 min-h-[320px]">
+              <div className="text-gray-400 text-center bg-white rounded-xl shadow p-4 min-h-[320px]">
                 {t("loading")}
               </div>
             ) : (
@@ -597,7 +589,7 @@ export default function Block1({
                       onChange={(e) =>
                         handleSelectReading(Number(e.target.value))
                       }
-                      className="block w-full p-2 pr-10 rounded border border-input text-base bg-card text-foreground appearance-none focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring transition-colors"
+                      className="block w-full p-2 pr-10 rounded border text-base bg-white appearance-none focus:outline-none"
                       style={{
                         minWidth: 0,
                         maxWidth: "100%",
@@ -613,7 +605,7 @@ export default function Block1({
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
                       <svg
-                        className="w-4 h-4 text-muted-foreground"
+                        className="w-4 h-4 text-gray-400"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth={2}
@@ -624,7 +616,7 @@ export default function Block1({
                     </div>
                   </div>
                 ) : (
-                  <div className="text-muted-foreground text-center my-8 bg-card rounded-xl shadow p-4">
+                  <div className="text-gray-400 text-center my-8 bg-white rounded-xl shadow p-4">
                     {t("no_texts_for_set")}
                   </div>
                 )}
@@ -637,7 +629,7 @@ export default function Block1({
                     />
                   </div>
                 ) : readingTitles.length > 0 ? (
-                  <div className="text-muted-foreground text-center my-8 bg-card rounded-xl shadow p-4">
+                  <div className="text-gray-400 text-center my-8 bg-white rounded-xl shadow p-4">
                     {t("loading_text")}
                   </div>
                 ) : null}
@@ -646,9 +638,9 @@ export default function Block1({
           </div>
         )}
         {activeTab === "exercises" && (
-          <div className="bg-card rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
+          <div className="bg-white rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
             {/* ✅ Налаштування poolSize */}
-            <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-border">
+            <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-input">
               <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <span className="text-sm font-semibold text-foreground">
                   {t(
@@ -661,10 +653,10 @@ export default function Block1({
                     <button
                       key={size}
                       onClick={() => setPoolSize(size)}
-                      className={`px-4 py-2 rounded-lg font-semibold border-2 transition-colors ${
+                      className={`px-4 py-2 rounded-lg font-semibold border-2 transition ${
                         poolSize === size
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-card-foreground border-border hover:bg-accent"
+                          ? "bg-primary text-white border-blue-600"
+                          : "bg-white text-foreground border-border hover:bg-blue-100"
                       }`}
                     >
                       {size}
@@ -676,36 +668,34 @@ export default function Block1({
 
             <div className="flex-1">
               {loadingExercises ? (
-                <div className="text-muted-foreground text-center">
-                  {t("loading")}
-                </div>
+                <div className="text-gray-400 text-center">{t("loading")}</div>
               ) : (
                 <ul className="flex flex-col gap-2">
                   {exercisesMeta.map((ex) => (
                     <li
                       key={ex.id}
-                      className="px-4 py-2 rounded border border-border bg-primary/10 text-foreground shadow text-left cursor-pointer hover:bg-accent transition-colors"
+                      className="px-4 py-2 rounded border bg-blue-50 text-foreground shadow text-left cursor-pointer hover:bg-blue-100"
                       onClick={() => handleSelectExercise(ex.id)}
                     >
                       {ex.exercise_name || ex.name || ex.title || ex.id}
                     </li>
                   ))}
                   {exercisesMeta.length === 0 && (
-                    <div className="text-muted-foreground text-center my-8">
+                    <div className="text-gray-400 text-center my-8">
                       {t("no_exercises_for_set")}
                     </div>
                   )}
                 </ul>
               )}
               {loadingExerciseDetails && (
-                <div className="text-muted-foreground text-center my-6">
+                <div className="text-gray-400 text-center my-6">
                   {t("loading_exercise")}
                 </div>
               )}
             </div>
           </div>
         )}
-        {error && <div className="text-destructive">{error}</div>}
+        {error && <div className="text-red-500">{error}</div>}
       </div>
     );
   }
