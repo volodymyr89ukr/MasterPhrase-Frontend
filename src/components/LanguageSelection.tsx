@@ -131,7 +131,7 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
 
   if (loading) {
     return (
-      <div className="p-4 text-center text-gray-500">
+      <div className="p-4 text-center text-muted-foreground">
         {t("loading_languages")}
       </div>
     );
@@ -139,10 +139,10 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
 
   if (error) {
     return (
-      <div className="p-4 text-center text-red-600">
+      <div className="p-4 text-center text-destructive">
         {error}
         <button
-          className="ml-4 px-3 py-1 bg-background0 text-white rounded"
+          className="ml-4 px-3 py-1 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
           onClick={() => window.location.reload()}
         >
           {t("retry")}
@@ -152,15 +152,15 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded shadow space-y-6">
-      <h2 className="text-xl font-semibold text-center mb-4">
+    <div className="max-w-md mx-auto p-6 bg-card rounded shadow space-y-6">
+      <h2 className="text-xl font-semibold text-center mb-4 text-card-foreground">
         {t("language_selection_title")}
       </h2>
 
       <div>
         <label
           htmlFor="interface-language"
-          className="block mb-2 font-medium text-gray-700"
+          className="block mb-2 font-medium text-foreground"
         >
           {t("interface_language_label")}
         </label>
@@ -168,7 +168,7 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
           id="interface-language"
           value={selectedInterfaceCode}
           onChange={(e) => setSelectedInterfaceCode(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border border-input rounded bg-card text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-colors"
         >
           {interfaceLanguages.map((lang) => (
             <option key={lang.code} value={lang.code}>
@@ -181,7 +181,7 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
       <div>
         <label
           htmlFor="learning-language"
-          className="block mb-2 font-medium text-gray-700"
+          className="block mb-2 font-medium text-foreground"
         >
           {t("learning_language_label")}
         </label>
@@ -189,7 +189,7 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
           id="learning-language"
           value={selectedLearningId ?? undefined}
           onChange={(e) => setSelectedLearningId(Number(e.target.value))}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border border-input rounded bg-card text-foreground focus:border-ring focus:ring-2 focus:ring-ring transition-colors"
         >
           {learningLanguages.map((lang) => (
             <option key={lang.id} value={lang.id}>
@@ -202,15 +202,15 @@ export default function LanguageSelection({ onClose }: LanguageSelectionProps) {
       <button
         disabled={!selectedInterfaceCode || !selectedLearningId}
         onClick={handleConfirm}
-        className="w-full py-2 bg-blue-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-2 bg-primary text-primary-foreground rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/90 transition-colors"
       >
         {t("continue")}
       </button>
-      {success && <div className="text-green-600 text-center">{success}</div>}
+      {success && <div className="text-success text-center">{success}</div>}
       {onClose && (
         <button
           onClick={onClose}
-          className="w-full mt-2 py-2 bg-gray-200 text-gray-700 rounded"
+          className="w-full mt-2 py-2 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
         >
           {t("cancel")}
         </button>

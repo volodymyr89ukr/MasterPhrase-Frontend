@@ -29,7 +29,7 @@ function AppContent() {
     const u = localStorage.getItem("user");
     if (token && u) setUser(JSON.parse(u));
 
-    // Відновлення мов з localStorage (як у App_2.tsx)
+    // Відновлення мов з localStorage
     const savedInterfaceLang =
       localStorage.getItem("interfaceLanguage") ||
       localStorage.getItem("interfaceLanguageCode");
@@ -178,56 +178,58 @@ function AppContent() {
       {/* Назва додатку окремим рядком по центру на головній */}
       {isHome && (
         <div className="w-full flex flex-col items-center mt-6 mb-2">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-muted-foreground tracking-tight text-center mb-2 select-none">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight text-center mb-2 select-none">
             MasterPhrase
           </h1>
           <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowLanguageSelection(true)}
-                className="text-lg sm:text-xl text-muted-foreground hover:text-foreground underline font-semibold transition"
+                className="text-lg sm:text-xl text-muted-foreground hover:text-foreground underline font-semibold transition-colors"
                 title={t("change_language_title")}
               >
                 {t("change_language")}
               </button>
             </div>
-            {user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-foreground text-lg sm:text-xl font-semibold">
-                  {user.username
-                    ? t("profile_user", { username: user.username })
-                    : user.email}
-                </span>
+            <div className="flex items-center gap-2">
+              {user ? (
+                <>
+                  <span className="text-foreground text-lg sm:text-xl font-semibold">
+                    {user.username
+                      ? t("profile_user", { username: user.username })
+                      : user.email}
+                  </span>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem("token");
+                      localStorage.removeItem("user");
+                      setUser(null);
+                    }}
+                    className="py-2 px-5 rounded-lg bg-secondary text-secondary-foreground font-bold hover:bg-secondary/80 transition-colors text-base sm:text-lg"
+                  >
+                    {t("logout")}
+                  </button>
+                </>
+              ) : (
                 <button
-                  onClick={() => {
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
-                    setUser(null);
-                  }}
-                  className="py-2 px-5 rounded-lg bg-blue-100 text-muted-foreground font-bold hover:bg-blue-200 transition text-base sm:text-lg"
+                  onClick={() => setShowLogin(true)}
+                  className="py-2 px-5 rounded-lg bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors text-base sm:text-lg"
                 >
-                  {t("logout")}
+                  {t("login")}
                 </button>
-              </div>
-            ) : (
+              )}
               <button
-                onClick={() => setShowLogin(true)}
-                className="py-2 px-5 rounded-lg bg-background0 text-white font-bold hover:bg-blue-600 transition text-base sm:text-lg"
+                onClick={toggleTheme}
+                className="p-2 rounded-md hover:bg-accent transition-colors"
+                aria-label={
+                  theme === "dark"
+                    ? "Switch to light mode"
+                    : "Switch to dark mode"
+                }
               >
-                {t("login")}
+                {theme === "dark" ? "☀️" : "🌙"}
               </button>
-            )}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-md hover:bg-muted transition"
-              aria-label={
-                theme === "dark"
-                  ? "Switch to light mode"
-                  : "Switch to dark mode"
-              }
-            >
-              {theme === "dark" ? "☀️" : "🌙"}
-            </button>
+            </div>
           </div>
         </div>
       )}
@@ -245,22 +247,23 @@ function AppContent() {
             <Block1
               user={user}
               learningLanguage={learningLanguage}
-              // Додаємо проп для кастомного рендера тисяч/комплектів
+              // Кастомний рендер тисяч
               renderThousandItem={(thousand) => (
-                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-muted-foreground text-center">
+                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
+                  <div className="text-lg font-bold text-card-foreground text-center">
                     {thousand.name}
                   </div>
                   {thousand.description && (
-                    <div className="text-xs text-gray-500 text-center mt-1">
+                    <div className="text-xs text-muted-foreground text-center mt-1">
                       {thousand.description}
                     </div>
                   )}
                 </div>
               )}
+              // Кастомний рендер комплектів
               renderWordSetItem={(set) => (
-                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-muted-foreground text-center">
+                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
+                  <div className="text-lg font-bold text-card-foreground text-center">
                     {set.word_set || set.name || `Set #${set.id}`}
                   </div>
                 </div>
@@ -275,8 +278,8 @@ function AppContent() {
               user={user}
               learningLanguage={learningLanguage}
               renderWordSetItem={(set) => (
-                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-white rounded-xl shadow border hover:bg-blue-100 transition cursor-pointer select-none p-3">
-                  <div className="text-lg font-bold text-muted-foreground text-center">
+                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
+                  <div className="text-lg font-bold text-card-foreground text-center">
                     {set.word_set || set.name || `Set #${set.id}`}
                   </div>
                 </div>
@@ -288,7 +291,6 @@ function AppContent() {
           path="/thousand/:thousandId/set/:setId"
           element={<Block1 user={user} learningLanguage={learningLanguage} />}
         />
-        {/* Далі — інші сторінки, якщо потрібно */}
       </Routes>
     </div>
   );

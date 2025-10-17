@@ -20,25 +20,25 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
 
   if (showTheory) {
     return (
-      <div className="p-6 max-w-2xl mx-auto bg-white rounded-xl shadow">
+      <div className="p-6 max-w-2xl mx-auto bg-card rounded-xl shadow">
         {onBack && (
           <button
-            className="mb-4 px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+            className="mb-4 px-4 py-2 rounded bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-colors"
             onClick={onBack}
           >
             {t("back_to_exercise_selection")}
           </button>
         )}
         {title && (
-          <h2 className="text-xl font-bold mb-3 text-muted-foreground">
-            {title}
-          </h2>
+          <h2 className="text-xl font-bold mb-3 text-foreground">{title}</h2>
         )}
         {theoryText && (
-          <div className="whitespace-pre-line mb-4">{theoryText}</div>
+          <div className="whitespace-pre-line mb-4 text-foreground">
+            {theoryText}
+          </div>
         )}
         <button
-          className="px-6 py-2 rounded-xl bg-background0 text-white font-semibold hover:bg-blue-600"
+          className="px-6 py-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
           onClick={() => setShowTheory(false)}
         >
           {t("start_exercise")}
@@ -53,7 +53,9 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
     exerciseData.length === 0
   ) {
     return (
-      <div className="p-8 text-center text-red-500">{t("data_not_found")}</div>
+      <div className="p-8 text-center text-destructive">
+        {t("data_not_found")}
+      </div>
     );
   }
 
