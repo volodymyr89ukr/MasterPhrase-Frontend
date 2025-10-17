@@ -591,36 +591,22 @@ export default function Block1({
             ) : (
               <>
                 {readingTitles.length > 0 ? (
-                  <div className="mb-4 w-full relative">
-                    <select
-                      value={selectedReadingId || readingTitles[0].id}
-                      onChange={(e) =>
-                        handleSelectReading(Number(e.target.value))
-                      }
-                      className="block w-full p-2 pr-10 rounded border border-input text-base bg-card text-foreground appearance-none focus:outline-none focus:border-ring focus:ring-2 focus:ring-ring transition-colors"
-                      style={{
-                        minWidth: 0,
-                        maxWidth: "100%",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                      }}
-                    >
+                  <div className="mb-4 w-full">
+                    {/* ✅ Кастомний Select з дизайн-системою */}
+                    <div className="flex flex-wrap gap-2">
                       {readingTitles.map((rt) => (
-                        <option key={rt.id} value={rt.id}>
+                        <button
+                          key={rt.id}
+                          onClick={() => handleSelectReading(rt.id)}
+                          className={`px-4 py-2 rounded-lg font-semibold border-2 transition-colors shadow-sm ${
+                            selectedReadingId === rt.id
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-card text-card-foreground border-border hover:bg-accent hover:border-accent"
+                          }`}
+                        >
                           {rt.title}
-                        </option>
+                        </button>
                       ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                      <svg
-                        className="w-4 h-4 text-muted-foreground"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M19 9l-7 7-7-7" />
-                      </svg>
                     </div>
                   </div>
                 ) : (
