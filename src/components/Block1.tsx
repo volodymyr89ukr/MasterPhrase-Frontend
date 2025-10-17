@@ -582,53 +582,51 @@ export default function Block1({
             </div>
           </div>
         )}
-        {activeTab === "reading" && (
-          <div className="w-full">
-            {loadingReadings ? (
-              <div className="text-muted-foreground text-center bg-card rounded-xl shadow p-4 min-h-[320px]">
-                {t("loading")}
+        {readingTitles.length > 0 ? (
+          <div className="mb-4 w-full">
+            <div className="relative">
+              <select
+                value={selectedReadingId || readingTitles[0].id}
+                onChange={(e) => handleSelectReading(Number(e.target.value))}
+                className="
+          block w-full px-4 py-3 pr-10 
+          rounded-lg border-2 border-border 
+          text-base font-medium
+          bg-card text-foreground 
+          appearance-none cursor-pointer
+          focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20
+          hover:border-accent hover:bg-accent/5
+          transition-all duration-200
+          shadow-sm
+        "
+              >
+                {readingTitles.map((rt) => (
+                  <option
+                    key={rt.id}
+                    value={rt.id}
+                    className="bg-card text-foreground py-2"
+                  >
+                    {rt.title}
+                  </option>
+                ))}
+              </select>
+              {/* Кастомна стрілка */}
+              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                <svg
+                  className="w-5 h-5 text-muted-foreground transition-transform duration-200"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
-            ) : (
-              <>
-                {readingTitles.length > 0 ? (
-                  <div className="mb-4 w-full">
-                    {/* ✅ Кастомний Select з дизайн-системою */}
-                    <div className="flex flex-wrap gap-2">
-                      {readingTitles.map((rt) => (
-                        <button
-                          key={rt.id}
-                          onClick={() => handleSelectReading(rt.id)}
-                          className={`px-4 py-2 rounded-lg font-semibold border-2 transition-colors shadow-sm ${
-                            selectedReadingId === rt.id
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-card text-card-foreground border-border hover:bg-accent hover:border-accent"
-                          }`}
-                        >
-                          {rt.title}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground text-center my-8 bg-card rounded-xl shadow p-4">
-                    {t("no_texts_for_set")}
-                  </div>
-                )}
-
-                {selectedReadingId && readingText ? (
-                  <div className="my-6 w-full">
-                    <TextSpeechHighlighter
-                      text={readingText.text}
-                      translation={readingText.translation}
-                    />
-                  </div>
-                ) : readingTitles.length > 0 ? (
-                  <div className="text-muted-foreground text-center my-8 bg-card rounded-xl shadow p-4">
-                    {t("loading_text")}
-                  </div>
-                ) : null}
-              </>
-            )}
+            </div>
+          </div>
+        ) : (
+          <div className="text-muted-foreground text-center my-8 bg-card rounded-xl shadow p-4">
+            {t("no_texts_for_set")}
           </div>
         )}
         {activeTab === "exercises" && (
