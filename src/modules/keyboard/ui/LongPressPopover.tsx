@@ -27,13 +27,13 @@ export default function LongPressPopover({
       document.removeEventListener("pointerdown", handleClickOutside);
   }, [onClose]);
 
-  const top = anchorRect.top - 60;
+  const top = anchorRect.top - 68;
   const left = anchorRect.left + anchorRect.width / 2;
 
   return (
     <div
       ref={ref}
-      className="fixed z-50 flex gap-1 p-2 bg-card border border-border rounded-xl shadow-lg"
+      className="fixed z-50 flex gap-1 p-1 bg-[#1C1F26] rounded-xl shadow-lg"
       style={{
         top: `${top}px`,
         left: `${left}px`,
@@ -47,7 +47,7 @@ export default function LongPressPopover({
             e.stopPropagation();
             onSelect(opt);
           }}
-          className="min-w-[40px] h-10 px-3 rounded-lg bg-secondary hover:bg-accent text-foreground font-semibold shadow transition-colors"
+          className="min-w-[44px] h-12 px-3 rounded-lg bg-[#1A1F24] hover:bg-[#252A31] text-white font-semibold shadow-md transition-colors ring-1 ring-white/10"
         >
           {opt}
         </button>

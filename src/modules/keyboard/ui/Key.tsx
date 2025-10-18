@@ -6,15 +6,75 @@ interface KeyProps {
   shift: boolean;
   onPress: (spec: KeySpec) => void;
   onLongPress?: (options: string[]) => void;
+  density?: "comfort" | "compact";
 }
 
 const LONG_PRESS_DELAY = 350;
 
-export default function Key({ spec, shift, onPress, onLongPress }: KeyProps) {
+const densityMap = {
+  comfort: { h: "h-14", gap: "gap-2", px: "px-3", font: "text-lg" },
+  compact: { h: "h-12", gap: "gap-1.5", px: "px-2.5", font: "text-base" },
+};
+
+// SVG Icons
+const ShiftIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 19V5M5 12l7-7 7 7" />
+  </svg>
+);
+
+const BackspaceIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2zM18 9l-6 6M12 9l6 6" />
+  </svg>
+);
+
+const EnterIcon = () => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 12H6M12 5l-7 7 7 7" />
+  </svg>
+);
+
+export default function Key({
+  spec,
+  shift,
+  onPress,
+  onLongPress,
+  density = "comfort",
+}: KeyProps) {
   const [pressing, setPressing] = useState(false);
   const timerRef = useRef<number | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const d = densityMap[density];
 
   useEffect(() => {
     return () => {
@@ -65,16 +125,24 @@ export default function Key({ spec, shift, onPress, onLongPress }: KeyProps) {
   const isSpace = isAction && spec.action === "Space";
   const isEnter = isAction && spec.action === "Enter";
   const isBackspace = isAction && spec.action === "Backspace";
+  const isSymbols = isAction && spec.action === "Symbols";
+  const isSwitch = isAction && spec.action === "Switch";
 
-  const baseClass =
-    "rounded-2xl px-3 py-2 font-semibold shadow-sm select-none transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const baseClass = `relative ${d.h} min-w-[44px] ${d.px} rounded-2xl ${d.font} font-semibold select-none transition-all active:scale-95 focus:outline-none shadow-md ring-1 ring-white/10 active:ring-2 active:ring-blue-400`;
+
   const colorClass = isAction
-    ? "bg-secondary text-secondary-foreground hover:bg-accent"
-    : "bg-card text-foreground hover:bg-accent";
-  const shiftClass = isShift && shift ? "ring-2 ring-primary" : "";
-  const spaceClass = isSpace ? "col-span-4" : "";
-  const enterClass = isEnter ? "col-span-2" : "";
-  const backspaceClass = isBackspace ? "col-span-1" : "";
+    ? "bg-[#1A1F24] text-white"
+    : "bg-[#1C2127] text-white";
+
+  const shiftClass = isShift && shift ? "ring-2 ring-blue-500" : "";
+  const spaceClass = isSpace ? "flex-grow" : "";
+  const wideClass = isEnter || isBackspace ? "min-w-[68px]" : "";
+
+  // Icons for action keys
+  let icon = null;
+  if (isShift) icon = <ShiftIcon />;
+  if (isBackspace) icon = <BackspaceIcon />;
+  if (isEnter) icon = <EnterIcon />;
 
   return (
     <button
@@ -85,12 +153,20 @@ export default function Key({ spec, shift, onPress, onLongPress }: KeyProps) {
           ? `letter ${displayLabel}`
           : spec.action.toLowerCase()
       }
-      className={`${baseClass} ${colorClass} ${shiftClass} ${spaceClass} ${enterClass} ${backspaceClass}`}
+      className={`${baseClass} ${colorClass} ${shiftClass} ${spaceClass} ${wideClass}`}
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
+      style={{ contain: "layout paint" }}
     >
-      {displayLabel}
+      {/* Invisible hit area */}
+      <span className="absolute -inset-2" aria-hidden="true" />
+
+      {/* Content */}
+      <span className="relative z-10 flex items-center justify-center gap-1">
+        {icon}
+        {!icon && displayLabel}
+      </span>
     </button>
   );
 }

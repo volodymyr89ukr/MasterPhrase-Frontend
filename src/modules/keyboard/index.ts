@@ -1,7 +1,9 @@
 export * from "./types";
 export * from "./engine/useInputEngine";
 export * from "./hooks/useTouchDetection";
+export { useVisualViewportInset } from "./hooks/useVisualViewportInset";
 export { default as CustomKeyboard } from "./ui/CustomKeyboard";
+export { default as KeyboardSheet } from "./ui/KeyboardSheet";
 export { enLayout } from "./layouts/en";
 export { deLayout } from "./layouts/de";
 export { esLayout } from "./layouts/es";

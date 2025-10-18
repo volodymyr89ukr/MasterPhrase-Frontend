@@ -5,7 +5,9 @@ import { useTranslation } from "react-i18next";
 import {
   useInputEngine,
   useTouchDetection,
+  useVisualViewportInset, // 🆕
   CustomKeyboard,
+  KeyboardSheet, // 🆕
   deLayout,
   enLayout,
   esLayout,
@@ -509,13 +511,15 @@ export default function WritingExercise({
 
       {/* Touch: Custom Keyboard */}
       {isTouchDevice && (
-        <CustomKeyboard
-          layout={currentLayout}
-          shift={engine.shift}
-          onKey={handleKey}
-          onSelectVariant={handleSelectVariant}
-          className="mt-auto"
-        />
+        <KeyboardSheet>
+          <CustomKeyboard
+            layout={currentLayout}
+            shift={engine.shift}
+            density="comfort"
+            onKey={handleKey}
+            onSelectVariant={handleSelectVariant}
+          />
+        </KeyboardSheet>
       )}
 
       {/* Language Picker Modal */}
