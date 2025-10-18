@@ -1,23 +1,20 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  ChangeEvent,
+  KeyboardEvent,
+} from "react";
 import { useSettings } from "../contexts/SettingsContext";
 import { speakSmartAsync, cancelSpeak } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
-import {
-  useInputEngine,
-  useTouchDetection,
-  CustomKeyboard,
-  deLayout,
-  enLayout,
-  esLayout,
-  symbolsLayout,
-  KeySpec,
-} from "../modules/keyboard";
 
 interface Phrase {
   phrase: string;
   translation?: string;
+  // allow array or scalar (backward-compat)
   writing_exercise?: number | string | Array<number | string>;
-  wordIndexToWrite?: number;
+  wordIndexToWrite?: number; // legacy, not used anymore
   [key: string]: any;
 }
 
@@ -35,13 +32,13 @@ function getWordByIndex(str: string, idx: number): string {
 function maskWord(word: string): string {
   return "_".repeat(Math.max(word.length, 8));
 }
-
 function getHint(word: string): string {
   if (word.length <= 2) return word[0] || "";
   if (word.length <= 4) return word.slice(0, 2);
   return word.slice(0, 3);
 }
 
+// normalize indices into 1-based unique sorted array with a sane default [2]
 function normalizeTargetIndices(input: Phrase["writing_exercise"]): number[] {
   if (input == null) return [2];
   const arr = Array.isArray(input) ? input : [input];
@@ -69,48 +66,139 @@ export default function WritingExercise({
 }: WritingExerciseProps) {
   const { t } = useTranslation();
   const { learningLanguage } = useSettings();
-  const { isTouchDevice } = useTouchDetection();
-
   const [currentIdx, setCurrentIdx] = useState(0);
+  // index of current target within the normalized indices list
   const [targetPos, setTargetPos] = useState(0);
+  const [userInput, setUserInput] = useState("");
   const [inputStatus, setInputStatus] = useState<
     "default" | "wrong" | "correct"
   >("default");
   const [completed, setCompleted] = useState(false);
   const [hintLevel, setHintLevel] = useState(0);
   const [showFixHint, setShowFixHint] = useState(false);
-  const [showLangPicker, setShowLangPicker] = useState(false);
-
   const inputRef = useRef<HTMLInputElement | null>(null);
   const feedbackTimeoutRef = useRef<number | null>(null);
   const fixHintTimeoutRef = useRef<number | null>(null);
+  const lastSelectionRef = useRef<{ start: number; end: number } | null>(null);
 
-  // ✅ Keyboard Engine
-  const engine = useInputEngine({
-    initial: "",
-    initialLayout:
-      learningLanguage?.code === "de"
-        ? "de"
-        : learningLanguage?.code === "es"
-        ? "es"
-        : "en",
-    onEnter: () => handleSubmit(),
-  });
+  // special chars
+  function getSpecialCharsForLanguage(code?: string): string[] {
+    if (!code) return [];
+    const lang = code.toLowerCase();
+    if (lang.startsWith("de")) return ["ä", "ö", "ü", "ß", "Ä", "Ö", "Ü"];
+    if (lang.startsWith("es"))
+      return [
+        "á",
+        "é",
+        "í",
+        "ó",
+        "ú",
+        "ü",
+        "ñ",
+        "Á",
+        "É",
+        "Í",
+        "Ó",
+        "Ú",
+        "Ü",
+        "Ñ",
+      ];
+    if (lang.startsWith("fr"))
+      return [
+        "à",
+        "â",
+        "ç",
+        "é",
+        "è",
+        "ê",
+        "ë",
+        "ï",
+        "î",
+        "ô",
+        "ù",
+        "û",
+        "ü",
+        "œ",
+        "æ",
+      ];
+    if (lang.startsWith("it")) return ["à", "è", "é", "ì", "ò", "ù"];
+    if (lang.startsWith("pt"))
+      return ["á", "â", "ã", "à", "ç", "é", "ê", "í", "ó", "ô", "õ", "ú", "ü"];
+    if (lang.startsWith("pl"))
+      return [
+        "ą",
+        "ć",
+        "ę",
+        "ł",
+        "ń",
+        "ó",
+        "ś",
+        "ź",
+        "ż",
+        "Ą",
+        "Ć",
+        "Ę",
+        "Ł",
+        "Ń",
+        "Ó",
+        "Ś",
+        "Ź",
+        "Ż",
+      ];
+    if (lang.startsWith("tr"))
+      return ["ç", "ğ", "ı", "İ", "ö", "ş", "ü", "Ç", "Ğ", "Ö", "Ş", "Ü"];
+    if (lang.startsWith("uk")) return ["ґ", "є", "і", "ї", "Ґ", "Є", "І", "Ї"];
+    if (lang.startsWith("ru")) return ["ё", "Ё", "ъ", "Ъ", "ы", "Ы"];
+    if (lang.startsWith("ar"))
+      return ["ء", "أ", "إ", "آ", "ى", "ة", "ؤ", "ئ", "‎ً", "‎ٌ", "‎ٍ"];
+    return [];
+  }
+  const specialChars = getSpecialCharsForLanguage(learningLanguage?.code);
 
-  // Sync engine.value → local verification
-  const userInput = engine.value;
-
-  // Get current layout
-  const layouts = {
-    en: enLayout,
-    de: deLayout,
-    es: esLayout,
+  // caret-aware insertion without overwriting selection
+  const inputRefEl = inputRef;
+  const handleInsertChar = (ch: string) => {
+    const el = inputRefEl.current;
+    if (!el) return;
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? el.value.length;
+    const insertionIndex =
+      (el.selectionDirection === "backward" ? start : end) ?? end;
+    try {
+      el.setSelectionRange(
+        insertionIndex,
+        insertionIndex,
+        el.selectionDirection || "none"
+      );
+    } catch {}
+    if (typeof el.setRangeText === "function") {
+      el.setRangeText(ch, insertionIndex, insertionIndex, "end");
+      setUserInput(el.value);
+      const caretPos = insertionIndex + ch.length;
+      lastSelectionRef.current = { start: caretPos, end: caretPos };
+      setTimeout(() => {
+        el.focus();
+        try {
+          el.setSelectionRange(caretPos, caretPos);
+        } catch {}
+      }, 0);
+    } else {
+      const value = el.value;
+      const newValue =
+        value.slice(0, insertionIndex) + ch + value.slice(insertionIndex);
+      setUserInput(newValue);
+      const caretPos = insertionIndex + ch.length;
+      lastSelectionRef.current = { start: caretPos, end: caretPos };
+      setTimeout(() => {
+        el.focus();
+        try {
+          el.setSelectionRange(caretPos, caretPos);
+        } catch {}
+      }, 0);
+    }
   };
-  const currentLayout = engine.symbols
-    ? symbolsLayout
-    : layouts[engine.layoutId];
 
-  // TTS warm-up
+  // warm-up TTS
   useEffect(() => {
     if ("speechSynthesis" in window) {
       const utter = new window.SpeechSynthesisUtterance(" .");
@@ -121,11 +209,11 @@ export default function WritingExercise({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reset when phrases change
+  // reset when phrases change
   useEffect(() => {
     setCurrentIdx(0);
     setTargetPos(0);
-    engine.reset();
+    setUserInput("");
     setInputStatus("default");
     setCompleted(false);
     setHintLevel(0);
@@ -134,12 +222,11 @@ export default function WritingExercise({
       window.clearTimeout(fixHintTimeoutRef.current);
       fixHintTimeoutRef.current = null;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phrases]);
 
-  // Reset when moving to next phrase or next target
+  // reset when moving to next phrase or next target within phrase
   useEffect(() => {
-    engine.reset();
+    setUserInput("");
     setInputStatus("default");
     setHintLevel(0);
     setShowFixHint(false);
@@ -147,12 +234,11 @@ export default function WritingExercise({
       window.clearTimeout(fixHintTimeoutRef.current);
       fixHintTimeoutRef.current = null;
     }
-    if (!isTouchDevice && inputRef.current) {
+    if (inputRef.current) {
       inputRef.current.focus();
       inputRef.current.select();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIdx, targetPos, isTouchDevice]);
+  }, [currentIdx, targetPos]);
 
   useEffect(() => {
     return () => {
@@ -162,7 +248,7 @@ export default function WritingExercise({
       if (fixHintTimeoutRef.current) {
         window.clearTimeout(fixHintTimeoutRef.current);
       }
-      cancelSpeak();
+      cancelSpeak(); // ✅ cleanup TTS при unmount
     };
   }, []);
 
@@ -186,7 +272,7 @@ export default function WritingExercise({
           onClick={() => {
             setCurrentIdx(0);
             setTargetPos(0);
-            engine.reset();
+            setUserInput("");
             setCompleted(false);
             setHintLevel(0);
             setShowFixHint(false);
@@ -199,7 +285,7 @@ export default function WritingExercise({
       </div>
     );
 
-  // Current phrase and targets
+  // current phrase and targets
   const obj = phrases[currentIdx];
   const targetIndices = normalizeTargetIndices(obj.writing_exercise);
   const currentTargetIndex =
@@ -209,15 +295,18 @@ export default function WritingExercise({
   const targetWord = getWordByIndex(obj.phrase, currentTargetIndex);
   const targetNorm = normalizeText(targetWord);
 
-  // Build masked phrase
+  // Build masked phrase:
+  // - solved targets (index < targetPos): reveal word
+  // - current target (index === targetPos): show masked/hinted
+  // - future targets: full mask
   const maskedPhrase = phraseWords
     .map((w, i) => {
       const idx1 = i + 1;
       const posInTargets = targetIndices.indexOf(idx1);
-      if (posInTargets === -1) return w;
+      if (posInTargets === -1) return w; // not a target
 
       if (posInTargets < targetPos) {
-        return getWordByIndex(obj.phrase, idx1);
+        return getWordByIndex(obj.phrase, idx1); // already solved
       }
       if (posInTargets === targetPos) {
         if (hintLevel === 2) return getWordByIndex(obj.phrase, idx1);
@@ -228,12 +317,13 @@ export default function WritingExercise({
         }
         return maskWord(realWord);
       }
+      // future target
       const realWord = getWordByIndex(obj.phrase, idx1);
       return maskWord(realWord);
     })
     .join(" ");
 
-  // Per-keystroke verification
+  // per-keystroke verification against current target
   useEffect(() => {
     if (userInput === "") {
       setInputStatus("default");
@@ -250,21 +340,27 @@ export default function WritingExercise({
       setInputStatus("default");
       setShowFixHint(false);
       if (userNorm === targetNorm && userNorm.length === targetNorm.length) {
+        // Correct current target
         setInputStatus("correct");
+        // If this was the last target for this phrase — move to next phrase
         const isLastTarget = targetPos >= targetIndices.length - 1;
         if (isLastTarget) {
+          // ✅ async wrapper для await
           (async () => {
             try {
               await speakSmartAsync(obj.phrase, {
                 lang: learningLanguage?.code || "de-DE",
               });
-            } catch {}
+            } catch {
+              // ignore TTS errors
+            }
+            // ✅ мінімальна пауза після озвучення
             await new Promise((r) => setTimeout(r, 800));
 
             if (currentIdx < phrases.length - 1) {
               setCurrentIdx((idx) => idx + 1);
               setTargetPos(0);
-              engine.reset();
+              setUserInput("");
               setHintLevel(0);
               setInputStatus("default");
             } else {
@@ -273,12 +369,13 @@ export default function WritingExercise({
             }
           })();
         } else {
+          // Move to next target within the same phrase
           if (feedbackTimeoutRef.current) {
             window.clearTimeout(feedbackTimeoutRef.current);
           }
           feedbackTimeoutRef.current = window.setTimeout(() => {
             setTargetPos((p) => p + 1);
-            engine.reset();
+            setUserInput("");
             setHintLevel(0);
             setInputStatus("default");
           }, 400);
@@ -308,92 +405,87 @@ export default function WritingExercise({
     learningLanguage,
   ]);
 
-  const handleSubmit = () => {
-    if (normalizeText(userInput) === targetNorm) {
-      setInputStatus("correct");
-      setHintLevel(0);
-      const isLastTarget = targetPos >= targetIndices.length - 1;
-      if (isLastTarget) {
-        (async () => {
-          try {
-            await speakSmartAsync(obj.phrase, {
-              lang: learningLanguage?.code || "de-DE",
-            });
-          } catch {}
-          await new Promise((r) => setTimeout(r, 800));
-
-          if (currentIdx < phrases.length - 1) {
-            setCurrentIdx((idx) => idx + 1);
-            setTargetPos(0);
-            engine.reset();
-            setHintLevel(0);
-            setInputStatus("default");
-          } else {
-            setCompleted(true);
-            if (onComplete) onComplete();
-          }
-        })();
-      } else {
-        if (feedbackTimeoutRef.current) {
-          window.clearTimeout(feedbackTimeoutRef.current);
-        }
-        feedbackTimeoutRef.current = window.setTimeout(() => {
-          setTargetPos((p) => p + 1);
-          engine.reset();
-          setHintLevel(0);
-          setInputStatus("default");
-        }, 200);
-      }
-    } else {
-      setInputStatus("wrong");
-      setShowFixHint(false);
-      if (fixHintTimeoutRef.current) {
-        window.clearTimeout(fixHintTimeoutRef.current);
-      }
-      fixHintTimeoutRef.current = window.setTimeout(() => {
-        setShowFixHint(true);
-      }, 1000);
-      if (window.navigator.vibrate) window.navigator.vibrate(120);
-    }
-  };
-
   const handleHintPart = () => {
     if (hintLevel < 1) setHintLevel(1);
   };
-
   const handleHintAll = () => {
     setHintLevel(2);
   };
 
-  const handleKey = (spec: KeySpec) => {
-    if (spec.type === "char") {
-      engine.insert(spec.value || spec.label);
-    } else {
-      switch (spec.action) {
-        case "Backspace":
-          engine.backspace();
-          break;
-        case "Enter":
-          handleSubmit();
-          break;
-        case "Space":
-          engine.space();
-          break;
-        case "Shift":
-          engine.toggleShift();
-          break;
-        case "Symbols":
-          engine.setSymbols(!engine.symbols);
-          break;
-        case "Switch":
-          setShowLangPicker((s) => !s);
-          break;
+  const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      if (normalizeText(userInput) === targetNorm) {
+        setInputStatus("correct");
+        setHintLevel(0);
+        const isLastTarget = targetPos >= targetIndices.length - 1;
+        if (isLastTarget) {
+          // ✅ async wrapper для await
+          (async () => {
+            try {
+              await speakSmartAsync(obj.phrase, {
+                lang: learningLanguage?.code || "de-DE",
+              });
+            } catch {
+              // ignore TTS errors
+            }
+            // ✅ мінімальна пауза після озвучення
+            await new Promise((r) => setTimeout(r, 800));
+
+            if (currentIdx < phrases.length - 1) {
+              setCurrentIdx((idx) => idx + 1);
+              setTargetPos(0);
+              setUserInput("");
+              setHintLevel(0);
+              setInputStatus("default");
+            } else {
+              setCompleted(true);
+              if (onComplete) onComplete();
+            }
+          })();
+        } else {
+          if (feedbackTimeoutRef.current) {
+            window.clearTimeout(feedbackTimeoutRef.current);
+          }
+          feedbackTimeoutRef.current = window.setTimeout(() => {
+            setTargetPos((p) => p + 1);
+            setUserInput("");
+            setHintLevel(0);
+            setInputStatus("default");
+          }, 200);
+        }
+      } else {
+        setInputStatus("wrong");
+        setShowFixHint(false);
+        if (fixHintTimeoutRef.current) {
+          window.clearTimeout(fixHintTimeoutRef.current);
+        }
+        fixHintTimeoutRef.current = window.setTimeout(() => {
+          setShowFixHint(true);
+        }, 1000);
+        if (window.navigator.vibrate) window.navigator.vibrate(120);
       }
     }
   };
 
-  const handleSelectVariant = (variant: string) => {
-    engine.insert(variant);
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setUserInput(e.target.value);
+    try {
+      const el = e.target as HTMLInputElement;
+      lastSelectionRef.current = {
+        start: el.selectionStart ?? el.value.length,
+        end: el.selectionEnd ?? el.value.length,
+      };
+    } catch {}
+    if (
+      inputStatus === "wrong" &&
+      targetNorm.startsWith(normalizeText(e.target.value))
+    ) {
+      setInputStatus("default");
+      setShowFixHint(false);
+      if (fixHintTimeoutRef.current) {
+        window.clearTimeout(fixHintTimeoutRef.current);
+      }
+    }
   };
 
   const inputColorClass =
@@ -415,55 +507,38 @@ export default function WritingExercise({
         >
           {maskedPhrase}
         </div>
-
-        {/* Desktop: normal input */}
-        {!isTouchDevice ? (
-          <input
-            ref={inputRef}
-            type="text"
-            className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 outline-none shadow transition-all duration-200 w-full max-w-[90vw] ${inputColorClass}`}
-            style={{
-              fontFamily: "inherit",
-              letterSpacing: "0.04em",
-            }}
-            value={engine.value}
-            onChange={(e) => {
-              // Sync desktop input to engine
-              const newVal = e.target.value;
-              engine.reset();
-              for (const ch of newVal) {
-                engine.insert(ch);
-              }
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                handleSubmit();
-              }
-            }}
-            autoFocus
-            spellCheck={false}
-            autoComplete="off"
-            placeholder={t("enter_word")}
-            autoCapitalize="off"
-          />
-        ) : (
-          // Touch: non-focusable display
-          <div
-            role="textbox"
-            aria-readonly="true"
-            aria-live="polite"
-            className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 shadow transition-all duration-200 w-full max-w-[90vw] min-h-[52px] ${inputColorClass}`}
-            style={{
-              fontFamily: "inherit",
-              letterSpacing: "0.04em",
-            }}
-          >
-            {engine.value}
-            <span className="animate-pulse ml-1">|</span>
+        <input
+          ref={inputRef}
+          type="text"
+          className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 outline-none shadow transition-all duration-200 w-full max-w-[90vw] ${inputColorClass}`}
+          style={{
+            fontFamily: "inherit",
+            letterSpacing: "0.04em",
+          }}
+          value={userInput}
+          onChange={handleInputChange}
+          onKeyDown={handleInputKeyDown}
+          autoFocus
+          spellCheck={false}
+          autoComplete="off"
+          placeholder={t("enter_word")}
+          autoCapitalize="off"
+        />
+        {specialChars.length > 0 && (
+          <div className="grid grid-cols-7 gap-1 w-full justify-items-center mt-3">
+            {specialChars.map((ch) => (
+              <button
+                key={ch}
+                type="button"
+                aria-label={`Insert ${ch}`}
+                className="min-w-[40px] h-10 px-2 py-2 rounded-xl border bg-secondary hover:bg-accent text-base md:text-lg font-semibold text-secondary-foreground shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-ring select-none transition-colors"
+                onClick={() => handleInsertChar(ch)}
+              >
+                {ch}
+              </button>
+            ))}
           </div>
         )}
-
         <div className="flex flex-row gap-3 w-full justify-center mt-5">
           <button
             onClick={handleHintPart}
@@ -484,7 +559,6 @@ export default function WritingExercise({
             {t("show_whole_word")}
           </button>
         </div>
-
         <style>
           {`
             .animate-shake {
@@ -499,53 +573,12 @@ export default function WritingExercise({
           `}
         </style>
       </div>
-
       <div className="py-3 text-muted-foreground text-base font-medium text-center select-none">
         {t("phrases_count", {
           current: currentIdx + 1,
           total: phrases.length,
         })}
       </div>
-
-      {/* Touch: Custom Keyboard */}
-      {isTouchDevice && (
-        <CustomKeyboard
-          layout={currentLayout}
-          shift={engine.shift}
-          onKey={handleKey}
-          onSelectVariant={handleSelectVariant}
-          className="mt-auto"
-        />
-      )}
-
-      {/* Language Picker Modal */}
-      {showLangPicker && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-card p-4 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold mb-3 text-foreground">
-              {t("select_language")}
-            </h3>
-            <div className="flex gap-2">
-              {(["en", "de", "es"] as const).map((lang) => (
-                <button
-                  key={lang}
-                  onClick={() => {
-                    engine.setLayout(lang);
-                    setShowLangPicker(false);
-                  }}
-                  className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                    engine.layoutId === lang
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary hover:bg-accent text-secondary-foreground"
-                  }`}
-                >
-                  {lang.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
