@@ -90,14 +90,12 @@ export default function MatchingPairsExercise({
         return;
       }
       if (first.pairId === second.pairId && first.type !== second.type) {
-        // ✅ Правильна пара — озвучуємо БЕЗ блокування
+        // ✅ async wrapper для await
         (async () => {
-          await new Promise((r) => setTimeout(r, 600)); // анімація перевороту
+          await new Promise((r) => setTimeout(r, 600));
           setMatched((m) => [...m, first.id, second.id]);
           setOpened([]);
-          setLock(false); // ✅ Розблокування ОДРАЗУ, не чекаємо TTS
 
-          // TTS в фоні (не блокує наступні кліки)
           const phraseCard = [first, second].find((c) => c.type === "phrase");
           if (phraseCard) {
             try {
@@ -108,9 +106,12 @@ export default function MatchingPairsExercise({
               // ignore TTS errors
             }
           }
+
+          // ✅ мінімальна пауза після озвучення
+          await new Promise((r) => setTimeout(r, 500));
+          setLock(false);
         })();
       } else {
-        // ❌ Неправильна пара — ховаємо з затримкою
         setTimeout(() => {
           setOpened([]);
           setLock(false);
