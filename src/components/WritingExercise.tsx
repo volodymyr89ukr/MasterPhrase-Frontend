@@ -5,14 +5,15 @@ import { useTranslation } from "react-i18next";
 import {
   useInputEngine,
   useTouchDetection,
-  useVisualViewportInset, // 🆕
+  useVisualViewportInset,
   CustomKeyboard,
-  KeyboardSheet, // 🆕
+  KeyboardSheet,
   deLayout,
   enLayout,
   esLayout,
   symbolsLayout,
   KeySpec,
+  DensityTier,
 } from "../modules/keyboard";
 
 interface Phrase {
@@ -82,6 +83,8 @@ export default function WritingExercise({
   const [hintLevel, setHintLevel] = useState(0);
   const [showFixHint, setShowFixHint] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
+  const [keyboardDensity, setKeyboardDensity] =
+    useState<DensityTier>("comfort");
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const feedbackTimeoutRef = useRef<number | null>(null);
@@ -511,11 +514,11 @@ export default function WritingExercise({
 
       {/* Touch: Custom Keyboard */}
       {isTouchDevice && (
-        <KeyboardSheet>
+        <KeyboardSheet onDensityChange={setKeyboardDensity}>
           <CustomKeyboard
             layout={currentLayout}
             shift={engine.shift}
-            density="comfort"
+            density={keyboardDensity}
             onKey={handleKey}
             onSelectVariant={handleSelectVariant}
           />

@@ -6,15 +6,10 @@ interface KeyProps {
   shift: boolean;
   onPress: (spec: KeySpec) => void;
   onLongPress?: (options: string[]) => void;
-  density?: "comfort" | "compact";
+  density?: "comfort" | "compact" | "ultra";
 }
 
 const LONG_PRESS_DELAY = 350;
-
-const densityMap = {
-  comfort: { h: "h-14", gap: "gap-2", px: "px-3", font: "text-lg" },
-  compact: { h: "h-12", gap: "gap-1.5", px: "px-2.5", font: "text-base" },
-};
 
 // SVG Icons
 const ShiftIcon = () => (
@@ -74,8 +69,6 @@ export default function Key({
   const [rect, setRect] = useState<DOMRect | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const d = densityMap[density];
-
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -128,8 +121,7 @@ export default function Key({
   const isSymbols = isAction && spec.action === "Symbols";
   const isSwitch = isAction && spec.action === "Switch";
 
-  const baseClass = `relative ${d.h} min-w-[44px] ${d.px} rounded-2xl ${d.font} font-semibold select-none transition-all active:scale-95 focus:outline-none shadow-md ring-1 ring-white/10 active:ring-2 active:ring-blue-400`;
-
+  const baseClass = `relative h-[var(--key-h)] min-w-[44px] px-[var(--key-px)] rounded-2xl text-[var(--font)] font-semibold select-none transition-all active:scale-95 focus:outline-none shadow-md ring-1 ring-white/10 active:ring-2 active:ring-blue-400`;
   const colorClass = isAction
     ? "bg-[#1A1F24] text-white"
     : "bg-[#1C2127] text-white";

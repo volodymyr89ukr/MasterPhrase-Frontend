@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import type { DensityTier } from "../hooks/useKeyboardAutosize";
 import { useInputEngine } from "../engine/useInputEngine";
 import { useTouchDetection } from "../hooks/useTouchDetection";
 import { useVisualViewportInset } from "../hooks/useVisualViewportInset";
@@ -13,6 +14,9 @@ import { KeySpec } from "../types";
 export default function KeyboardHostDemo() {
   const { isTouchDevice, setUserOverride } = useTouchDetection();
   const { bottomInset } = useVisualViewportInset();
+
+  const [keyboardDensity, setKeyboardDensity] =
+    useState<DensityTier>("comfort");
 
   const engine = useInputEngine({
     initialLayout: "de",
@@ -83,14 +87,9 @@ export default function KeyboardHostDemo() {
           >
             Toggle Keyboard Mode
           </button>
-          <button
-            onClick={() =>
-              setDensity((d) => (d === "comfort" ? "compact" : "comfort"))
-            }
-            className="px-3 py-1 rounded bg-secondary text-secondary-foreground hover:bg-accent transition-colors"
-          >
-            Density: {density}
-          </button>
+          <div className="px-3 py-1 rounded bg-secondary text-secondary-foreground">
+            Auto Density: {keyboardDensity}
+          </div>
         </div>
       </div>
 
@@ -126,11 +125,11 @@ export default function KeyboardHostDemo() {
 
       {/* Keyboard */}
       {isTouchDevice && (
-        <KeyboardSheet>
+        <KeyboardSheet onDensityChange={setKeyboardDensity}>
           <CustomKeyboard
             layout={currentLayout}
             shift={engine.shift}
-            density={density}
+            density={keyboardDensity}
             onKey={handleKey}
             onSelectVariant={handleSelectVariant}
           />

@@ -8,7 +8,7 @@ interface CustomKeyboardProps {
   shift: boolean;
   onKey: (spec: KeySpec) => void;
   onSelectVariant?: (variant: string) => void;
-  density?: "comfort" | "compact";
+  density?: "comfort" | "compact" | "ultra";
   className?: string;
 }
 
@@ -73,19 +73,17 @@ export default function CustomKeyboard({
     onSelectVariant?.(variant);
     setPopover(null);
   };
-
-  const densityGap = density === "comfort" ? "gap-2" : "gap-1.5";
-
   return (
     <div className={`relative ${className}`}>
       <div
-        className={`flex flex-col ${densityGap} px-2 pb-2`}
+        data-tier={density}
+        className="kbd flex flex-col gap-[var(--key-gap)] px-2 pb-2"
         style={{ contain: "layout paint" }}
       >
         {adaptiveRows.map((row, i) => (
           <div
             key={i}
-            className={`flex ${densityGap} justify-center`}
+            className="flex gap-[var(--key-gap)] justify-center"
             style={{ contain: "layout paint" }}
           >
             {row.map((spec, j) => (

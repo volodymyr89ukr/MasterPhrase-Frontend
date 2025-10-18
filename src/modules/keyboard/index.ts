@@ -8,3 +8,5 @@ export { enLayout } from "./layouts/en";
 export { deLayout } from "./layouts/de";
 export { esLayout } from "./layouts/es";
 export { symbolsLayout } from "./layouts/symbols";
+export { useKeyboardAutosize } from "./hooks/useKeyboardAutosize";
+export type { DensityTier } from "./hooks/useKeyboardAutosize";

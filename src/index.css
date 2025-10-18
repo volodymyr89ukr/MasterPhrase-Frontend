@@ -179,3 +179,35 @@
 .animate-errorPulse {
   animation: errorPulse 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Keyboard density tiers */
+.kbd[data-tier="comfort"] {
+  --key-h: 56px;
+  --key-gap: 8px;
+  --key-px: 12px;
+  --font: 1.125rem;
+}
+
+.kbd[data-tier="compact"] {
+  --key-h: 50px;
+  --key-gap: 6px;
+  --key-px: 10px;
+  --font: 1rem;
+}
+
+.kbd[data-tier="ultra"] {
+  --key-h: 44px;
+  --key-gap: 4px;
+  --key-px: 9px;
+  --font: 0.95rem;
+}
+
+/* Hide keyboard sheet scrollbar */
+.kbd-sheet::-webkit-scrollbar {
+  display: none;
+}
+
+.kbd-sheet {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
