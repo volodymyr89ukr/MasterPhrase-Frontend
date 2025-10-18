@@ -101,6 +101,36 @@
       font-size: 0.9rem !important;
     }
   }
+  /* Анімація підкреслення для тексту */
+  .underline-animated-text {
+    /* Створюємо підкреслення через градієнт фону */
+    background-image: linear-gradient(hsl(var(--success)), hsl(var(--success)));
+    background-repeat: no-repeat;
+    background-position: 0% 100%; /* Позиція внизу зліва */
+
+    /* Початковий стан: лінія невидима (ширина 0%) */
+    background-size: 0% 2px;
+
+    /* Запускаємо анімацію */
+    animation: underline-wipe 1.5s ease-out forwards;
+  }
+
+  /* Опис самої анімації */
+  @keyframes underline-wipe {
+    to {
+      /* Кінцевий стан: лінія займає 100% ширини */
+      background-size: 100% 2px;
+    }
+  }
+
+  /* Повага до налаштувань доступності */
+  @media (prefers-reduced-motion: reduce) {
+    .underline-animated-text {
+      animation: none;
+      /* Якщо анімація вимкнена, просто показуємо лінію */
+      background-size: 100% 2px;
+    }
+  }
 }
 
 /* Success/Error animations (legacy support - migrating to Tailwind) */
