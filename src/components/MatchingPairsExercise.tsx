@@ -196,7 +196,7 @@ export default function MatchingPairsExercise({
                 transition-all duration-300
                 ${
                   isMatched
-                    ? "bg-success/20 border-success text-success-foreground"
+                    ? "bg-success/20 border-success text-success"
                     : isOpen
                     ? "bg-card border-primary"
                     : "bg-accent border-border"
