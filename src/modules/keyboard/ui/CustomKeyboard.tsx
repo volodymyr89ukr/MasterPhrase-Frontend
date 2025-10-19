@@ -77,15 +77,11 @@ export default function CustomKeyboard({
     <div className={`relative ${className}`}>
       <div
         data-tier={density}
-        className="kbd flex flex-col gap-[var(--key-gap)] px-2 pb-2"
+        className="kbd flex flex-col gap-[var(--key-gap)] px-1 pb-2"
         style={{ contain: "layout paint" }}
       >
         {adaptiveRows.map((row, i) => (
-          <div
-            key={i}
-            className="flex gap-[var(--key-gap)] justify-center"
-            style={{ contain: "layout paint" }}
-          >
+          <div key={i} className="kbd-row" style={{ contain: "layout paint" }}>
             {row.map((spec, j) => (
               <Key
                 key={j}

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 export type DensityTier = "comfort" | "compact" | "ultra";
 
 const HEIGHT_MAP = { comfort: 56, compact: 50, ultra: 44 };
-const GAP_MAP = { comfort: 8, compact: 6, ultra: 4 };
+const GAP_MAP = { comfort: 6, compact: 5, ultra: 4 };
 const ROWS_COUNT = 4;
 
 export function useKeyboardAutosize(extraPadding = 12): DensityTier {

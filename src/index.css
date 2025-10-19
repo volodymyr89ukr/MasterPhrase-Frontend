@@ -211,3 +211,111 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+/* Keyboard responsive width adjustments */
+.kbd-sheet {
+  /* Remove horizontal margin on very narrow screens */
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+}
+
+@media (min-width: 380px) {
+  .kbd-sheet {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
+}
+
+/* Key responsive sizing */
+.kbd[data-tier="comfort"] {
+  --key-h: 56px;
+  --key-gap: 6px;
+  --key-px: 8px;
+  --font: 1.125rem;
+  --key-min-w: 32px;
+}
+
+.kbd[data-tier="compact"] {
+  --key-h: 50px;
+  --key-gap: 5px;
+  --key-px: 7px;
+  --font: 1rem;
+  --key-min-w: 30px;
+}
+
+.kbd[data-tier="ultra"] {
+  --key-h: 44px;
+  --key-gap: 4px;
+  --key-px: 6px;
+  --font: 0.95rem;
+  --key-min-w: 28px;
+}
+
+/* Increase key width on wider screens */
+@media (min-width: 380px) {
+  .kbd[data-tier="comfort"] {
+    --key-gap: 8px;
+    --key-px: 10px;
+    --key-min-w: 36px;
+  }
+
+  .kbd[data-tier="compact"] {
+    --key-gap: 6px;
+    --key-px: 9px;
+    --key-min-w: 34px;
+  }
+
+  .kbd[data-tier="ultra"] {
+    --key-gap: 5px;
+    --key-px: 8px;
+    --key-min-w: 32px;
+  }
+}
+
+@media (min-width: 420px) {
+  .kbd[data-tier="comfort"] {
+    --key-gap: 8px;
+    --key-px: 12px;
+    --key-min-w: 40px;
+  }
+
+  .kbd[data-tier="compact"] {
+    --key-gap: 7px;
+    --key-px: 10px;
+    --key-min-w: 38px;
+  }
+
+  .kbd[data-tier="ultra"] {
+    --key-gap: 6px;
+    --key-px: 9px;
+    --key-min-w: 36px;
+  }
+}
+
+/* Ensure keys flex to fill available space */
+.kbd .kbd-row {
+  display: flex;
+  justify-content: center;
+  gap: var(--key-gap);
+  width: 100%;
+}
+
+.kbd .kbd-key {
+  flex: 1 1 auto;
+  min-width: var(--key-min-w);
+  max-width: 64px;
+  height: var(--key-h);
+  padding-left: var(--key-px);
+  padding-right: var(--key-px);
+  font-size: var(--font);
+}
+
+/* Special keys */
+.kbd .kbd-key-wide {
+  flex: 1.5 1.5 auto;
+  min-width: calc(var(--key-min-w) * 1.5);
+}
+
+.kbd .kbd-key-space {
+  flex: 3 3 auto;
+  min-width: calc(var(--key-min-w) * 3);
+}

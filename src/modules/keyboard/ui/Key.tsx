@@ -121,14 +121,15 @@ export default function Key({
   const isSymbols = isAction && spec.action === "Symbols";
   const isSwitch = isAction && spec.action === "Switch";
 
-  const baseClass = `relative h-[var(--key-h)] min-w-[44px] px-[var(--key-px)] rounded-2xl text-[var(--font)] font-semibold select-none transition-all active:scale-95 focus:outline-none shadow-md ring-1 ring-white/10 active:ring-2 active:ring-blue-400`;
+  const baseClass = `kbd-key relative rounded-2xl font-semibold select-none transition-all active:scale-95 focus:outline-none shadow-md ring-1 ring-white/10 active:ring-2 active:ring-blue-400`;
   const colorClass = isAction
     ? "bg-[#1A1F24] text-white"
     : "bg-[#1C2127] text-white";
 
   const shiftClass = isShift && shift ? "ring-2 ring-blue-500" : "";
-  const spaceClass = isSpace ? "flex-grow" : "";
-  const wideClass = isEnter || isBackspace ? "min-w-[68px]" : "";
+  const spaceClass = isSpace ? "kbd-key-space" : "";
+  const wideClass =
+    isEnter || isBackspace || isSymbols || isSwitch ? "kbd-key-wide" : "";
 
   // Icons for action keys
   let icon = null;
