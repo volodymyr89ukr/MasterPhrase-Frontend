@@ -4,6 +4,7 @@ export const enLayout: KeyboardLayout = {
   id: "en",
   displayName: "English",
   rows: [
+    // Row 1: QWERTY...
     [
       { type: "char", label: "q" },
       { type: "char", label: "w" },
@@ -16,6 +17,7 @@ export const enLayout: KeyboardLayout = {
       { type: "char", label: "o" },
       { type: "char", label: "p" },
     ],
+    // Row 2: ASDF...
     [
       { type: "char", label: "a" },
       { type: "char", label: "s" },
@@ -27,8 +29,9 @@ export const enLayout: KeyboardLayout = {
       { type: "char", label: "k" },
       { type: "char", label: "l" },
     ],
+    // Row 3: Shift + letters
     [
-      { type: "action", action: "Shift", label: "⇧" },
+      { type: "action", label: "⇧", action: "Shift" },
       { type: "char", label: "z" },
       { type: "char", label: "x" },
       { type: "char", label: "c" },
@@ -36,13 +39,14 @@ export const enLayout: KeyboardLayout = {
       { type: "char", label: "b" },
       { type: "char", label: "n" },
       { type: "char", label: "m" },
-      { type: "action", action: "Backspace", label: "⌫" },
+      { type: "action", label: "⌫", action: "Backspace" },
     ],
+    // Row 4: Service keys
     [
-      { type: "action", action: "Symbols", label: "123" },
-      { type: "action", action: "Switch", label: "🌐" },
-      { type: "action", action: "Space", label: "space" },
-      { type: "action", action: "Enter", label: "↵" },
+      { type: "action", label: "123", action: "Symbols" },
+      { type: "action", label: "🌐", action: "Switch" },
+      { type: "action", label: "Space", action: "Space" },
+      { type: "action", label: "↵", action: "Enter" },
     ],
   ],
   transform: {

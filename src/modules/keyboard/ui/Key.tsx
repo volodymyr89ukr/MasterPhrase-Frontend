@@ -1,15 +1,12 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { KeySpec } from "../types";
 
 interface KeyProps {
   spec: KeySpec;
   shift: boolean;
   onPress: (spec: KeySpec) => void;
-  onLongPress?: (options: string[], rect: DOMRect) => void;
   density?: "comfort" | "compact" | "ultra";
 }
-
-const LONG_PRESS_DELAY = 350;
 
 // SVG Icons
 const ShiftIcon = () => (
@@ -61,67 +58,27 @@ export default function Key({
   spec,
   shift,
   onPress,
-  onLongPress,
   density = "comfort",
 }: KeyProps) {
   const [pressing, setPressing] = useState(false);
-  const timerRef = useRef<number | null>(null);
-  const longPressTriggered = useRef(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        window.clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
     setPressing(true);
-    longPressTriggered.current = false;
-
-    if (spec.type === "char" && spec.longPress && spec.longPress.length > 0) {
-      console.log(
-        "🔵 Long-press timer started for:",
-        spec.label,
-        spec.longPress
-      ); // DEBUG
-      timerRef.current = window.setTimeout(() => {
-        if (buttonRef.current) {
-          const r = buttonRef.current.getBoundingClientRect();
-          longPressTriggered.current = true;
-          onLongPress?.(spec.longPress!, r);
-        }
-      }, LONG_PRESS_DELAY);
-    }
   };
 
   const handlePointerUp = () => {
-    if (timerRef.current) {
-      window.clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-
-    // Only trigger onPress if long-press was NOT triggered
-    if (pressing && !longPressTriggered.current) {
+    if (pressing) {
       onPress(spec);
     }
-
     setPressing(false);
-    longPressTriggered.current = false;
   };
 
   const handlePointerCancel = () => {
-    if (timerRef.current) {
-      window.clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
     setPressing(false);
-    longPressTriggered.current = false;
   };
+
   let displayLabel = spec.type === "char" ? spec.label : spec.label || "";
   if (spec.type === "char" && shift && /^[a-z]$/.test(spec.label)) {
     displayLabel = spec.label.toUpperCase();

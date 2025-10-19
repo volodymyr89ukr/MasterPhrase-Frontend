@@ -397,10 +397,6 @@ export default function WritingExercise({
     }
   };
 
-  const handleSelectVariant = (variant: string) => {
-    engine.insert(variant);
-  };
-
   const inputColorClass =
     inputStatus === "correct"
       ? "border-success bg-success/10"
@@ -520,7 +516,6 @@ export default function WritingExercise({
             shift={engine.shift}
             density={keyboardDensity}
             onKey={handleKey}
-            onSelectVariant={handleSelectVariant}
           />
         </KeyboardSheet>
       )}
