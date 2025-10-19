@@ -89,11 +89,8 @@ export default function CustomKeyboard({
                 shift={shift}
                 density={density}
                 onPress={onKey}
-                onLongPress={(opts) => {
-                  const btn = document.activeElement as HTMLButtonElement;
-                  if (btn) {
-                    handleLongPress(opts, btn.getBoundingClientRect());
-                  }
+                onLongPress={(opts, rect) => {
+                  handleLongPress(opts, rect);
                 }}
               />
             ))}

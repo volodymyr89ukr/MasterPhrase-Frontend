@@ -5,7 +5,7 @@ interface KeyProps {
   spec: KeySpec;
   shift: boolean;
   onPress: (spec: KeySpec) => void;
-  onLongPress?: (options: string[]) => void;
+  onLongPress?: (options: string[], rect: DOMRect) => void;
   density?: "comfort" | "compact" | "ultra";
 }
 
@@ -84,7 +84,7 @@ export default function Key({
         if (buttonRef.current) {
           const r = buttonRef.current.getBoundingClientRect();
           setRect(r);
-          onLongPress?.(spec.longPress!);
+          onLongPress?.(spec.longPress!, r); // ✅ Передаємо rect
         }
       }, LONG_PRESS_DELAY);
     }

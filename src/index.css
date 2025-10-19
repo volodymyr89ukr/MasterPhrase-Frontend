@@ -179,7 +179,6 @@
 .animate-errorPulse {
   animation: errorPulse 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 /* Keyboard density tiers */
 .kbd[data-tier="comfort"] {
   --key-h: 56px;

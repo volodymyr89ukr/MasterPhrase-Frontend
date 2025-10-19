@@ -24,10 +24,11 @@ export default function KeyboardSheet({
   return (
     <div
       data-tier={tier}
-      className="kbd-sheet fixed left-0 right-0 bottom-0 z-30 bg-[#0E1116]/95 backdrop-blur pt-2 pb-[env(safe-area-inset-bottom)] overflow-y-auto overscroll-contain"
+      className="kbd-sheet fixed left-0 right-0 bottom-0 z-30 bg-[#0E1116]/96 backdrop-blur-sm pt-2 pb-[env(safe-area-inset-bottom)] overflow-y-auto overscroll-contain"
       style={{
         maxHeight: "var(--kbd-sheet-max, 42dvh)",
         contain: "layout paint",
+        touchAction: "pan-y",
       }}
     >
       {children}
