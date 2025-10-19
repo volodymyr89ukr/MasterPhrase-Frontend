@@ -73,6 +73,10 @@ export default function CustomKeyboard({
     onSelectVariant?.(variant);
     setPopover(null);
   };
+
+  const handleClosePopover = () => {
+    setPopover(null);
+  };
   return (
     <div className={`relative ${className}`}>
       <div
@@ -103,7 +107,7 @@ export default function CustomKeyboard({
           options={popover.options}
           anchorRect={popover.rect}
           onSelect={handleSelectVariant}
-          onClose={() => setPopover(null)}
+          onClose={handleClosePopover}
         />
       )}
     </div>

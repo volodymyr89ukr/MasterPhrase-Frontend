@@ -66,25 +66,34 @@ export default function Key({
 }: KeyProps) {
   const [pressing, setPressing] = useState(false);
   const timerRef = useRef<number | null>(null);
-  const [rect, setRect] = useState<DOMRect | null>(null);
+  const longPressTriggered = useRef(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
     };
   }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
     setPressing(true);
+    longPressTriggered.current = false;
 
     if (spec.type === "char" && spec.longPress && spec.longPress.length > 0) {
+      console.log(
+        "🔵 Long-press timer started for:",
+        spec.label,
+        spec.longPress
+      ); // DEBUG
       timerRef.current = window.setTimeout(() => {
         if (buttonRef.current) {
           const r = buttonRef.current.getBoundingClientRect();
-          setRect(r);
-          onLongPress?.(spec.longPress!, r); // ✅ Передаємо rect
+          longPressTriggered.current = true;
+          onLongPress?.(spec.longPress!, r);
         }
       }, LONG_PRESS_DELAY);
     }
@@ -92,22 +101,27 @@ export default function Key({
 
   const handlePointerUp = () => {
     if (timerRef.current) {
-      clearTimeout(timerRef.current);
+      window.clearTimeout(timerRef.current);
       timerRef.current = null;
     }
-    if (pressing && !rect) {
+
+    // Only trigger onPress if long-press was NOT triggered
+    if (pressing && !longPressTriggered.current) {
       onPress(spec);
     }
+
     setPressing(false);
-    setRect(null);
+    longPressTriggered.current = false;
   };
 
   const handlePointerCancel = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    if (timerRef.current) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
     setPressing(false);
-    setRect(null);
+    longPressTriggered.current = false;
   };
-
   let displayLabel = spec.type === "char" ? spec.label : spec.label || "";
   if (spec.type === "char" && shift && /^[a-z]$/.test(spec.label)) {
     displayLabel = spec.label.toUpperCase();
