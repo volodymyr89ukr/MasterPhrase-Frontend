@@ -21,12 +21,12 @@ export function useKeyboardAutosize(extraPadding = 12): DensityTier {
             .replace("px", "")
         ) || 0;
 
-      // Max keyboard height: 42% of viewport or viewport - content (220px) - safe area
-      const maxSheetHeight = Math.min(vh * 0.42, vh - 220 - safeBottom);
+      // Max keyboard height: 38% of viewport or viewport - content (220px) - safe area
+      const maxSheetHeight = Math.min(vh * 0.38, vh - 220 - safeBottom);
 
       // Calculate required height for each tier
       const calcNeeded = (h: number, g: number) =>
-        ROWS_COUNT * h + (ROWS_COUNT - 1) * g + safeBottom + extraPadding;
+        ROWS_COUNT * h + (ROWS_COUNT - 1) * g + safeBottom + 8;
 
       // Choose tier that fits
       let newTier: DensityTier;
