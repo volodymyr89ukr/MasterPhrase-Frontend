@@ -501,13 +501,6 @@ export default function WritingExercise({
         </style>
       </div>
 
-      <div className="py-3 text-muted-foreground text-base font-medium text-center select-none">
-        {t("phrases_count", {
-          current: currentIdx + 1,
-          total: phrases.length,
-        })}
-      </div>
-
       {/* Touch: Custom Keyboard */}
       {isTouchDevice && (
         <KeyboardSheet onDensityChange={setKeyboardDensity}>

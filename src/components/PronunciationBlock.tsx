@@ -156,10 +156,6 @@ export default function PronunciationBlock({
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
       <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
-        <div className="mb-2 text-center text-sm text-muted-foreground">
-          {currentIdx + 1}/{phrases.length} {t("phrase")}
-        </div>
-
         <div className="text-2xl text-center font-medium my-4 min-h-[3.2em] px-3 py-2 rounded">
           {fullPhrase}
         </div>
@@ -224,12 +220,6 @@ export default function PronunciationBlock({
             />
             {t("show_translation")}
           </label>
-          <button
-            onClick={handleRepeat}
-            className="px-3 py-1 rounded bg-secondary hover:bg-accent text-secondary-foreground text-sm transition-colors"
-          >
-            {t("repeat")}
-          </button>
         </div>
 
         <div className="flex justify-center mt-6">
