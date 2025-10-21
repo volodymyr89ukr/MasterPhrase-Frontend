@@ -174,7 +174,7 @@ function AppContent() {
   const isHome = location.pathname === "/";
 
   return (
-    <div className="w-screen h-screen overflow-y-auto flex flex-col bg-background">
+    <div className="app-viewport w-screen overflow-y-auto flex flex-col bg-background pb-safe">
       {/* Назва додатку окремим рядком по центру на головній */}
       {isHome && (
         <div className="w-full flex flex-col items-center mt-6 mb-2">
