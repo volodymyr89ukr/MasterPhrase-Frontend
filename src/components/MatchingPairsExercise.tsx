@@ -151,9 +151,6 @@ export default function MatchingPairsExercise({
 
   return (
     <div className="flex flex-col h-full items-stretch w-full max-w-lg mx-auto min-h-[420px] p-2 sm:p-4 rounded-xl shadow bg-card relative">
-      <div className="mb-2 text-center text-sm text-muted-foreground">
-        {t("find_all_pairs")}
-      </div>
       <div className="mb-2 text-center text-xs text-muted-foreground flex items-center justify-center gap-3 flex-wrap">
         <span>
           {t("attempts")}: {moves}

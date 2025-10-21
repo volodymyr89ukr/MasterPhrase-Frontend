@@ -156,9 +156,6 @@ export default function PronunciationBlock({
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
       <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
-        <div className="mb-3 text-base text-muted-foreground font-semibold">
-          {t("repeat_phrase_after_audio")}
-        </div>
         <div className="mb-2 text-center text-sm text-muted-foreground">
           {currentIdx + 1}/{phrases.length} {t("phrase")}
         </div>
