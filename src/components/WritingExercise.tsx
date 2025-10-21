@@ -406,7 +406,7 @@ export default function WritingExercise({
 
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
+      <div className="p-3 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
         <div className="text-base sm:text-lg text-muted-foreground italic text-center min-h-[2em]">
           {obj.translation}
         </div>
