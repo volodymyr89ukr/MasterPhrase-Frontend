@@ -406,12 +406,12 @@ export default function WritingExercise({
 
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
-        <div className="text-base sm:text-lg text-muted-foreground italic text-center min-h-[2em]">
+      <div className="p-3 sm:p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center gap-3">
+        <div className="text-sm sm:text-base text-muted-foreground italic text-center leading-tight">
           {obj.translation}
         </div>
         <div
-          className="text-2xl sm:text-3xl text-center font-semibold min-h-[2.7em] px-2 sm:px-6 py-2"
+          className="text-xl sm:text-2xl text-center font-semibold px-2 sm:px-4 py-1.5"
           style={{ letterSpacing: "0.02em", wordBreak: "break-word" }}
         >
           {maskedPhrase}
@@ -422,7 +422,7 @@ export default function WritingExercise({
           <input
             ref={inputRef}
             type="text"
-            className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 outline-none shadow transition-all duration-200 w-full max-w-[90vw] ${inputColorClass}`}
+            className={`text-lg sm:text-xl text-center px-4 py-2.5 rounded-lg border-2 outline-none shadow transition-all duration-200 w-full max-w-[90vw] ${inputColorClass}`}
             style={{
               fontFamily: "inherit",
               letterSpacing: "0.04em",
@@ -454,7 +454,7 @@ export default function WritingExercise({
             role="textbox"
             aria-readonly="true"
             aria-live="polite"
-            className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 shadow transition-all duration-200 w-full max-w-[90vw] min-h-[52px] ${inputColorClass}`}
+            className={`text-lg sm:text-xl text-center px-4 py-2.5 rounded-lg border-2 shadow transition-all duration-200 w-full max-w-[90vw] min-h-[48px] ${inputColorClass}`}
             style={{
               fontFamily: "inherit",
               letterSpacing: "0.04em",
@@ -465,11 +465,11 @@ export default function WritingExercise({
           </div>
         )}
 
-        <div className="flex flex-row gap-3 w-full justify-center mt-5">
+        <div className="flex flex-row gap-2 w-full justify-center">
           <button
             onClick={handleHintPart}
             disabled={hintLevel >= 1}
-            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-colors ${
+            className={`w-full sm:w-auto px-3 py-1.5 rounded-lg border bg-secondary hover:bg-accent text-secondary-foreground text-sm transition-colors ${
               hintLevel >= 1 ? "opacity-60 cursor-not-allowed" : ""
             }`}
           >
@@ -478,7 +478,7 @@ export default function WritingExercise({
           <button
             onClick={handleHintAll}
             disabled={hintLevel >= 2}
-            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-colors ${
+            className={`w-full sm:w-auto px-3 py-1.5 rounded-lg border bg-secondary hover:bg-accent text-secondary-foreground text-sm transition-colors ${
               hintLevel >= 2 ? "opacity-60 cursor-not-allowed" : ""
             }`}
           >

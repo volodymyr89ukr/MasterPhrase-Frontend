@@ -340,6 +340,31 @@
   max-width: 180px;
 }
 
+/* ========================================
+   KEYBOARD ENHANCEMENTS
+   ======================================== */
+
+/* Prevent text selection and enable smooth touch */
+.kbd .kbd-key {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+/* Reduce KeyboardSheet top padding on small screens */
+@media (max-height: 667px) {
+  .kbd-sheet {
+    padding-top: 0.25rem;
+  }
+}
+
+@media (max-height: 568px) {
+  .kbd-sheet {
+    padding-top: 0.125rem;
+  }
+}
+
 /* === Dynamic viewport height + safe-area padding === */
 .app-viewport {
   height: 100svh; /* fallback для iOS/Android старіші */
