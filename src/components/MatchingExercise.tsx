@@ -265,18 +265,6 @@ export default function MatchingExercise({
             </div>
           )}
         </div>
-
-        <div className="w-full bg-secondary rounded-full h-3 mt-6 mb-2">
-          <div
-            className="bg-primary h-3 rounded-full transition-all duration-300"
-            style={{
-              width: `${((progress ?? 0) / (total || 1)) * 100}%`,
-            }}
-          ></div>
-        </div>
-        <div className="text-sm text-muted-foreground text-right mb-4">
-          {progress ?? 0}/{total} {t("learned")}
-        </div>
       </div>
     </div>
   );
