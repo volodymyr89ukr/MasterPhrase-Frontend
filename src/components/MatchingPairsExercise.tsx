@@ -22,6 +22,7 @@ interface MatchingPairsExerciseProps {
   phrases: Phrase[];
   onComplete?: () => void;
   onReset?: () => void;
+  onProgressUpdate?: (matched: number, total: number) => void;
 }
 
 function buildCards(phrases: Phrase[]): Card[] {
@@ -52,6 +53,7 @@ export default function MatchingPairsExercise({
   phrases,
   onComplete,
   onReset,
+  onProgressUpdate,
 }: MatchingPairsExerciseProps) {
   const { t } = useTranslation();
   const { learningLanguage } = useSettings();
@@ -98,6 +100,11 @@ export default function MatchingPairsExercise({
         (async () => {
           await new Promise((r) => setTimeout(r, 600)); // анімація перевороту
           setMatched((m) => [...m, first.id, second.id]);
+          // Оновлюємо прогрес у батьківському компоненті
+          if (onProgressUpdate) {
+            const newMatchedCount = matched.length + 2; // +2 бо додаємо дві карти
+            onProgressUpdate(newMatchedCount / 2, phrases.length); // ділимо на 2, бо кожна пара = 2 карти
+          }
           setOpened([]);
           setLock(false);
 

@@ -256,8 +256,12 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     }
   }
 
+  function handlePairsProgressUpdate(matched: number, total: number) {
+    setPairsProgress(matched);
+  }
+
   function handlePairsComplete() {
-    setPairsProgress(matchingPool.length); // встановлюємо прогрес = poolSize
+    // Прогрес вже встановлений через onProgressUpdate
     setMode("transition-to-pronunciation");
   }
 
@@ -466,6 +470,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             key={pairsKey}
             phrases={matchingPool}
             onComplete={handlePairsComplete}
+            onProgressUpdate={handlePairsProgressUpdate}
           />
         )}
         {mode === "pairs" && matchingPool.length < 2 && (
