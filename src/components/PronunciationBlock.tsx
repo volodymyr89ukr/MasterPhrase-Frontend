@@ -14,12 +14,14 @@ interface PronunciationBlockProps {
   phrases: Phrase[];
   cycles?: number;
   onComplete?: () => void;
+  onProgressUpdate?: (current: number, total: number) => void;
 }
 
 export default function PronunciationBlock({
   phrases = [],
   cycles = 1,
   onComplete,
+  onProgressUpdate,
 }: PronunciationBlockProps) {
   const { t } = useTranslation();
   const { learningLanguage } = useSettings();
@@ -34,6 +36,12 @@ export default function PronunciationBlock({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  // Встановлюємо початковий прогрес
+  useEffect(() => {
+    if (onProgressUpdate) {
+      onProgressUpdate(currentIdx + 1, phrases.length);
+    }
+  }, [currentIdx, phrases.length, onProgressUpdate]);
 
   const curr = phrases[currentIdx];
   const fullPhrase = curr?.phrase?.replace(/_+/, curr?.answer || "") || "";
@@ -118,8 +126,19 @@ export default function PronunciationBlock({
 
   const handleNext = () => {
     if (currentIdx < phrases.length - 1) {
-      setCurrentIdx((idx) => idx + 1);
+      const nextIdx = currentIdx + 1;
+      setCurrentIdx(nextIdx);
+
+      // Оновлюємо прогрес у батьківському компоненті
+      if (onProgressUpdate) {
+        onProgressUpdate(nextIdx + 1, phrases.length);
+      }
     } else {
+      // Встановлюємо прогрес на максимум перед завершенням
+      if (onProgressUpdate) {
+        onProgressUpdate(phrases.length, phrases.length);
+      }
+
       // Викликаємо onComplete тільки після завершення всіх фраз
       if (onComplete) {
         onComplete();

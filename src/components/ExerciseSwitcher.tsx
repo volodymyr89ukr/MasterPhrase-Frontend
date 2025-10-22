@@ -260,18 +260,26 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setPairsProgress(matched);
   }
 
+  function handlePronunciationProgressUpdate(current: number, total: number) {
+    setPronunciationProgress(current);
+  }
+
+  function handleWritingProgressUpdate(current: number, total: number) {
+    setWritingProgress(current);
+  }
+
   function handlePairsComplete() {
     // Прогрес вже встановлений через onProgressUpdate
     setMode("transition-to-pronunciation");
   }
 
   function handlePronunciationComplete() {
-    setPronunciationProgress(matchingPool.length); // встановлюємо прогрес = poolSize
+    // Прогрес вже встановлений через onProgressUpdate
     setMode("transition-to-writing");
   }
 
   function handleWritingComplete() {
-    setWritingProgress(matchingPool.length); // встановлюємо прогрес = poolSize
+    // Прогрес вже встановлений через onProgressUpdate
 
     // Додаємо фрази з поточного циклу до списку повністю вивчених
     const newCompleted = new Set(cycleCompletedPhrases);
@@ -506,6 +514,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             phrases={matchingPool}
             cycles={1}
             onComplete={handlePronunciationComplete}
+            onProgressUpdate={handlePronunciationProgressUpdate}
           />
         )}
 
@@ -514,6 +523,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             key={matchingPool.map((obj) => obj.id).join("_")}
             phrases={matchingPool}
             onComplete={handleWritingComplete}
+            onProgressUpdate={handleWritingProgressUpdate}
           />
         )}
       </div>

@@ -27,6 +27,7 @@ interface Phrase {
 interface WritingExerciseProps {
   phrases: Phrase[];
   onComplete?: () => void;
+  onProgressUpdate?: (current: number, total: number) => void;
 }
 
 function getWordByIndex(str: string, idx: number): string {
@@ -69,6 +70,7 @@ function normalizeText(s: string): string {
 export default function WritingExercise({
   phrases = [],
   onComplete,
+  onProgressUpdate,
 }: WritingExerciseProps) {
   const { t } = useTranslation();
   const { learningLanguage } = useSettings();
@@ -126,6 +128,12 @@ export default function WritingExercise({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Встановлюємо початковий прогрес
+  useEffect(() => {
+    if (onProgressUpdate) {
+      onProgressUpdate(currentIdx + 1, phrases.length);
+    }
+  }, [currentIdx, phrases.length, onProgressUpdate]);
   // Reset when phrases change
   useEffect(() => {
     setCurrentIdx(0);
@@ -267,12 +275,23 @@ export default function WritingExercise({
             await new Promise((r) => setTimeout(r, 800));
 
             if (currentIdx < phrases.length - 1) {
-              setCurrentIdx((idx) => idx + 1);
+              const nextIdx = currentIdx + 1;
+              setCurrentIdx(nextIdx);
               setTargetPos(0);
               engine.reset();
               setHintLevel(0);
               setInputStatus("default");
+
+              // Оновлюємо прогрес у батьківському компоненті
+              if (onProgressUpdate) {
+                onProgressUpdate(nextIdx + 1, phrases.length);
+              }
             } else {
+              // Встановлюємо прогрес на максимум перед завершенням
+              if (onProgressUpdate) {
+                onProgressUpdate(phrases.length, phrases.length);
+              }
+
               setCompleted(true);
               if (onComplete) onComplete();
             }
@@ -328,12 +347,23 @@ export default function WritingExercise({
           await new Promise((r) => setTimeout(r, 800));
 
           if (currentIdx < phrases.length - 1) {
-            setCurrentIdx((idx) => idx + 1);
+            const nextIdx = currentIdx + 1;
+            setCurrentIdx(nextIdx);
             setTargetPos(0);
             engine.reset();
             setHintLevel(0);
             setInputStatus("default");
+
+            // Оновлюємо прогрес у батьківському компоненті
+            if (onProgressUpdate) {
+              onProgressUpdate(nextIdx + 1, phrases.length);
+            }
           } else {
+            // Встановлюємо прогрес на максимум перед завершенням
+            if (onProgressUpdate) {
+              onProgressUpdate(phrases.length, phrases.length);
+            }
+
             setCompleted(true);
             if (onComplete) onComplete();
           }
