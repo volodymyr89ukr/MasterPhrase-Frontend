@@ -412,6 +412,14 @@ export default function Block1({
     if (selectedExerciseId && exerciseDetails) {
       return (
         <div className="w-full h-full overflow-y-auto p-2 sm:p-4 max-w-3xl min-w-[360px] mx-auto flex flex-col justify-between pb-safe min-h-0">
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={handleRequestExitExercise}
+              className="px-3 py-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 border border-input shadow text-sm transition-colors"
+            >
+              {t("finish_exercise")}
+            </button>
+          </div>
           <div className="flex-1">
             {loadingExerciseDetails ? (
               <div className="text-muted-foreground text-center my-6">
@@ -428,7 +436,6 @@ export default function Block1({
                   exerciseDetails.name ||
                   exerciseDetails.title
                 }
-                onBack={handleConfirmExitExercise}
               />
             )}
           </div>
