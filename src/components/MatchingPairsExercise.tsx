@@ -198,7 +198,7 @@ export default function MatchingPairsExercise({
               disabled={isOpen || lock || opened.length === 2}
               tabIndex={isOpen ? -1 : 0}
               className={`
-                relative group w-full aspect-[3/4] min-h-[80px]
+                relative group w-full aspect-[4/5] min-h-[80px]
                 rounded-xl shadow-md border-2 flex items-center justify-center
                 transition-all duration-300
                 ${
