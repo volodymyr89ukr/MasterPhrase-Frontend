@@ -140,13 +140,16 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     }
   }
 
-  // Отримати поточний прогрес у циклі
+  // Отримати поточний прогрес у циклі (скільки завершено)
   function getCurrentInCycle(currentMode: typeof mode): number {
     switch (currentMode) {
       case "matching":
-        return Math.min(exerciseData.length - questions.length + 1, poolSize);
+        // Скільки фраз вже пройдено (не +1, бо рахуємо завершені)
+        const completed = exerciseData.length - questions.length;
+        return Math.min(completed, poolSize);
       case "make-phrase":
-        return makePhraseIdx + 1;
+        // Скільки фраз вже завершено (не +1)
+        return makePhraseIdx;
       case "pairs":
         return pairsProgress;
       case "pronunciation":
@@ -466,6 +469,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
               const nextIdx = makePhraseIdx + 1;
               if (nextIdx < matchingPool.length) {
                 setMakePhraseIdx(nextIdx);
+                // Прогрес оновиться автоматично через getCurrentInCycle(),
+                // який повертає makePhraseIdx (вже збільшений)
               } else {
                 setMode("transition-to-pairs");
                 setPairsKey((k) => k + 1);
