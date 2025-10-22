@@ -128,12 +128,13 @@ export default function WritingExercise({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Встановлюємо початковий прогрес
+  // Встановлюємо початковий прогрес = 0 при монтуванні
   useEffect(() => {
     if (onProgressUpdate) {
-      onProgressUpdate(currentIdx + 1, phrases.length);
+      onProgressUpdate(0, phrases.length);
     }
-  }, [currentIdx, phrases.length, onProgressUpdate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phrases.length]);
   // Reset when phrases change
   useEffect(() => {
     setCurrentIdx(0);
@@ -282,12 +283,12 @@ export default function WritingExercise({
               setHintLevel(0);
               setInputStatus("default");
 
-              // Оновлюємо прогрес у батьківському компоненті
+              // Оновлюємо прогрес: завершено currentIdx + 1 фраз
               if (onProgressUpdate) {
-                onProgressUpdate(nextIdx + 1, phrases.length);
+                onProgressUpdate(currentIdx + 1, phrases.length);
               }
             } else {
-              // Встановлюємо прогрес на максимум перед завершенням
+              // Встановлюємо прогрес на максимум: завершено всі фрази
               if (onProgressUpdate) {
                 onProgressUpdate(phrases.length, phrases.length);
               }
@@ -354,12 +355,12 @@ export default function WritingExercise({
             setHintLevel(0);
             setInputStatus("default");
 
-            // Оновлюємо прогрес у батьківському компоненті
+            // Оновлюємо прогрес: завершено currentIdx + 1 фраз
             if (onProgressUpdate) {
-              onProgressUpdate(nextIdx + 1, phrases.length);
+              onProgressUpdate(currentIdx + 1, phrases.length);
             }
           } else {
-            // Встановлюємо прогрес на максимум перед завершенням
+            // Встановлюємо прогрес на максимум: завершено всі фрази
             if (onProgressUpdate) {
               onProgressUpdate(phrases.length, phrases.length);
             }

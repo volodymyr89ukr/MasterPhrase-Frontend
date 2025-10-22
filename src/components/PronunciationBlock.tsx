@@ -36,12 +36,13 @@ export default function PronunciationBlock({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
-  // Встановлюємо початковий прогрес
+  // Встановлюємо початковий прогрес = 0 при монтуванні
   useEffect(() => {
     if (onProgressUpdate) {
-      onProgressUpdate(currentIdx + 1, phrases.length);
+      onProgressUpdate(0, phrases.length);
     }
-  }, [currentIdx, phrases.length, onProgressUpdate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phrases.length]);
 
   const curr = phrases[currentIdx];
   const fullPhrase = curr?.phrase?.replace(/_+/, curr?.answer || "") || "";
@@ -129,12 +130,12 @@ export default function PronunciationBlock({
       const nextIdx = currentIdx + 1;
       setCurrentIdx(nextIdx);
 
-      // Оновлюємо прогрес у батьківському компоненті
+      // Оновлюємо прогрес: завершено currentIdx + 1 фраз
       if (onProgressUpdate) {
-        onProgressUpdate(nextIdx + 1, phrases.length);
+        onProgressUpdate(currentIdx + 1, phrases.length);
       }
     } else {
-      // Встановлюємо прогрес на максимум перед завершенням
+      // Встановлюємо прогрес на максимум: завершено всі фрази
       if (onProgressUpdate) {
         onProgressUpdate(phrases.length, phrases.length);
       }
