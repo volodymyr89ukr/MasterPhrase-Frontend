@@ -428,7 +428,7 @@ export default function Block1({
                   exerciseDetails.name ||
                   exerciseDetails.title
                 }
-                onBack={handleConfirmExitExercise}
+                onBack={handleRequestExitExercise}
               />
             )}
           </div>
