@@ -100,7 +100,10 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   // Лічильник для показу макро-прогресу
   const [showSessionProgress, setShowSessionProgress] = useState(false);
-
+  // Прогрес для блоків pairs, pronunciation, writing
+  const [pairsProgress, setPairsProgress] = useState(0);
+  const [pronunciationProgress, setPronunciationProgress] = useState(0);
+  const [writingProgress, setWritingProgress] = useState(0);
   // Отримати назву поточного блоку
   function getBlockName(currentMode: typeof mode): string {
     switch (currentMode) {
@@ -145,9 +148,11 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       case "make-phrase":
         return makePhraseIdx + 1;
       case "pairs":
+        return pairsProgress;
       case "pronunciation":
+        return pronunciationProgress;
       case "writing":
-        return matchingPool.length;
+        return writingProgress;
       default:
         return 0;
     }
@@ -163,6 +168,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setMakePhraseIdx(0);
     setCycleCompletedPhrases(new Set());
     setShowSessionProgress(false);
+    setPairsProgress(0);
+    setPronunciationProgress(0);
+    setWritingProgress(0);
   }, [exerciseData]);
 
   useEffect(() => {
@@ -249,14 +257,18 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }
 
   function handlePairsComplete() {
+    setPairsProgress(matchingPool.length); // встановлюємо прогрес = poolSize
     setMode("transition-to-pronunciation");
   }
 
   function handlePronunciationComplete() {
+    setPronunciationProgress(matchingPool.length); // встановлюємо прогрес = poolSize
     setMode("transition-to-writing");
   }
 
   function handleWritingComplete() {
+    setWritingProgress(matchingPool.length); // встановлюємо прогрес = poolSize
+
     // Додаємо фрази з поточного циклу до списку повністю вивчених
     const newCompleted = new Set(cycleCompletedPhrases);
     matchingPool.forEach((phrase) => {
@@ -284,6 +296,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setQuestions((qArr) => shuffleArray(qArr));
     setCurrentIdx(0);
     setMode("matching");
+    setPairsProgress(0);
+    setPronunciationProgress(0);
+    setWritingProgress(0);
   }
 
   function handleFullReset() {
@@ -296,6 +311,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setMakePhraseIdx(0);
     setCycleCompletedPhrases(new Set());
     setShowSessionProgress(false);
+    setPairsProgress(0);
+    setPronunciationProgress(0);
+    setWritingProgress(0);
   }
 
   useEffect(() => {

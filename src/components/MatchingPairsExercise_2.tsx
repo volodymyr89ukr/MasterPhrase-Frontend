@@ -61,6 +61,9 @@ export default function MatchingPairsExercise({
   const [lock, setLock] = useState(false);
   const [moves, setMoves] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const [animatingPhraseId, setAnimatingPhraseId] = useState<string | null>(
+    null
+  );
 
   function getStarRating(attempts: number): 0 | 1 | 2 | 3 {
     if (attempts <= 12) return 3;
@@ -76,6 +79,7 @@ export default function MatchingPairsExercise({
     setLock(false);
     setMoves(0);
     setIsFinished(false);
+    setAnimatingPhraseId(null); // Скидаємо анімацію при оновленні
   }, [phrases]);
 
   useEffect(() => {
@@ -90,14 +94,17 @@ export default function MatchingPairsExercise({
         return;
       }
       if (first.pairId === second.pairId && first.type !== second.type) {
-        // ✅ async wrapper для await
+        // ✅ Правильна пара
         (async () => {
-          await new Promise((r) => setTimeout(r, 600));
+          await new Promise((r) => setTimeout(r, 600)); // анімація перевороту
           setMatched((m) => [...m, first.id, second.id]);
           setOpened([]);
+          setLock(false);
 
+          // Запускаємо анімацію та TTS
           const phraseCard = [first, second].find((c) => c.type === "phrase");
           if (phraseCard) {
+            setAnimatingPhraseId(phraseCard.id); // Запускаємо анімацію
             try {
               await speakSmartAsync(phraseCard.content, {
                 lang: learningLanguage?.code || "de-DE",
@@ -106,12 +113,9 @@ export default function MatchingPairsExercise({
               // ignore TTS errors
             }
           }
-
-          // ✅ мінімальна пауза після озвучення
-          await new Promise((r) => setTimeout(r, 500));
-          setLock(false);
         })();
       } else {
+        // ❌ Неправильна пара
         setTimeout(() => {
           setOpened([]);
           setLock(false);
@@ -122,12 +126,11 @@ export default function MatchingPairsExercise({
 
   useEffect(() => {
     if (matched.length === cards.length && cards.length > 0 && !isFinished) {
-      // ✅ Чекаємо завершення анімації + TTS останньої фрази
+      // ✅ Гра завершена
       (async () => {
         await new Promise((r) => setTimeout(r, 700)); // анімація
         setIsFinished(true);
         await new Promise((r) => setTimeout(r, 2500)); // показ результату
-        // TTS уже завершено в попередньому useEffect (рядок 115)
         if (onComplete) onComplete();
       })();
     }
@@ -135,7 +138,7 @@ export default function MatchingPairsExercise({
 
   useEffect(() => {
     return () => {
-      cancelSpeak(); // ✅ cleanup TTS при unmount
+      cancelSpeak(); // cleanup TTS
     };
   }, []);
 
@@ -148,15 +151,10 @@ export default function MatchingPairsExercise({
 
   return (
     <div className="flex flex-col h-full items-stretch w-full max-w-lg mx-auto min-h-[420px] p-2 sm:p-4 rounded-xl shadow bg-card relative">
-      <div className="mb-2 text-center text-sm text-muted-foreground">
-        {t("find_all_pairs")}
-      </div>
       <div className="mb-2 text-center text-xs text-muted-foreground flex items-center justify-center gap-3 flex-wrap">
         <span>
           {t("attempts")}: {moves}
         </span>
-
-        {/* Легкий, непомітний текст-легенда; ховаємо на xs, показуємо з sm */}
         <span
           className="hidden sm:inline text-[11px] leading-snug text-muted-foreground/60 select-none"
           aria-label="Stars scoring rules"
@@ -184,6 +182,7 @@ export default function MatchingPairsExercise({
           const isOpen = opened.includes(card.id) || matched.includes(card.id);
           const isMatched = matched.includes(card.id);
           const isSelected = opened.includes(card.id);
+          const shouldAnimate = card.id === animatingPhraseId;
 
           return (
             <button
@@ -197,7 +196,7 @@ export default function MatchingPairsExercise({
                 transition-all duration-300
                 ${
                   isMatched
-                    ? "bg-success/20 border-success text-success-foreground"
+                    ? "bg-success/20 border-success text-success"
                     : isOpen
                     ? "bg-card border-primary"
                     : "bg-accent border-border"
@@ -221,7 +220,10 @@ export default function MatchingPairsExercise({
             >
               {/* Face: Лицева сторона */}
               <span
-                className="absolute inset-0 flex items-center justify-center transition-transform duration-400"
+                className={`
+                  absolute inset-0 flex items-center justify-center transition-transform duration-400
+                  ${shouldAnimate ? "underline-animated-text" : ""}
+                `}
                 style={{
                   transform: isOpen ? "rotateY(0deg)" : "rotateY(180deg)",
                   backfaceVisibility: "hidden",

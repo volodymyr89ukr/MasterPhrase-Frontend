@@ -119,8 +119,11 @@ export default function PronunciationBlock({
   const handleNext = () => {
     if (currentIdx < phrases.length - 1) {
       setCurrentIdx((idx) => idx + 1);
-    } else if (onComplete) {
-      onComplete();
+    } else {
+      // Викликаємо onComplete тільки після завершення всіх фраз
+      if (onComplete) {
+        onComplete();
+      }
     }
   };
 
