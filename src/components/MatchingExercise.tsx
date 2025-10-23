@@ -179,18 +179,19 @@ export default function MatchingExercise({
         <div
           className={`grid ${
             shuffledOptions.length === 3 ? "grid-cols-2" : "grid-cols-2"
-          } gap-4 mb-4`}
+          } gap-3 mb-6`}
         >
           {shuffledOptions.map((option, i) => (
             <button
               key={i}
               disabled={selected !== null}
-              className={`py-2 px-4 rounded-xl shadow border transition-colors
+              className={`py-3 px-4 rounded-xl shadow border transition-all duration-150 min-h-[48px] flex items-center justify-center text-center
+              active:scale-[0.97] focus-ring
               ${
                 selected === option
                   ? option === question.answer
                     ? "bg-success/20 border-success"
-                    : "bg-destructive/20 border-destructive"
+                    : "bg-destructive/20 border-destructive animate-shake"
                   : "bg-card border-border"
               }
               hover:bg-accent

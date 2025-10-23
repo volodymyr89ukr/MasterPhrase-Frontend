@@ -245,11 +245,10 @@ export default function PronunciationBlock({
           </label>
         </div>
 
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-center mt-auto pt-6">
           <button
             onClick={handleNext}
-            className="px-6 py-2 rounded bg-success text-success-foreground font-semibold hover:bg-success/90 shadow transition-colors"
-            style={{ fontSize: "1.2rem" }}
+            className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow transition-transform active:scale-[0.98] focus-ring text-lg"
           >
             {currentIdx < phrases.length - 1 ? t("next") : t("finish")}
           </button>

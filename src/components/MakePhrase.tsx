@@ -314,7 +314,7 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
         </div>
 
         {/* Available tokens */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
           {available.map((a, i) => {
             const isCorrectHint =
               nextCorrectIdx >= 0 &&
@@ -334,10 +334,11 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
                     handlePick(i);
                   }
                 }}
-                className={`px-3 py-2 rounded-xl border shadow-sm text-center transition select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`px-3 py-3 rounded-xl border shadow-sm text-center transition-transform select-none focus-ring min-h-[48px]
+                ${
                   disabled
-                    ? "bg-muted text-muted-foreground border-border cursor-not-allowed"
-                    : "bg-card hover:bg-accent text-card-foreground border-border"
+                    ? "bg-muted text-muted-foreground border-border cursor-not-allowed opacity-60"
+                    : "bg-card hover:bg-accent text-card-foreground border-border active:scale-[0.97]"
                 } ${isCorrectHint ? "ring-2 ring-success" : ""}`}
                 title={
                   disabled
@@ -356,21 +357,21 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
           <button
             onClick={handleCheck}
             disabled={interactionsLocked}
-            className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.98] focus-ring"
           >
             {t("check", "Check")}
           </button>
           <button
             onClick={handleHint}
             disabled={interactionsLocked}
-            className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.98] focus-ring"
           >
             {hintCount < 2 ? t("hint", "Hint") : t("skip", "Skip")}
           </button>
           <button
             onClick={handleClear}
             disabled={interactionsLocked}
-            className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.98] focus-ring"
           >
             {t("clear", "Clear")}
           </button>

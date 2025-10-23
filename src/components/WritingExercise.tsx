@@ -500,7 +500,7 @@ export default function WritingExercise({
           <button
             onClick={handleHintPart}
             disabled={hintLevel >= 1}
-            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-colors ${
+            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-transform active:scale-[0.98] focus-ring ${
               hintLevel >= 1 ? "opacity-60 cursor-not-allowed" : ""
             }`}
           >
@@ -509,7 +509,7 @@ export default function WritingExercise({
           <button
             onClick={handleHintAll}
             disabled={hintLevel >= 2}
-            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-colors ${
+            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-transform active:scale-[0.98] focus-ring ${
               hintLevel >= 2 ? "opacity-60 cursor-not-allowed" : ""
             }`}
           >

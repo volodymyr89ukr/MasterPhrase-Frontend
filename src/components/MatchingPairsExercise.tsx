@@ -200,16 +200,15 @@ export default function MatchingPairsExercise({
               className={`
                 relative group w-full aspect-[4/5] min-h-[80px]
                 rounded-xl shadow-md border-2 flex items-center justify-center
-                transition-all duration-300
+                transition-all duration-300 focus-ring
+                active:scale-[0.97]
                 ${
                   isMatched
                     ? "bg-success/20 border-success text-success"
                     : isOpen
                     ? "bg-card border-primary"
-                    : "bg-accent border-border"
+                    : "bg-accent border-border hover:bg-muted/50"
                 }
-                outline-none
-                focus:ring-2 focus:ring-ring
                 overflow-hidden
               `}
               style={{
