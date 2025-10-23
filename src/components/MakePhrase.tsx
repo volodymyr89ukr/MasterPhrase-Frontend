@@ -100,10 +100,14 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
     () => tokenizeWithPunctuation(question.phrase),
     [question.phrase]
   );
-  const distractors = useMemo(
-    () => pickDistractors(question.options, correctTokens),
-    [question.options, correctTokens]
-  );
+  const distractors = useMemo(() => {
+    // Якщо у фразі більше 7 слів, не додаємо дистрактори, щоб не ускладнювати.
+    if (correctTokens.length > 7) {
+      return [];
+    }
+    // В іншому випадку, беремо дистрактори з options.
+    return pickDistractors(question.options, correctTokens);
+  }, [question.options, correctTokens]);
 
   // Build and shuffle tokens with stable seed
   const allTokens = useMemo(() => {
