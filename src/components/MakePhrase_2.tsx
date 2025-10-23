@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSettings } from "../contexts/SettingsContext";
 import { speakSmart, speakSmartAsync, cancelSpeak } from "../utils/ttsUtils";
 import { useTranslation } from "react-i18next";
+import { Eraser, Lightbulb } from "lucide-react";
+import { Button } from "./ui/Button";
 
 // Reuse the shape used in MatchingExercise
 export interface Phrase {
@@ -266,129 +268,143 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
   }, [hintCount, selected.length, correctTokens.length]);
 
   return (
-    <div className="w-full h-full bg-background flex flex-col overflow-y-auto">
-      <div className="max-w-xl w-full mx-auto p-4">
-        {/* Title / Translation */}
-        {question.translation && (
-          <div className="text-center text-muted-foreground italic mb-2 min-h-[1.6em]">
-            {question.translation}
+    <div className="w-full h-full bg-background flex flex-col">
+      <div className="flex-1 overflow-y-auto scroll-mask-bottom min-h-0">
+        <div className="max-w-xl w-full mx-auto p-4 pb-8">
+          {/* Title / Translation */}
+          {question.translation && (
+            <div className="text-center text-muted-foreground italic mb-2 min-h-[1.6em]">
+              {question.translation}
+            </div>
+          )}
+
+          {/* Drop zone */}
+          <div
+            ref={dropZoneRef}
+            className={[
+              "p-3 mb-4 rounded-xl border flex flex-wrap gap-2 items-start transition-colors",
+              isSuccessPause
+                ? "bg-success/10 border-success animate-pulse"
+                : "bg-card shadow border-border",
+              "min-h-[6.2em] sm:min-h-[7em]",
+            ].join(" ")}
+            tabIndex={0}
+            onKeyDown={onDropZoneKeyDown}
+            aria-live="polite"
+          >
+            {selected.length === 0 && !isSuccessPause && (
+              <span className="text-muted-foreground">
+                {t("assemble_phrase_prompt", "Tap words to build the phrase")}
+              </span>
+            )}
+
+            {isSuccessPause ? (
+              <span className="text-success font-semibold">
+                {normalizeStr(selected.join(" "))}
+              </span>
+            ) : (
+              selected.map((tok, idx) => (
+                <button
+                  key={idx}
+                  tabIndex={0}
+                  onFocus={() => setFocusedDropIdx(idx)}
+                  onBlur={() =>
+                    setFocusedDropIdx((v) => (v === idx ? null : v))
+                  }
+                  onClick={() => handleRemove(idx)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleRemove(idx);
+                    }
+                  }}
+                  disabled={interactionsLocked}
+                  className={`px-3 py-1 rounded-lg border shadow-sm bg-card text-card-foreground font-semibold hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+                    errorIndices.includes(idx)
+                      ? "border-destructive bg-destructive/10"
+                      : "border-border"
+                  }`}
+                  title={t("remove_token", "Remove token")}
+                >
+                  {tok}
+                </button>
+              ))
+            )}
           </div>
-        )}
 
-        {/* Drop zone */}
-        <div
-          ref={dropZoneRef}
-          className={[
-            "p-3 mb-4 rounded-xl border flex flex-wrap gap-2 items-start transition-colors",
-            isSuccessPause
-              ? "bg-success/10 border-success animate-pulse"
-              : "bg-card shadow border-border",
-            "min-h-[6.2em] sm:min-h-[7em]",
-          ].join(" ")}
-          tabIndex={0}
-          onKeyDown={onDropZoneKeyDown}
-          aria-live="polite"
-        >
-          {selected.length === 0 && !isSuccessPause && (
-            <span className="text-muted-foreground">
-              {t("assemble_phrase_prompt", "Tap words to build the phrase")}
-            </span>
-          )}
-
-          {isSuccessPause ? (
-            <span className="text-success font-semibold">
-              {normalizeStr(selected.join(" "))}
-            </span>
-          ) : (
-            selected.map((tok, idx) => (
-              <button
-                key={idx}
-                tabIndex={0}
-                onFocus={() => setFocusedDropIdx(idx)}
-                onBlur={() => setFocusedDropIdx((v) => (v === idx ? null : v))}
-                onClick={() => handleRemove(idx)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handleRemove(idx);
-                  }
-                }}
-                disabled={interactionsLocked}
-                className={`px-3 py-1 rounded-lg border shadow-sm bg-card text-card-foreground font-semibold hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
-                  errorIndices.includes(idx)
-                    ? "border-destructive bg-destructive/10"
-                    : "border-border"
-                }`}
-                title={t("remove_token", "Remove token")}
-              >
-                {tok}
-              </button>
-            ))
-          )}
-        </div>
-
-        {/* Available tokens */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-          {available.map((a, i) => {
-            const isCorrectHint =
-              nextCorrectIdx >= 0 &&
-              normalizeStr(a.token) ===
-                normalizeStr(correctTokens[nextCorrectIdx] || "") &&
-              !a.used;
-            const disabled =
-              a.used || disabledDistractors.has(i) || interactionsLocked;
-            return (
-              <button
-                key={`${a.token}_${i}`}
-                disabled={disabled}
-                onClick={() => handlePick(i)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    handlePick(i);
-                  }
-                }}
-                className={`px-3 py-3 rounded-xl border shadow-sm text-center transition-transform select-none focus-ring min-h-[48px]
+          {/* Available tokens */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+            {available.map((a, i) => {
+              const isCorrectHint =
+                nextCorrectIdx >= 0 &&
+                normalizeStr(a.token) ===
+                  normalizeStr(correctTokens[nextCorrectIdx] || "") &&
+                !a.used;
+              const disabled =
+                a.used || disabledDistractors.has(i) || interactionsLocked;
+              return (
+                <button
+                  key={`${a.token}_${i}`}
+                  disabled={disabled}
+                  onClick={() => handlePick(i)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handlePick(i);
+                    }
+                  }}
+                  className={`px-3 py-3 rounded-xl border shadow-sm text-center transition-transform select-none focus-ring min-h-[48px]
                 ${
                   disabled
                     ? "bg-muted text-muted-foreground border-border cursor-not-allowed opacity-60"
                     : "bg-card hover:bg-accent text-card-foreground border-border active:scale-[0.97]"
                 } ${isCorrectHint ? "ring-2 ring-success" : ""}`}
-                title={
-                  disabled
-                    ? t("token_disabled", "Token disabled")
-                    : t("add_token", "Add token")
-                }
-              >
-                {a.token}
-              </button>
-            );
-          })}
+                  title={
+                    disabled
+                      ? t("token_disabled", "Token disabled")
+                      : t("add_token", "Add token")
+                  }
+                >
+                  {a.token}
+                </button>
+              );
+            })}
+          </div>
         </div>
+      </div>
 
-        {/* Controls */}
-        <div className="flex flex-wrap gap-3 justify-center">
-          <button
-            onClick={handleCheck}
-            disabled={interactionsLocked}
-            className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.98] focus-ring"
+      {/* === BOTTOM FIXED CONTROLS === */}
+      <div className="mt-auto bg-background/80 backdrop-blur-sm border-t pb-safe">
+        <div className="max-w-xl mx-auto p-3 flex w-full items-center gap-2">
+          {/* Другорядна кнопка "Очистити" */}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("clear", "Clear")}
+            onClick={handleClear}
+            disabled={interactionsLocked || selected.length === 0}
           >
-            {t("check", "Check")}
-          </button>
-          <button
+            <Eraser size={22} />
+          </Button>
+          {/* Другорядна кнопка "Підказка" */}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={hintCount < 2 ? t("hint", "Hint") : t("skip", "Skip")}
             onClick={handleHint}
             disabled={interactionsLocked}
-            className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.98] focus-ring"
           >
-            {hintCount < 2 ? t("hint", "Hint") : t("skip", "Skip")}
-          </button>
-          <button
-            onClick={handleClear}
-            disabled={interactionsLocked}
-            className="px-4 py-2 rounded-xl bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 shadow disabled:opacity-50 disabled:cursor-not-allowed transition-transform active:scale-[0.98] focus-ring"
+            <Lightbulb size={22} />
+          </Button>
+
+          {/* Головна кнопка "Перевірити" */}
+          <Button
+            onClick={handleCheck}
+            disabled={interactionsLocked || selected.length === 0}
+            className="flex-1 h-12 text-base"
           >
-            {t("clear", "Clear")}
-          </button>
+            {t("check", "Check")}
+          </Button>
         </div>
       </div>
     </div>

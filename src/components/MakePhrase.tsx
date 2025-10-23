@@ -269,6 +269,7 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
 
   return (
     <div className="w-full h-full bg-background flex flex-col">
+      {/* === SCROLLABLE CONTENT AREA === */}
       <div className="flex-1 overflow-y-auto scroll-mask-bottom min-h-0">
         <div className="max-w-xl w-full mx-auto p-4 pb-8">
           {/* Title / Translation */}
