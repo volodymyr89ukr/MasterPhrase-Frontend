@@ -61,11 +61,13 @@ function compareTokens(a: string[], b: string[]): boolean {
   return normalizeStr(a.join(" ")) === normalizeStr(b.join(" "));
 }
 
+// ...existing code...
 function pickDistractors(
   options: string[] | undefined,
-  targetTokens: string[]
+  targetTokens: string[],
+  count: number
 ): string[] {
-  if (!options || options.length === 0) return [];
+  if (!options || options.length === 0 || count === 0) return [];
   const targetSet = new Set(targetTokens.map((t) => t.toLowerCase()));
   const words = new Set<string>();
   for (const opt of options) {
@@ -79,8 +81,9 @@ function pickDistractors(
       }
     }
   }
-  return Array.from(words).slice(0, 3); // 1-3 distractors
+  return Array.from(words).slice(0, count);
 }
+// ...existing code...
 
 const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
   const { t } = useTranslation();
@@ -101,12 +104,19 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
     [question.phrase]
   );
   const distractors = useMemo(() => {
-    // Якщо у фразі більше 7 слів, не додаємо дистрактори, щоб не ускладнювати.
-    if (correctTokens.length > 7) {
-      return [];
+    const phraseLength = correctTokens.length;
+    let distractorCount = 0;
+
+    if (phraseLength <= 7) {
+      distractorCount = 3;
+    } else if (phraseLength === 8) {
+      distractorCount = 2;
+    } else if (phraseLength === 9) {
+      distractorCount = 1;
     }
-    // В іншому випадку, беремо дистрактори з options.
-    return pickDistractors(question.options, correctTokens);
+    // Якщо phraseLength > 9, distractorCount залишається 0
+
+    return pickDistractors(question.options, correctTokens, distractorCount);
   }, [question.options, correctTokens]);
 
   // Build and shuffle tokens with stable seed
