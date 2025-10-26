@@ -144,9 +144,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   function getCurrentInCycle(currentMode: typeof mode): number {
     switch (currentMode) {
       case "matching":
-        // Скільки фраз вже пройдено (не +1, бо рахуємо завершені)
-        const completed = exerciseData.length - questions.length;
-        return Math.min(completed, poolSize);
+        // Прогрес у блоці "matching" - це кількість фраз,
+        // які вже додані до поточного пулу (matchingPool)
+        return matchingPool.length;
       case "make-phrase":
         // Скільки фраз вже завершено (не +1)
         return makePhraseIdx;
