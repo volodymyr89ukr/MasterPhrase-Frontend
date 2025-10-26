@@ -20,7 +20,7 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
 
   if (showTheory) {
     return (
-      <div className="w-full h-full flex flex-col max-w-2xl mx-auto overflow-hidden">
+      <div className="w-full h-full flex flex-col max-w-2xl mx-auto overflow-hidden p-4">
         <div className="flex-shrink-0 bg-card rounded-t-xl shadow">
           {/* Фіксований хедер */}
           {onBack && (

@@ -427,7 +427,7 @@ export default function Block1({
     // Exercise details view
     if (selectedExerciseId && exerciseDetails) {
       return (
-        <div className="w-full h-full overflow-y-auto p-2 sm:p-4 max-w-3xl min-w-[360px] mx-auto flex flex-col justify-between pb-safe min-h-0">
+        <div className="w-full h-full overflow-hidden max-w-3xl min-w-[360px] mx-auto flex flex-col">
           <div className="flex-1">
             {loadingExerciseDetails ? (
               <div className="text-muted-foreground text-center my-6">

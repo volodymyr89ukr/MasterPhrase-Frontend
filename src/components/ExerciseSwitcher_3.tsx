@@ -451,7 +451,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
         />
       )}
 
-      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+      <div className="flex-1 flex items-center justify-center p-4 overflow-y-auto">
         {mode === "matching" && questions[currentIdx] && (
           <MatchingExercise
             question={questions[currentIdx]}
