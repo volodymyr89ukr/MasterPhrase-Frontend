@@ -427,27 +427,25 @@ export default function Block1({
     // Exercise details view
     if (selectedExerciseId && exerciseDetails) {
       return (
-        <div className="w-full h-full overflow-hidden max-w-3xl min-w-[360px] mx-auto flex flex-col">
-          <div className="flex-1">
-            {loadingExerciseDetails ? (
-              <div className="text-muted-foreground text-center my-6">
-                {t("loading_exercise")}
-              </div>
-            ) : exerciseDetails.error ? (
-              <div className="text-destructive">{exerciseDetails.error}</div>
-            ) : (
-              <ExerciseBlockContainer
-                theoryText={exerciseDetails.theory}
-                exerciseData={exerciseDetails.data}
-                title={
-                  exerciseDetails.exercise_name ||
-                  exerciseDetails.name ||
-                  exerciseDetails.title
-                }
-                onBack={handleRequestExitExercise}
-              />
-            )}
-          </div>
+        <div className="w-full h-full flex items-center justify-center p-4">
+          {loadingExerciseDetails ? (
+            <div className="text-muted-foreground text-center my-6">
+              {t("loading_exercise")}
+            </div>
+          ) : exerciseDetails.error ? (
+            <div className="text-destructive">{exerciseDetails.error}</div>
+          ) : (
+            <ExerciseBlockContainer
+              theoryText={exerciseDetails.theory}
+              exerciseData={exerciseDetails.data}
+              title={
+                exerciseDetails.exercise_name ||
+                exerciseDetails.name ||
+                exerciseDetails.title
+              }
+              onBack={handleRequestExitExercise}
+            />
+          )}
           <ConfirmModal
             open={showConfirmExit}
             onCancel={handleCancelExitExercise}
