@@ -332,7 +332,7 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
 
       {/* === SCROLLABLE AREA з варіантами слів === */}
       <div className="flex-1 overflow-y-auto scroll-mask-bottom min-h-0">
-        <div className="max-w-xl w-full mx-auto px-4 pb-4">
+        <div className="max-w-xl w-full mx-auto px-4 pb-10">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {available.map((a, i) => {
               const isCorrectHint =
