@@ -1,3 +1,10 @@
+export interface User {
+  id: number;
+  email: string;
+  username?: string;
+  [key: string]: any;
+}
+
 export type KeySpec =
   | { type: "char"; label: string; value?: string }
   | {

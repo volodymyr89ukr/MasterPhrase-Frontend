@@ -331,39 +331,46 @@ export default function Block1({
   // 1. Головна: вибір тисяч
   if (!thousandId) {
     return (
-      <div className="w-full h-full overflow-y-auto p-4 max-w-3xl mx-auto pb-safe min-h-0">
-        <h2 className="text-xl font-bold mb-4 text-foreground">
-          {t("select_thousand_words")}
-        </h2>
-        {loadingThousands ? (
-          <div className="text-muted-foreground">{t("loading")}</div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {thousands.map((th) => (
-              <div
-                key={th.id}
-                onClick={() => navigate(`/thousand/${th.id}`)}
-                className="cursor-pointer"
-              >
-                {renderThousandItem ? (
-                  renderThousandItem(th)
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors select-none p-3">
-                    <div className="text-lg font-bold text-card-foreground text-center">
-                      {th.name}
-                    </div>
-                    {th.description && (
-                      <div className="text-xs text-muted-foreground text-center mt-1">
-                        {th.description}
+      <div className="w-full h-full flex flex-col max-w-3xl mx-auto">
+        {/* Фіксований хедер */}
+        <div className="flex-shrink-0 p-4 pb-2">
+          <h2 className="text-xl font-bold text-foreground">
+            {t("select_thousand_words")}
+          </h2>
+        </div>
+
+        {/* Скролована зона */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-0">
+          {loadingThousands ? (
+            <div className="text-muted-foreground">{t("loading")}</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              {thousands.map((th) => (
+                <div
+                  key={th.id}
+                  onClick={() => navigate(`/thousand/${th.id}`)}
+                  className="cursor-pointer"
+                >
+                  {renderThousandItem ? (
+                    renderThousandItem(th)
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors select-none p-3">
+                      <div className="text-lg font-bold text-card-foreground text-center">
+                        {th.name}
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-        {error && <div className="text-destructive">{error}</div>}
+                      {th.description && (
+                        <div className="text-xs text-muted-foreground text-center mt-1">
+                          {th.description}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {error && <div className="text-destructive">{error}</div>}
+        </div>
       </div>
     );
   }
@@ -371,37 +378,46 @@ export default function Block1({
   // 2. Вибір комплекту в тисячі
   if (thousandId && !setId) {
     return (
-      <div className="w-full h-full overflow-y-auto p-4 max-w-3xl mx-auto pb-safe min-h-0">
-        <div className="flex items-center gap-2 mb-4">
-          <BackButton to="/" />
-          <h2 className="text-xl font-bold text-foreground">
-            {t("select_word_set")}
-          </h2>
-        </div>
-        {loadingWordSets ? (
-          <div className="text-muted-foreground">{t("loading")}</div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-            {wordSets.map((ws) => (
-              <div
-                key={ws.id}
-                onClick={() => navigate(`/thousand/${thousandId}/set/${ws.id}`)}
-                className="cursor-pointer"
-              >
-                {renderWordSetItem ? (
-                  renderWordSetItem(ws)
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors select-none p-3">
-                    <div className="text-lg font-bold text-card-foreground text-center">
-                      {ws.name || ws.word_set}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+      <div className="w-full h-full flex flex-col max-w-3xl mx-auto">
+        {/* Фіксований хедер */}
+        <div className="flex-shrink-0 p-4 pb-2">
+          <div className="flex items-center gap-2">
+            <BackButton to="/" />
+            <h2 className="text-xl font-bold text-foreground">
+              {t("select_word_set")}
+            </h2>
           </div>
-        )}
-        {error && <div className="text-destructive">{error}</div>}
+        </div>
+
+        {/* Скролована зона */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-0">
+          {loadingWordSets ? (
+            <div className="text-muted-foreground">{t("loading")}</div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              {wordSets.map((ws) => (
+                <div
+                  key={ws.id}
+                  onClick={() =>
+                    navigate(`/thousand/${thousandId}/set/${ws.id}`)
+                  }
+                  className="cursor-pointer"
+                >
+                  {renderWordSetItem ? (
+                    renderWordSetItem(ws)
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors select-none p-3">
+                      <div className="text-lg font-bold text-card-foreground text-center">
+                        {ws.name || ws.word_set}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {error && <div className="text-destructive">{error}</div>}
+        </div>
       </div>
     );
   }
@@ -443,248 +459,277 @@ export default function Block1({
 
     // --- Tabs unified container ---
     return (
-      <div className="w-full h-full overflow-y-auto p-0 sm:p-4 max-w-3xl min-w-[320px] mx-auto pb-safe min-h-0">
-        <div className="flex items-center gap-2 mb-4 px-4 pt-4">
-          <BackButton to={`/thousand/${thousandId}`} />
-          <div className="flex gap-1 sm:gap-2 bg-secondary rounded-lg p-1 shadow-sm">
-            {(["words", "reading", "exercises"] as const).map((tab) => (
-              <button
-                key={tab}
-                className={`px-3 py-1 rounded-md text-base font-semibold transition-colors duration-200
-                  ${
-                    activeTab === tab
-                      ? "bg-primary text-primary-foreground shadow"
-                      : "bg-transparent text-secondary-foreground hover:bg-accent"
-                  }
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
-                `}
-                style={{ minWidth: 0 }}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab === "words"
-                  ? t("tab_all_words")
-                  : tab === "reading"
-                  ? t("tab_reading")
-                  : t("tab_exercises")}
-              </button>
-            ))}
+      <div className="w-full h-full flex flex-col max-w-3xl min-w-[320px] mx-auto overflow-hidden">
+        {/* Фіксований хедер з вкладками */}
+        <div className="flex-shrink-0 px-4 pt-4 pb-2">
+          <div className="flex items-center gap-2 mb-3">
+            <BackButton to={`/thousand/${thousandId}`} />
+            <div className="flex gap-1 sm:gap-2 bg-secondary rounded-lg p-1 shadow-sm">
+              {(["words", "reading", "exercises"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  className={`px-3 py-1 rounded-md text-base font-semibold transition-colors duration-200
+                    ${
+                      activeTab === tab
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "bg-transparent text-secondary-foreground hover:bg-accent"
+                    }
+                    focus:outline-none focus-visible:ring-2 focus-visible:ring-ring
+                  `}
+                  style={{ minWidth: 0 }}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab === "words"
+                    ? t("tab_all_words")
+                    : tab === "reading"
+                    ? t("tab_reading")
+                    : t("tab_exercises")}
+                </button>
+              ))}
+              {/* </button>
+              ))} */}
+            </div>
           </div>
         </div>
-        {/* Tabs content */}
-        {activeTab === "words" && (
-          <div className="bg-card rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
-            {/* Панель керування */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-              <div className="text-center sm:text-left text-sm text-muted-foreground">
-                {t("select_known_words", "Обери слова, які ти вже вивчив")}
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <button
-                  onClick={() => setMarkKnownMode((v) => !v)}
-                  className={`px-3 py-1 rounded-lg text-sm font-semibold border shadow-sm transition-colors
-                    ${
-                      markKnownMode
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-secondary text-secondary-foreground border-border hover:bg-accent"
-                    }`}
-                  title={t(
-                    "toggle_mark_known_mode",
-                    'Перемкнути режим "Позначати відомі"'
-                  )}
-                >
-                  {markKnownMode
-                    ? t("mark_known_on", "Позначати відомі: Увімкн.")
-                    : t("mark_known_off", "Позначати відомі: Вимкн.")}
-                </button>
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="accent-primary"
-                    checked={hideKnown}
-                    onChange={(e) => setHideKnown(e.target.checked)}
-                  />
-                  <span className="text-foreground">
-                    {t("hide_known", "Сховати відомі")}
-                  </span>
-                </label>
-              </div>
-            </div>
 
-            <div className="flex-1">
-              {loadingWords ? (
-                <div className="text-muted-foreground text-center">
-                  {t("loading")}
-                </div>
-              ) : (
-                <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {wordsForList.map((w: any, idx) => {
-                    const id = typeof w === "object" ? w.id : undefined;
-                    const known =
-                      typeof id === "number" ? isWordKnown(id) : false;
-                    const clickable = markKnownMode && typeof id === "number";
-                    return (
-                      <li
-                        key={id ?? idx}
-                        onClick={() => {
-                          if (clickable) toggleKnownWord(id as number);
-                        }}
-                        className={[
-                          "px-3 py-2 rounded text-center shadow-sm border flex flex-col items-center justify-center min-h-[56px] select-none transition-colors",
-                          known
-                            ? "bg-muted text-muted-foreground border-border opacity-80"
-                            : "bg-card text-card-foreground border-border",
-                          clickable
-                            ? "cursor-pointer hover:bg-accent"
-                            : "cursor-default",
-                        ].join(" ")}
-                        title={
-                          typeof id === "number"
-                            ? known
-                              ? t(
-                                  "click_to_mark_unknown",
-                                  "Натисни, щоб повернути у навчання"
-                                )
-                              : t(
-                                  "click_to_mark_known",
-                                  "Натисни, щоб позначити як відоме"
-                                )
-                            : t("no_id_for_word", "ID слова відсутній")
-                        }
-                      >
-                        {typeof w === "string" ? (
-                          <span className="text-lg font-semibold leading-tight">
-                            {w}
-                          </span>
-                        ) : (
-                          <>
-                            <span className="text-lg font-bold leading-tight">
-                              {w.word}
-                            </span>
-                            {w.translation && (
-                              <span className="text-base text-primary opacity-80 mt-0.5 leading-tight">
-                                {w.translation}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          </div>
-        )}
-        {activeTab === "reading" && (
-          <div className="w-full">
-            {loadingReadings ? (
-              <div className="text-muted-foreground text-center bg-card rounded-xl shadow p-4 min-h-[320px]">
-                {t("loading")}
-              </div>
-            ) : (
-              <>
-                {readingTitles.length > 0 ? (
-                  <div className="mb-4 w-full">
-                    {/* ✅ Кастомний Select з дизайн-системою */}
-                    <div className="flex flex-wrap gap-2">
-                      {readingTitles.map((rt) => (
-                        <button
-                          key={rt.id}
-                          onClick={() => handleSelectReading(rt.id)}
-                          className={`px-4 py-2 rounded-lg font-semibold border-2 transition-colors shadow-sm ${
-                            selectedReadingId === rt.id
+        {/* Скролована зона для контенту вкладок */}
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {activeTab === "words" && (
+            <div className="flex-1 flex flex-col overflow-hidden px-4">
+              <div className="bg-card rounded-xl shadow flex flex-col overflow-hidden">
+                {/* Фіксована панель керування */}
+                <div className="flex-shrink-0 p-4 pb-3 border-b border-border">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="text-center sm:text-left text-sm text-muted-foreground">
+                      {t(
+                        "select_known_words",
+                        "Обери слова, які ти вже вивчив"
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => setMarkKnownMode((v) => !v)}
+                        className={`px-3 py-1 rounded-lg text-sm font-semibold border shadow-sm transition-colors
+                          ${
+                            markKnownMode
                               ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-card text-card-foreground border-border hover:bg-accent hover:border-accent"
+                              : "bg-secondary text-secondary-foreground border-border hover:bg-accent"
                           }`}
-                        >
-                          {rt.title}
-                        </button>
-                      ))}
+                        title={t(
+                          "toggle_mark_known_mode",
+                          'Перемкнути режим "Позначати відомі"'
+                        )}
+                      >
+                        {markKnownMode
+                          ? t("mark_known_on", "Позначати відомі: Увімкн.")
+                          : t("mark_known_off", "Позначати відомі: Вимкн.")}
+                      </button>
+                      <label className="flex items-center gap-2 text-sm cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="accent-primary"
+                          checked={hideKnown}
+                          onChange={(e) => setHideKnown(e.target.checked)}
+                        />
+                        <span className="text-foreground">
+                          {t("hide_known", "Сховати відомі")}
+                        </span>
+                      </label>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-muted-foreground text-center my-8 bg-card rounded-xl shadow p-4">
-                    {t("no_texts_for_set")}
-                  </div>
-                )}
-
-                {selectedReadingId && readingText ? (
-                  <div className="my-6 w-full">
-                    <TextSpeechHighlighter
-                      text={readingText.text}
-                      translation={readingText.translation}
-                    />
-                  </div>
-                ) : readingTitles.length > 0 ? (
-                  <div className="text-muted-foreground text-center my-8 bg-card rounded-xl shadow p-4">
-                    {t("loading_text")}
-                  </div>
-                ) : null}
-              </>
-            )}
-          </div>
-        )}
-        {activeTab === "exercises" && (
-          <div className="bg-card rounded-xl shadow p-4 min-h-[320px] flex flex-col transition-all duration-200">
-            {/* ✅ Налаштування poolSize */}
-            <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-border">
-              <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <span className="text-sm font-semibold text-foreground">
-                  {t(
-                    "pool_size_setting",
-                    "Кількість фраз для переходу між блоками:"
-                  )}
-                </span>
-                <div className="flex items-center gap-3">
-                  {[3, 4, 5, 6].map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setPoolSize(size)}
-                      className={`px-4 py-2 rounded-lg font-semibold border-2 transition-colors ${
-                        poolSize === size
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-card-foreground border-border hover:bg-accent"
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
                 </div>
-              </label>
-            </div>
 
-            <div className="flex-1">
-              {loadingExercises ? (
-                <div className="text-muted-foreground text-center">
+                {/* Скролована зона зі словами */}
+                <div className="flex-1 overflow-y-auto p-4 min-h-0">
+                  {loadingWords ? (
+                    <div className="text-muted-foreground text-center">
+                      {t("loading")}
+                    </div>
+                  ) : (
+                    <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {wordsForList.map((w: any, idx) => {
+                        const id = typeof w === "object" ? w.id : undefined;
+                        const known =
+                          typeof id === "number" ? isWordKnown(id) : false;
+                        const clickable =
+                          markKnownMode && typeof id === "number";
+                        return (
+                          <li
+                            key={id ?? idx}
+                            onClick={() => {
+                              if (clickable) toggleKnownWord(id as number);
+                            }}
+                            className={[
+                              "px-3 py-2 rounded text-center shadow-sm border flex flex-col items-center justify-center min-h-[56px] select-none transition-colors",
+                              known
+                                ? "bg-muted text-muted-foreground border-border opacity-80"
+                                : "bg-card text-card-foreground border-border",
+                              clickable
+                                ? "cursor-pointer hover:bg-accent"
+                                : "cursor-default",
+                            ].join(" ")}
+                            title={
+                              typeof id === "number"
+                                ? known
+                                  ? t(
+                                      "click_to_mark_unknown",
+                                      "Натисни, щоб повернути у навчання"
+                                    )
+                                  : t(
+                                      "click_to_mark_known",
+                                      "Натисни, щоб позначити як відоме"
+                                    )
+                                : t("no_id_for_word", "ID слова відсутній")
+                            }
+                          >
+                            {typeof w === "string" ? (
+                              <span className="text-lg font-semibold leading-tight">
+                                {w}
+                              </span>
+                            ) : (
+                              <>
+                                <span className="text-lg font-bold leading-tight">
+                                  {w.word}
+                                </span>
+                                {w.translation && (
+                                  <span className="text-base text-primary opacity-80 mt-0.5 leading-tight">
+                                    {w.translation}
+                                  </span>
+                                )}
+                              </>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          {activeTab === "reading" && (
+            <div className="flex-1 flex flex-col overflow-hidden px-4">
+              {loadingReadings ? (
+                <div className="text-muted-foreground text-center bg-card rounded-xl shadow p-4">
                   {t("loading")}
                 </div>
               ) : (
-                <ul className="flex flex-col gap-2">
-                  {exercisesMeta.map((ex) => (
-                    <li
-                      key={ex.id}
-                      className="px-4 py-2 rounded border border-border bg-primary/10 text-foreground shadow text-left cursor-pointer hover:bg-accent transition-colors"
-                      onClick={() => handleSelectExercise(ex.id)}
-                    >
-                      {ex.exercise_name || ex.name || ex.title || ex.id}
-                    </li>
-                  ))}
-                  {exercisesMeta.length === 0 && (
-                    <div className="text-muted-foreground text-center my-8">
-                      {t("no_exercises_for_set")}
+                <div className="flex-1 flex flex-col overflow-hidden bg-card rounded-xl shadow">
+                  {/* Фіксовані кнопки вибору тексту */}
+                  {readingTitles.length > 0 && (
+                    <div className="flex-shrink-0 p-4 pb-3 border-b border-border">
+                      <div className="flex flex-wrap gap-2">
+                        {readingTitles.map((rt) => (
+                          <button
+                            key={rt.id}
+                            onClick={() => handleSelectReading(rt.id)}
+                            className={`px-4 py-2 rounded-lg font-semibold border-2 transition-colors shadow-sm ${
+                              selectedReadingId === rt.id
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card text-card-foreground border-border hover:bg-accent hover:border-accent"
+                            }`}
+                          >
+                            {rt.title}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
-                </ul>
-              )}
-              {loadingExerciseDetails && (
-                <div className="text-muted-foreground text-center my-6">
-                  {t("loading_exercise")}
+
+                  {readingTitles.length === 0 && (
+                    <div className="text-muted-foreground text-center p-8">
+                      {t("no_texts_for_set")}
+                    </div>
+                  )}
+
+                  {/* Скролована зона з текстом */}
+                  {selectedReadingId && readingText && (
+                    <div className="flex-1 overflow-y-auto p-4 min-h-0">
+                      <TextSpeechHighlighter
+                        text={readingText.text}
+                        translation={readingText.translation}
+                      />
+                    </div>
+                  )}
+
+                  {selectedReadingId &&
+                    !readingText &&
+                    readingTitles.length > 0 && (
+                      <div className="text-muted-foreground text-center p-8">
+                        {t("loading_text")}
+                      </div>
+                    )}
                 </div>
               )}
             </div>
-          </div>
-        )}
-        {error && <div className="text-destructive">{error}</div>}
+          )}
+          {activeTab === "exercises" && (
+            <div className="flex-1 flex flex-col overflow-hidden px-4">
+              <div className="bg-card rounded-xl shadow flex flex-col overflow-hidden">
+                {/* Фіксована панель налаштувань poolSize */}
+                <div className="flex-shrink-0 p-4 pb-3 border-b border-border">
+                  <div className="p-3 bg-primary/10 rounded-lg border border-border">
+                    <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <span className="text-sm font-semibold text-foreground">
+                        {t(
+                          "pool_size_setting",
+                          "Кількість фраз для переходу між блоками:"
+                        )}
+                      </span>
+                      <div className="flex items-center gap-3">
+                        {[3, 4, 5, 6].map((size) => (
+                          <button
+                            key={size}
+                            onClick={() => setPoolSize(size)}
+                            className={`px-4 py-2 rounded-lg font-semibold border-2 transition-colors ${
+                              poolSize === size
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-card text-card-foreground border-border hover:bg-accent"
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Скролована зона зі списком вправ */}
+                <div className="flex-1 overflow-y-auto p-4 min-h-0">
+                  {loadingExercises ? (
+                    <div className="text-muted-foreground text-center">
+                      {t("loading")}
+                    </div>
+                  ) : (
+                    <ul className="flex flex-col gap-2">
+                      {exercisesMeta.map((ex) => (
+                        <li
+                          key={ex.id}
+                          className="px-4 py-2 rounded border border-border bg-primary/10 text-foreground shadow text-left cursor-pointer hover:bg-accent transition-colors"
+                          onClick={() => handleSelectExercise(ex.id)}
+                        >
+                          {ex.exercise_name || ex.name || ex.title || ex.id}
+                        </li>
+                      ))}
+                      {exercisesMeta.length === 0 && (
+                        <div className="text-muted-foreground text-center my-8">
+                          {t("no_exercises_for_set")}
+                        </div>
+                      )}
+                    </ul>
+                  )}
+                  {loadingExerciseDetails && (
+                    <div className="text-muted-foreground text-center my-6">
+                      {t("loading_exercise")}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          {error && <div className="text-destructive px-4 py-2">{error}</div>}
+        </div>
       </div>
     );
   }
