@@ -308,12 +308,21 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   function handleContinueFromSessionProgress() {
     setShowSessionProgress(false);
-    setQuestions((qArr) => shuffleArray(qArr));
+
+    // Перемішуємо питання для нового циклу
+    const shuffledQuestions = shuffleArray(questions);
+    setQuestions(shuffledQuestions);
+
+    // ВАЖЛИВО: скидаємо currentIdx, щоб прогрес обнулився
     setCurrentIdx(0);
+
     setMode("matching");
     setPairsProgress(0);
     setPronunciationProgress(0);
     setWritingProgress(0);
+
+    // Очищаємо pool, щоб почати новий цикл
+    setMatchingPool([]);
   }
 
   function handleFullReset() {
