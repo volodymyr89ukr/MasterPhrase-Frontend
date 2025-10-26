@@ -285,7 +285,7 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
             isSuccessPause
               ? "bg-success/10 border-success animate-pulse"
               : "bg-card shadow border-border",
-            "min-h-[6.2em] sm:min-h-[7em]",
+            "min-h-[6.4em] sm:min-h-[7.3em]",
           ].join(" ")}
           tabIndex={0}
           onKeyDown={onDropZoneKeyDown}
