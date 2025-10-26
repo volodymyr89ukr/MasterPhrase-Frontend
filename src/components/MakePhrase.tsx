@@ -268,73 +268,72 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
   }, [hintCount, selected.length, correctTokens.length]);
 
   return (
-    <div className="w-full h-full bg-background flex flex-col">
-      {/* === SCROLLABLE CONTENT AREA === */}
-      <div className="flex-1 overflow-y-auto scroll-mask-bottom min-h-0">
-        <div className="max-w-xl w-full mx-auto p-4 pb-8">
-          {/* Title / Translation */}
-          {question.translation && (
-            <div className="text-center text-muted-foreground italic mb-2 min-h-[1.6em]">
-              {question.translation}
-            </div>
+    <div className="w-full h-full bg-background flex flex-col overflow-hidden">
+      <div className="flex-shrink-0 max-w-xl w-full mx-auto px-4 pt-4">
+        {/* Фіксований переклад */}
+        {question.translation && (
+          <div className="text-center text-muted-foreground italic mb-3 min-h-[1.6em]">
+            {question.translation}
+          </div>
+        )}
+
+        {/* Фіксована зона складання */}
+        <div
+          ref={dropZoneRef}
+          className={[
+            "p-3 mb-3 rounded-xl border flex flex-wrap gap-2 items-start transition-colors",
+            isSuccessPause
+              ? "bg-success/10 border-success animate-pulse"
+              : "bg-card shadow border-border",
+            "min-h-[6.2em] sm:min-h-[7em]",
+          ].join(" ")}
+          tabIndex={0}
+          onKeyDown={onDropZoneKeyDown}
+          aria-live="polite"
+        >
+          {selected.length === 0 && !isSuccessPause && (
+            <span className="text-muted-foreground">
+              {t("assemble_phrase_prompt", "Tap words to build the phrase")}
+            </span>
           )}
 
-          {/* Drop zone */}
-          <div
-            ref={dropZoneRef}
-            className={[
-              "p-3 mb-4 rounded-xl border flex flex-wrap gap-2 items-start transition-colors",
-              isSuccessPause
-                ? "bg-success/10 border-success animate-pulse"
-                : "bg-card shadow border-border",
-              "min-h-[6.2em] sm:min-h-[7em]",
-            ].join(" ")}
-            tabIndex={0}
-            onKeyDown={onDropZoneKeyDown}
-            aria-live="polite"
-          >
-            {selected.length === 0 && !isSuccessPause && (
-              <span className="text-muted-foreground">
-                {t("assemble_phrase_prompt", "Tap words to build the phrase")}
-              </span>
-            )}
-
-            {isSuccessPause ? (
-              <span className="text-success font-semibold">
-                {normalizeStr(selected.join(" "))}
-              </span>
-            ) : (
-              selected.map((tok, idx) => (
-                <button
-                  key={idx}
-                  tabIndex={0}
-                  onFocus={() => setFocusedDropIdx(idx)}
-                  onBlur={() =>
-                    setFocusedDropIdx((v) => (v === idx ? null : v))
+          {isSuccessPause ? (
+            <span className="text-success font-semibold">
+              {normalizeStr(selected.join(" "))}
+            </span>
+          ) : (
+            selected.map((tok, idx) => (
+              <button
+                key={idx}
+                tabIndex={0}
+                onFocus={() => setFocusedDropIdx(idx)}
+                onBlur={() => setFocusedDropIdx((v) => (v === idx ? null : v))}
+                onClick={() => handleRemove(idx)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleRemove(idx);
                   }
-                  onClick={() => handleRemove(idx)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleRemove(idx);
-                    }
-                  }}
-                  disabled={interactionsLocked}
-                  className={`px-3 py-1 rounded-lg border shadow-sm bg-card text-card-foreground font-semibold hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
-                    errorIndices.includes(idx)
-                      ? "border-destructive bg-destructive/10"
-                      : "border-border"
-                  }`}
-                  title={t("remove_token", "Remove token")}
-                >
-                  {tok}
-                </button>
-              ))
-            )}
-          </div>
+                }}
+                disabled={interactionsLocked}
+                className={`px-3 py-1 rounded-lg border shadow-sm bg-card text-card-foreground font-semibold hover:bg-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-colors ${
+                  errorIndices.includes(idx)
+                    ? "border-destructive bg-destructive/10"
+                    : "border-border"
+                }`}
+                title={t("remove_token", "Remove token")}
+              >
+                {tok}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
 
-          {/* Available tokens */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+      {/* === SCROLLABLE AREA з варіантами слів === */}
+      <div className="flex-1 overflow-y-auto scroll-mask-bottom min-h-0">
+        <div className="max-w-xl w-full mx-auto px-4 pb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {available.map((a, i) => {
               const isCorrectHint =
                 nextCorrectIdx >= 0 &&
@@ -375,7 +374,7 @@ const MakePhrase: React.FC<MakePhraseProps> = ({ question, onComplete }) => {
       </div>
 
       {/* === BOTTOM FIXED CONTROLS === */}
-      <div className="mt-auto bg-background/80 backdrop-blur-sm border-t pb-safe">
+      <div className="flex-shrink-0 bg-background/80 backdrop-blur-sm border-t pb-safe">
         <div className="max-w-xl mx-auto p-3 flex w-full items-center gap-2">
           {/* Другорядна кнопка "Очистити" */}
           <Button
