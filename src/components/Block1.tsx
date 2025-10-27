@@ -357,7 +357,7 @@ export default function Block1({
         </div>
 
         {/* Скролована зона */}
-        <div className="flex-1 overflow-y-auto px-4 pb-12 min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-0">
           {loadingThousands ? (
             <div className="text-muted-foreground">{t("loading")}</div>
           ) : (
