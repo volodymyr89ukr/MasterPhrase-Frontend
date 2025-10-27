@@ -387,22 +387,22 @@ export default function Block1({
             </div>
           )}
           {error && <div className="text-destructive">{error}</div>}{" "}
-          {/* =====> (REQ 3 & 4) КНОПКИ РОБОТИ З ПОМИЛКАМИ <===== */}
+          {/* =====> (REQ 3 & 4) КНОПКИ РОБОТИ З ПОМИЛКАМИ <===== */}{" "}
           {errorPool.size > 0 && (
             <div className="mt-8 p-4 bg-card rounded-xl shadow border border-border">
+              {/* =====> ЗМІНА ТУТ: Додано whitespace-nowrap та прибрано зайві пробіли <===== */}
               <h3 className="text-lg font-bold text-center mb-3 text-foreground whitespace-nowrap">
                 {t("error_pool_title", "Помилки")} ({errorPool.size})
               </h3>
-              {/* =====> ЗМІНА ТУТ: Замінено класи flexbox та прибрано min-w <===== */}
-              <div className="flex gap-3">
+              <div className="flex flex-wrap sm:flex-nowrap gap-3">
                 <button
-                  className="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors min-w-[150px]"
                   onClick={() => setErrorSessionData(getErrorArray())}
                 >
                   {t("error_pool_practice", "Тренувати")}
                 </button>
                 <button
-                  className="flex-1 px-4 py-3 rounded-lg bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 transition-colors"
+                  className="flex-1 px-4 py-3 rounded-lg bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 transition-colors min-w-[150px]"
                   onClick={() => navigate("/review-errors")}
                 >
                   {t("error_pool_review", "Переглянути")}
