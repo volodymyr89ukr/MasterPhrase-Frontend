@@ -61,6 +61,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 }) => {
   const { t } = useTranslation();
   const { poolSize } = useSettings();
+  const { knownWordIdsSet } = useProgress();
 
   if (!Array.isArray(exerciseData) || exerciseData.length === 0) {
     return (
@@ -91,7 +92,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   const [pairsKey, setPairsKey] = useState<number>(1);
   const [fullyCompleted, setFullyCompleted] = useState<boolean>(false);
   const [makePhraseIdx, setMakePhraseIdx] = useState<number>(0);
-  const { knownWordIdsSet } = useProgress();
 
   // Відстеження фраз, які пройшли всі 5 блоків
   const [cycleCompletedPhrases, setCycleCompletedPhrases] = useState<
@@ -100,6 +100,66 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
   // Лічильник для показу макро-прогресу
   const [showSessionProgress, setShowSessionProgress] = useState(false);
+  // Прогрес для блоків pairs, pronunciation, writing
+  const [pairsProgress, setPairsProgress] = useState(0);
+  const [pronunciationProgress, setPronunciationProgress] = useState(0);
+  const [writingProgress, setWritingProgress] = useState(0);
+  // Отримати назву поточного блоку
+  function getBlockName(currentMode: typeof mode): string {
+    switch (currentMode) {
+      case "matching":
+        return t("block_matching", "Розпізнавання");
+      case "make-phrase":
+        return t("block_make_phrase", "Складання фраз");
+      case "pairs":
+        return t("block_pairs", "Пари");
+      case "pronunciation":
+        return t("block_pronunciation", "Вимова");
+      case "writing":
+        return t("block_writing", "Написання");
+      default:
+        return "";
+    }
+  }
+
+  // Отримати номер поточного блоку (1-5)
+  function getBlockNumber(currentMode: typeof mode): number {
+    switch (currentMode) {
+      case "matching":
+        return 1;
+      case "make-phrase":
+        return 2;
+      case "pairs":
+        return 3;
+      case "pronunciation":
+        return 4;
+      case "writing":
+        return 5;
+      default:
+        return 0;
+    }
+  }
+
+  // Отримати поточний прогрес у циклі (скільки завершено)
+  function getCurrentInCycle(currentMode: typeof mode): number {
+    switch (currentMode) {
+      case "matching":
+        // Прогрес у блоці "matching" - це кількість фраз,
+        // які вже додані до поточного пулу (matchingPool)
+        return matchingPool.length;
+      case "make-phrase":
+        // Скільки фраз вже завершено (не +1)
+        return makePhraseIdx;
+      case "pairs":
+        return pairsProgress;
+      case "pronunciation":
+        return pronunciationProgress;
+      case "writing":
+        return writingProgress;
+      default:
+        return 0;
+    }
+  }
 
   useEffect(() => {
     setQuestions(prepareQuestions(exerciseData));
@@ -109,6 +169,11 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setPairsKey(1);
     setFullyCompleted(false);
     setMakePhraseIdx(0);
+    setCycleCompletedPhrases(new Set());
+    setShowSessionProgress(false);
+    setPairsProgress(0);
+    setPronunciationProgress(0);
+    setWritingProgress(0);
   }, [exerciseData]);
 
   useEffect(() => {
@@ -194,22 +259,70 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     }
   }
 
+  function handlePairsProgressUpdate(matched: number, total: number) {
+    setPairsProgress(matched);
+  }
+
+  function handlePronunciationProgressUpdate(current: number, total: number) {
+    setPronunciationProgress(current);
+  }
+
+  function handleWritingProgressUpdate(current: number, total: number) {
+    setWritingProgress(current);
+  }
+
   function handlePairsComplete() {
+    // Прогрес вже встановлений через onProgressUpdate
     setMode("transition-to-pronunciation");
   }
 
   function handlePronunciationComplete() {
+    // Прогрес вже встановлений через onProgressUpdate
     setMode("transition-to-writing");
   }
 
   function handleWritingComplete() {
+    // Прогрес вже встановлений через onProgressUpdate
+
+    // Додаємо фрази з поточного циклу до списку повністю вивчених
+    const newCompleted = new Set(cycleCompletedPhrases);
+    matchingPool.forEach((phrase) => {
+      if (phrase.id !== undefined) {
+        newCompleted.add(phrase.id);
+      }
+    });
+    setCycleCompletedPhrases(newCompleted);
+
     setMatchingPool([]);
+
+    // Якщо більше немає фраз для вивчення
     if (questions.length === 0) {
       setFullyCompleted(true);
       setMode("finished");
       return;
     }
-    setMode("transition-back-to-matching");
+
+    // Показуємо екран макро-прогресу перед поверненням до matching
+    setShowSessionProgress(true);
+  }
+
+  function handleContinueFromSessionProgress() {
+    setShowSessionProgress(false);
+
+    // Перемішуємо питання для нового циклу
+    const shuffledQuestions = shuffleArray(questions);
+    setQuestions(shuffledQuestions);
+
+    // ВАЖЛИВО: скидаємо currentIdx, щоб прогрес обнулився
+    setCurrentIdx(0);
+
+    setMode("matching");
+    setPairsProgress(0);
+    setPronunciationProgress(0);
+    setWritingProgress(0);
+
+    // Очищаємо pool, щоб почати новий цикл
+    setMatchingPool([]);
   }
 
   function handleFullReset() {
@@ -219,6 +332,12 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     setMode("matching");
     setPairsKey((k) => k + 1);
     setFullyCompleted(false);
+    setMakePhraseIdx(0);
+    setCycleCompletedPhrases(new Set());
+    setShowSessionProgress(false);
+    setPairsProgress(0);
+    setPronunciationProgress(0);
+    setWritingProgress(0);
   }
 
   useEffect(() => {
@@ -226,6 +345,17 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       window.speechSynthesis.cancel();
     };
   }, []);
+
+  // Session Progress Screen
+  if (showSessionProgress) {
+    return (
+      <SessionProgressScreen
+        fullyLearnedCount={cycleCompletedPhrases.size}
+        totalPhrases={exerciseData.length}
+        onContinue={handleContinueFromSessionProgress}
+      />
+    );
+  }
 
   // Finished screen
   if (mode === "finished" || fullyCompleted) {
@@ -239,6 +369,10 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            <div className="text-lg text-muted-foreground mb-4">
+              {t("total_learned", "Всього вивчено")}:{" "}
+              {cycleCompletedPhrases.size} / {exerciseData.length}
+            </div>
             <Button size="lg" className="w-full" onClick={handleFullReset}>
               {t("start_over")}
             </Button>
@@ -314,23 +448,19 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }
 
   return (
-    <div className="w-full h-full bg-background flex flex-col overflow-y-auto">
-      {title && (
-        <div className="text-center text-lg font-semibold mt-4 mb-2 text-muted-foreground">
-          {title}
-        </div>
+    <div className="w-full h-full bg-background flex flex-col overflow-hidden">
+      {/* Хедер з мікро-прогресом */}
+      {!showSessionProgress && !mode.startsWith("transition") && (
+        <ExerciseProgressHeader
+          blockNumber={getBlockNumber(mode)}
+          blockName={getBlockName(mode)}
+          currentInCycle={getCurrentInCycle(mode)}
+          totalInCycle={poolSize}
+          onExit={onBack}
+        />
       )}
-      {onBack && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="self-start ml-4 mt-2 mb-2"
-          onClick={onBack}
-        >
-          ← {t("back")}
-        </Button>
-      )}
-      <div className="flex-1 flex items-center justify-center p-4">
+
+      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
         {mode === "matching" && questions[currentIdx] && (
           <MatchingExercise
             question={questions[currentIdx]}
@@ -348,6 +478,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
               const nextIdx = makePhraseIdx + 1;
               if (nextIdx < matchingPool.length) {
                 setMakePhraseIdx(nextIdx);
+                // Прогрес оновиться автоматично через getCurrentInCycle(),
+                // який повертає makePhraseIdx (вже збільшений)
               } else {
                 setMode("transition-to-pairs");
                 setPairsKey((k) => k + 1);
@@ -360,6 +492,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             key={pairsKey}
             phrases={matchingPool}
             onComplete={handlePairsComplete}
+            onProgressUpdate={handlePairsProgressUpdate}
           />
         )}
         {mode === "pairs" && matchingPool.length < 2 && (
@@ -395,6 +528,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             phrases={matchingPool}
             cycles={1}
             onComplete={handlePronunciationComplete}
+            onProgressUpdate={handlePronunciationProgressUpdate}
           />
         )}
 
@@ -403,6 +537,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             key={matchingPool.map((obj) => obj.id).join("_")}
             phrases={matchingPool}
             onComplete={handleWritingComplete}
+            onProgressUpdate={handleWritingProgressUpdate}
           />
         )}
       </div>

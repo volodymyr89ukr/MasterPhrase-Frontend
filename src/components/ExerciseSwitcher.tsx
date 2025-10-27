@@ -38,13 +38,6 @@ function shuffleArray<T>(array: T[]): T[] {
   return arr;
 }
 
-function prepareQuestions(rawData: Phrase[]): Phrase[] {
-  return rawData.map((q, idx) => ({
-    ...q,
-    id: idx,
-  }));
-}
-
 function deduplicatePhrases(arr: Phrase[]): Phrase[] {
   const seen = new Set<number>();
   return arr.filter((obj) => {
@@ -71,8 +64,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     );
   }
 
-  const [questions, setQuestions] = useState<Phrase[]>(() =>
-    prepareQuestions(exerciseData)
+  const [questions, setQuestions] = useState<Phrase[]>(
+    () => [...exerciseData] // Просто копіюємо масив
   );
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [matchingPool, setMatchingPool] = useState<Phrase[]>([]);
@@ -162,7 +155,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }
 
   useEffect(() => {
-    setQuestions(prepareQuestions(exerciseData));
+    setQuestions([...exerciseData]); // Використовуємо копію
     setCurrentIdx(0);
     setMatchingPool([]);
     setMode("matching");
@@ -326,7 +319,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }
 
   function handleFullReset() {
-    setQuestions(prepareQuestions(exerciseData));
+    setQuestions([...exerciseData]); // Використовуємо копію
     setCurrentIdx(0);
     setMatchingPool([]);
     setMode("matching");
