@@ -396,7 +396,7 @@ export default function Block1({
                 (                 {errorPool.size})              {" "}
               </h3>
                            {" "}
-              <div className="flex flex-wrap sm:flex-nowrap gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                                {" "}
                 <button
                   className="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
