@@ -3,13 +3,11 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { SettingsProvider, useSettings } from "./contexts/SettingsContext";
 import { ProgressProvider, useProgress } from "./contexts/ProgressContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { ErrorPoolProvider } from "./contexts/ErrorPoolContext";
 // Re-export hooks для зворотної сумісності
 export { useAuth } from "./contexts/AuthContext";
 export { useSettings } from "./contexts/SettingsContext";
 export { useProgress } from "./contexts/ProgressContext";
 export type { Language } from "./contexts/SettingsContext";
-export { useErrorPool } from "./contexts/ErrorPoolContext";
 
 // ✅ Композиція всіх контекстів
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -19,9 +17,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     <ThemeProvider>
       <AuthProvider>
         <SettingsProvider>
-          <ProgressProvider>
-            <ErrorPoolProvider>{children}</ErrorPoolProvider>
-          </ProgressProvider>
+          <ProgressProvider>{children}</ProgressProvider>
         </SettingsProvider>
       </AuthProvider>
     </ThemeProvider>

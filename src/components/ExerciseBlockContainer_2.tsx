@@ -7,7 +7,6 @@ interface ExerciseBlockContainerProps {
   exerciseData?: any[]; // Якщо відомий тип, замініть any[] на конкретний тип
   onBack?: () => void;
   title?: string;
-  isErrorSession?: boolean;
 }
 
 const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
@@ -15,7 +14,6 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
   exerciseData,
   onBack,
   title,
-  isErrorSession = false,
 }) => {
   const [showTheory, setShowTheory] = useState(!!theoryText);
   const { t } = useTranslation();
@@ -81,7 +79,6 @@ const ExerciseBlockContainer: React.FC<ExerciseBlockContainerProps> = ({
       exerciseData={exerciseData}
       onBack={onBack}
       title={title}
-      isErrorSession={isErrorSession}
     />
   );
 };

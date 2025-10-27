@@ -6,7 +6,6 @@ import ExerciseBlockContainer from "./ExerciseBlockContainer";
 import TextSpeechHighlighter from "./TextSpeechHighlighter";
 import { useSettings } from "../contexts/SettingsContext";
 import { useProgress } from "../contexts/ProgressContext";
-import { useErrorPool } from "../contexts/ErrorPoolContext";
 
 interface Thousand {
   id: number;
@@ -120,7 +119,6 @@ export default function Block1({
   const { interfaceLanguage } = useSettings();
   const { knownWordIds, toggleKnownWord, isWordKnown, knownWordIdsSet } =
     useProgress();
-  const { errorPool, getErrorArray, injectErrors } = useErrorPool();
   const { poolSize, setPoolSize } = useSettings();
 
   // State
@@ -144,7 +142,6 @@ export default function Block1({
   const [loadingExerciseDetails, setLoadingExerciseDetails] =
     useState<boolean>(false);
   const [showConfirmExit, setShowConfirmExit] = useState<boolean>(false);
-  const [errorSessionData, setErrorSessionData] = useState<any[] | null>(null);
 
   // Додаткові стани для вкладки "words"
   const [markKnownMode, setMarkKnownMode] = useState<boolean>(false);
@@ -283,14 +280,16 @@ export default function Block1({
           }`
         );
         const data = await res.json();
-        const rawData = Array.isArray(data?.data) ? data.data : []; // =====> (REQ 2) ВАШ КОД ІН'ЄКЦІЇ ПОМИЛОК <===== // Ін'єктуємо 6 помилок. `injectErrors` повертає [нові дані, id видалених]
-        const [combinedData] = await injectErrors(rawData, 6); // =====> КІНЕЦЬ КОДУ <=====
+
         // Фільтрація фраз за knownWordIds (по поточній мові навчання)
         const knownSet = new Set(knownWordIds);
-        const filtered = combinedData.filter((item: any) => {
-          const wid = item?.word_id ?? item?.wordId ?? item?.word?.id ?? null;
-          return !(typeof wid === "number" && knownSet.has(wid));
-        });
+        const filtered = Array.isArray(data?.data)
+          ? data.data.filter((item: any) => {
+              const wid =
+                item?.word_id ?? item?.wordId ?? item?.word?.id ?? null;
+              return !(typeof wid === "number" && knownSet.has(wid));
+            })
+          : [];
 
         setExerciseDetails({ ...data, data: filtered });
       } catch {
@@ -314,24 +313,8 @@ export default function Block1({
     setSelectedExerciseId(null);
     setExerciseDetails(null);
     setLoadingExerciseDetails(false);
-    setErrorSessionData(null);
   };
 
-  // =====> (REQ 4) ЛОГІКА ДЛЯ РЕЖИМУ ТРЕНУВАННЯ ПОМИЛОК <=====
-  if (errorSessionData) {
-    return (
-      <div className="w-full h-full flex items-center justify-center p-4">
-               {" "}
-        <ExerciseBlockContainer
-          exerciseData={errorSessionData}
-          title={t("error_session_title", "Робота над помилками")}
-          onBack={handleConfirmExitExercise} // Використовуємо існуючу функцію
-          isErrorSession={true} // <-- Передаємо проп
-        />
-             {" "}
-      </div>
-    );
-  } // =====> КІНЕЦЬ КОДУ <=====
   // Похідні для вкладки words
   const wordsForList = useMemo(() => {
     if (!hideKnown) return allWords;
@@ -386,39 +369,7 @@ export default function Block1({
               ))}
             </div>
           )}
-          {error && <div className="text-destructive">{error}</div>}   {" "}
-          {/* =====> (REQ 3 & 4) КНОПКИ РОБОТИ З ПОМИЛКАМИ <===== */}         {" "}
-          {errorPool.size > 0 && (
-            <div className="mt-8 p-4 bg-card rounded-xl shadow border border-border">
-                           {" "}
-              <h3 className="text-lg font-bold text-center mb-3 text-foreground">
-                                {t("error_pool_title", "Робота над помилками")}{" "}
-                (                 {errorPool.size})              {" "}
-              </h3>
-                           {" "}
-              <div className="flex flex-col sm:flex-row gap-3">
-                               {" "}
-                <button
-                  className="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-                  onClick={() => setErrorSessionData(getErrorArray())}
-                >
-                                   {" "}
-                  {t("error_pool_practice", "Тренувати помилки")}               {" "}
-                </button>
-                               {" "}
-                <button
-                  className="flex-1 px-4 py-3 rounded-lg bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 transition-colors"
-                  onClick={() => navigate("/review-errors")}
-                >
-                                    {t("error_pool_review", "Переглянути")}     
-                           {" "}
-                </button>
-                             {" "}
-              </div>
-                         {" "}
-            </div>
-          )}
-                    {/* =====> КІНЕЦЬ КОДУ <===== */}
+          {error && <div className="text-destructive">{error}</div>}
         </div>
       </div>
     );
@@ -493,7 +444,6 @@ export default function Block1({
                 exerciseDetails.title
               }
               onBack={handleRequestExitExercise}
-              isErrorSession={false}
             />
           )}
           <ConfirmModal

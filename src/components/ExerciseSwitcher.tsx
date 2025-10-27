@@ -10,12 +10,14 @@ import { useTranslation } from "react-i18next";
 import { cancelSpeak } from "../utils/ttsUtils";
 import { useSettings } from "../contexts/SettingsContext";
 import { useProgress } from "../contexts/ProgressContext";
+import { useErrorPool } from "../contexts/ErrorPoolContext"; // <-- 1. ІМПОРТ
 import { TransitionScreen } from "./ui/TransitionScreen";
 import { Button } from "./ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 
 export interface Phrase extends Question {
-  id: number;
+  id: number; // Це ЛОКАЛЬНИЙ ID (idx)
+  stableId?: number; // <-- 2. ДОДАЄМО СТАБІЛЬНИЙ ID
   writing_exercise?: string | number | Array<string | number>;
   [key: string]: any;
 }
@@ -24,6 +26,7 @@ interface ExerciseSwitcherProps {
   exerciseData?: Phrase[];
   onBack?: () => void;
   title?: string;
+  isErrorSession?: boolean; // <-- 3. ДОДАЄМО ПРОП
 }
 
 // Centralized transition delay between exercise blocks (ms)
@@ -36,6 +39,19 @@ function shuffleArray<T>(array: T[]): T[] {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+function prepareQuestions(rawData: Phrase[]): Phrase[] {
+  return rawData.map((q, idx) => ({
+    ...q,
+    // Зберігаємо стабільний ID.
+    // Якщо q.stableId ВЖЕ існує (це ін'єкція помилки), НЕ перезаписуємо його.
+    // Якщо його немає (це свіжа фраза), беремо q.id як стабільний.
+    stableId: q.stableId ?? q.id,
+
+    // Створюємо НОВИЙ локальний id для ЦІЄЇ сесії.
+    id: idx,
+  }));
 }
 
 function deduplicatePhrases(arr: Phrase[]): Phrase[] {
@@ -51,10 +67,12 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   exerciseData = [],
   onBack,
   title,
+  isErrorSession = false, // <-- 5. ВСТАНОВЛЮЄМО ЗНАЧЕННЯ
 }) => {
   const { t } = useTranslation();
   const { poolSize } = useSettings();
   const { knownWordIdsSet } = useProgress();
+  const { addError, removeErrors } = useErrorPool(); // <-- 6. ОТРИМУЄМО ХУКИ
 
   if (!Array.isArray(exerciseData) || exerciseData.length === 0) {
     return (
@@ -64,8 +82,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
     );
   }
 
-  const [questions, setQuestions] = useState<Phrase[]>(
-    () => [...exerciseData] // Просто копіюємо масив
+  const [questions, setQuestions] = useState<Phrase[]>(() =>
+    prepareQuestions(exerciseData)
   );
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const [matchingPool, setMatchingPool] = useState<Phrase[]>([]);
@@ -155,7 +173,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }
 
   useEffect(() => {
-    setQuestions([...exerciseData]); // Використовуємо копію
+    setQuestions(prepareQuestions(exerciseData));
     setCurrentIdx(0);
     setMatchingPool([]);
     setMode("matching");
@@ -227,6 +245,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       }
       updatedIdx = Math.min(currentIdx, updatedQuestions.length - 1);
     } else {
+      addError(currQ);
       if (updatedQuestions.length > 5) {
         const wrongQ = updatedQuestions.splice(currentIdx, 1)[0];
         let insertPos = currentIdx + 3;
@@ -285,7 +304,15 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       }
     });
     setCycleCompletedPhrases(newCompleted);
-
+    // =====> (REQ 4-b) ВАШ КОД ОЧИЩЕННЯ ПОМИЛОК <=====
+    if (isErrorSession) {
+      // Якщо це була сесія помилок, видаляємо пройдені фрази з пулу
+      // Ми ОБОВ'ЯЗКОВО повинні видаляти за СТАБІЛЬНИМ ID
+      const completedStableIds = matchingPool
+        .map((p) => p.stableId) // <-- Беремо stableId
+        .filter((id): id is number => typeof id === "number"); // Фільтруємо undefined
+      removeErrors(completedStableIds);
+    } // =====> КІНЕЦЬ КОДУ <=====
     setMatchingPool([]);
 
     // Якщо більше немає фраз для вивчення
@@ -319,7 +346,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }
 
   function handleFullReset() {
-    setQuestions([...exerciseData]); // Використовуємо копію
+    setQuestions(prepareQuestions(exerciseData));
     setCurrentIdx(0);
     setMatchingPool([]);
     setMode("matching");

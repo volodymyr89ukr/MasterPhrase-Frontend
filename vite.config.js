@@ -10,4 +10,11 @@ export default defineConfig({
       "/api": "http://localhost:5000", // <-- тут порт твого бекенда
     },
   },
+  resolve: {
+    alias: {
+      // Коли код просить '@react-native-async-storage/async-storage',
+      // Vite підключає 'localforage'
+      "@react-native-async-storage/async-storage": "localforage",
+    },
+  },
 });
