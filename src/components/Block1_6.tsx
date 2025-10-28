@@ -349,6 +349,13 @@ export default function Block1({
   if (!thousandId) {
     return (
       <div className="w-full h-full flex flex-col max-w-3xl mx-auto overflow-hidden">
+        {/* Фіксований хедер */}
+        <div className="flex-shrink-0 p-4 pb-2">
+          <h2 className="text-xl font-bold text-foreground">
+            {t("select_thousand_words")}
+          </h2>
+        </div>
+
         {/* Скролована зона з тисячами */}
         <div className="flex-1 overflow-y-auto px-4 min-h-0">
           {loadingThousands ? (
@@ -380,9 +387,12 @@ export default function Block1({
             </div>
           )}
           {error && <div className="text-destructive mt-4">{error}</div>}
-          {/* Блок Помилок (Картка) */}
-          {errorPool.size > 0 && (
-            <div className="bg-card rounded-xl shadow border border-border p-4 mt-6 mb-4">
+        </div>
+
+        {/* Фіксований футер з помилками */}
+        {errorPool.size > 0 && (
+          <div className="flex-shrink-0 p-4 pt-3 border-t border-border bg-background">
+            <div className="max-w-3xl mx-auto">
               <h3 className="text-lg font-bold text-center mb-3 text-foreground">
                 {t("error_pool_title", "Помилки")} ({errorPool.size})
               </h3>
@@ -401,8 +411,8 @@ export default function Block1({
                 </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }
