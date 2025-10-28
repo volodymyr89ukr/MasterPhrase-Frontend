@@ -401,15 +401,6 @@ export default function WritingExercise({
     setHintLevel(2);
   };
 
-  const handleHintClick = () => {
-    if (hintLevel === 0) {
-      setHintLevel(1); // Перший клік: показати частину
-    } else if (hintLevel === 1) {
-      setHintLevel(2); // Другий клік: показати все
-    }
-    // Якщо hintLevel === 2, нічого не робити
-  };
-
   const handleKey = (spec: KeySpec) => {
     if (spec.type === "char") {
       engine.insert(spec.value || spec.label);
@@ -457,72 +448,74 @@ export default function WritingExercise({
           {maskedPhrase}
         </div>
 
-        {/* === НОВИЙ БЛОК ВВЕДЕННЯ З КНОПКОЮ ПІДКАЗКИ === */}
-        <div className="flex items-center w-full max-w-[90vw] gap-2">
-          {/* === Адаптивне поле вводу (Desktop або Touch) === */}
-          {!isTouchDevice ? (
-            <input
-              ref={inputRef}
-              type="text"
-              className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 outline-none shadow transition-all duration-200 w-full flex-1 ${inputColorClass}`}
-              style={{
-                fontFamily: "inherit",
-                letterSpacing: "0.04em",
-              }}
-              value={engine.value}
-              onChange={(e) => {
-                // Sync desktop input to engine
-                const newVal = e.target.value;
-                engine.reset();
-                for (const ch of newVal) {
-                  engine.insert(ch);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleSubmit();
-                }
-              }}
-              autoFocus
-              spellCheck={false}
-              autoComplete="off"
-              placeholder={t("enter_word")}
-              autoCapitalize="off"
-            />
-          ) : (
-            // Touch: non-focusable display
-            <div
-              role="textbox"
-              aria-readonly="true"
-              aria-live="polite"
-              className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 shadow transition-all duration-200 w-full flex-1 min-h-[52px] ${inputColorClass}`}
-              style={{
-                fontFamily: "inherit",
-                letterSpacing: "0.04em",
-              }}
-            >
-              {engine.value}
-              <span className="animate-pulse ml-1">|</span>
-            </div>
-          )}
-
-          {/* === Нова кнопка підказки (Лампочка) === */}
-          <button
-            onClick={handleHintClick}
-            disabled={hintLevel >= 2}
-            className={`flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-lg border bg-secondary hover:bg-accent text-secondary-foreground text-2xl transition-all active:scale-[0.98] focus-ring ${
-              hintLevel >= 2 ? "opacity-50 cursor-not-allowed" : ""
-            } ${
-              hintLevel === 1 ? "border-primary" : "" // Підсвічуємо, якщо 1-й рівень активний
-            }`}
-            aria-label={t("get_hint", "Отримати підказку")}
-            title={t("get_hint", "Отримати підказку")}
+        {/* Desktop: normal input */}
+        {!isTouchDevice ? (
+          <input
+            ref={inputRef}
+            type="text"
+            className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 outline-none shadow transition-all duration-200 w-full max-w-[90vw] ${inputColorClass}`}
+            style={{
+              fontFamily: "inherit",
+              letterSpacing: "0.04em",
+            }}
+            value={engine.value}
+            onChange={(e) => {
+              // Sync desktop input to engine
+              const newVal = e.target.value;
+              engine.reset();
+              for (const ch of newVal) {
+                engine.insert(ch);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
+            autoFocus
+            spellCheck={false}
+            autoComplete="off"
+            placeholder={t("enter_word")}
+            autoCapitalize="off"
+          />
+        ) : (
+          // Touch: non-focusable display
+          <div
+            role="textbox"
+            aria-readonly="true"
+            aria-live="polite"
+            className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 shadow transition-all duration-200 w-full max-w-[90vw] min-h-[52px] ${inputColorClass}`}
+            style={{
+              fontFamily: "inherit",
+              letterSpacing: "0.04em",
+            }}
           >
-            💡
+            {engine.value}
+            <span className="animate-pulse ml-1">|</span>
+          </div>
+        )}
+
+        <div className="flex flex-row gap-3 w-full justify-center mt-5">
+          <button
+            onClick={handleHintPart}
+            disabled={hintLevel >= 1}
+            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-transform active:scale-[0.98] focus-ring ${
+              hintLevel >= 1 ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+          >
+            {t("show_part_of_word")}
+          </button>
+          <button
+            onClick={handleHintAll}
+            disabled={hintLevel >= 2}
+            className={`w-full sm:w-auto px-4 py-2 rounded-xl border bg-secondary hover:bg-accent text-secondary-foreground text-base transition-transform active:scale-[0.98] focus-ring ${
+              hintLevel >= 2 ? "opacity-60 cursor-not-allowed" : ""
+            }`}
+          >
+            {t("show_whole_word")}
           </button>
         </div>
-        {/* === КІНЕЦЬ НОВОГО БЛОКУ ВВЕДЕННЯ === */}
 
         <style>
           {`
