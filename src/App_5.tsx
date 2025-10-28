@@ -187,55 +187,50 @@ function AppContent() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={() => setShowLanguageSelection(true)}
-                  className="flex items-center gap-1.5 text-lg sm:text-xl text-muted-foreground hover:text-foreground font-semibold transition-colors focus-ring"
+                  className="text-lg sm:text-xl text-muted-foreground hover:text-foreground underline font-semibold transition-colors"
                   title={t("change_language_title")}
                 >
-                  <span>🌐</span>
-                  <span className="uppercase">
-                    {interfaceLanguage?.code || "UA"}
-                  </span>
+                  {t("change_language")}
                 </button>
               </div>
-              <div className="flex items-center gap-2 sm:gap-4">
-                {/* Перемикач теми */}
-                <button
-                  onClick={toggleTheme}
-                  className="text-base sm:text-lg font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-accent focus-ring"
-                  aria-label={
-                    theme === "dark"
-                      ? "Switch to light mode"
-                      : "Switch to dark mode"
-                  }
-                >
-                  {theme === "dark" ? "Світла" : "Темна"}
-                </button>
-
-                {/* Блок Входу / Профілю */}
+              <div className="flex items-center gap-2">
                 {user ? (
                   <>
+                    <span className="text-foreground text-lg sm:text-xl font-semibold">
+                      {user.username
+                        ? t("profile_user", { username: user.username })
+                        : user.email}
+                    </span>
                     <button
                       onClick={() => {
                         localStorage.removeItem("token");
                         localStorage.removeItem("user");
                         setUser(null);
                       }}
-                      className="flex items-center gap-1.5 py-2 px-4 rounded-lg border border-border bg-transparent text-foreground hover:bg-accent transition-colors text-base sm:text-lg font-bold focus-ring"
-                      title={t("logout")}
+                      className="py-2 px-5 rounded-lg bg-secondary text-secondary-foreground font-bold hover:bg-secondary/80 transition-colors text-base sm:text-lg"
                     >
-                      <span className="hidden sm:inline">{t("logout")}</span>
-                      <span>🚪</span>
+                      {t("logout")}
                     </button>
                   </>
                 ) : (
                   <button
                     onClick={() => setShowLogin(true)}
-                    className="flex items-center gap-1.5 py-2 px-4 rounded-lg border border-primary text-primary hover:bg-primary/10 transition-colors text-base sm:text-lg font-bold focus-ring"
-                    title={t("login")}
+                    className="py-2 px-5 rounded-lg bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors text-base sm:text-lg"
                   >
-                    <span className="hidden sm:inline">{t("login")}</span>
-                    <span>👤</span>
+                    {t("login")}
                   </button>
                 )}
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-md hover:bg-accent transition-colors"
+                  aria-label={
+                    theme === "dark"
+                      ? "Switch to light mode"
+                      : "Switch to dark mode"
+                  }
+                >
+                  {theme === "dark" ? "☀️" : "🌙"}
+                </button>
               </div>
             </div>
           </div>
