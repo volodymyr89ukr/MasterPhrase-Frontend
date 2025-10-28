@@ -358,11 +358,7 @@ export default function Block1({
               {thousands.map((th) => (
                 <div
                   key={th.id}
-                  onClick={() =>
-                    navigate(`/thousand/${th.id}`, {
-                      state: { title: th.name },
-                    })
-                  }
+                  onClick={() => navigate(`/thousand/${th.id}`)}
                   className="cursor-pointer"
                 >
                   {renderThousandItem ? (
@@ -416,7 +412,6 @@ export default function Block1({
 
   // 2. Вибір комплекту в тисячі
   if (thousandId && !setId) {
-    const title = location.state?.title;
     return (
       <div className="w-full h-full flex flex-col max-w-3xl mx-auto">
         {/* Фіксований хедер */}
@@ -424,7 +419,7 @@ export default function Block1({
           <div className="flex items-center gap-2">
             <BackButton to="/" />
             <h2 className="text-xl font-bold text-foreground">
-              {title || t("select_word_set")}
+              {t("select_word_set")}
             </h2>
           </div>
         </div>
