@@ -176,132 +176,126 @@ function AppContent() {
 
   return (
     <div className="app-viewport w-screen h-screen overflow-hidden flex flex-col bg-background">
-      {/* Фіксований хедер на головній */}
+      {/* Назва додатку окремим рядком по центру на головній */}
       {isHome && (
-        <div className="flex-shrink-0 w-full">
-          <div className="w-full flex flex-col items-center mt-6 mb-2">
-            <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight text-center mb-2 select-none">
-              MasterPhrase
-            </h1>
-            <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setShowLanguageSelection(true)}
-                  className="text-lg sm:text-xl text-muted-foreground hover:text-foreground underline font-semibold transition-colors"
-                  title={t("change_language_title")}
-                >
-                  {t("change_language")}
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                {user ? (
-                  <>
-                    <span className="text-foreground text-lg sm:text-xl font-semibold">
-                      {user.username
-                        ? t("profile_user", { username: user.username })
-                        : user.email}
-                    </span>
-                    <button
-                      onClick={() => {
-                        localStorage.removeItem("token");
-                        localStorage.removeItem("user");
-                        setUser(null);
-                      }}
-                      className="py-2 px-5 rounded-lg bg-secondary text-secondary-foreground font-bold hover:bg-secondary/80 transition-colors text-base sm:text-lg"
-                    >
-                      {t("logout")}
-                    </button>
-                  </>
-                ) : (
+        <div className="w-full flex flex-col items-center mt-6 mb-2">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight text-center mb-2 select-none">
+            MasterPhrase
+          </h1>
+          <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowLanguageSelection(true)}
+                className="text-lg sm:text-xl text-muted-foreground hover:text-foreground underline font-semibold transition-colors"
+                title={t("change_language_title")}
+              >
+                {t("change_language")}
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              {user ? (
+                <>
+                  <span className="text-foreground text-lg sm:text-xl font-semibold">
+                    {user.username
+                      ? t("profile_user", { username: user.username })
+                      : user.email}
+                  </span>
                   <button
-                    onClick={() => setShowLogin(true)}
-                    className="py-2 px-5 rounded-lg bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors text-base sm:text-lg"
+                    onClick={() => {
+                      localStorage.removeItem("token");
+                      localStorage.removeItem("user");
+                      setUser(null);
+                    }}
+                    className="py-2 px-5 rounded-lg bg-secondary text-secondary-foreground font-bold hover:bg-secondary/80 transition-colors text-base sm:text-lg"
                   >
-                    {t("login")}
+                    {t("logout")}
                   </button>
-                )}
+                </>
+              ) : (
                 <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-md hover:bg-accent transition-colors"
-                  aria-label={
-                    theme === "dark"
-                      ? "Switch to light mode"
-                      : "Switch to dark mode"
-                  }
+                  onClick={() => setShowLogin(true)}
+                  className="py-2 px-5 rounded-lg bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors text-base sm:text-lg"
                 >
-                  {theme === "dark" ? "☀️" : "🌙"}
+                  {t("login")}
                 </button>
-              </div>
+              )}
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-md hover:bg-accent transition-colors"
+                aria-label={
+                  theme === "dark"
+                    ? "Switch to light mode"
+                    : "Switch to dark mode"
+                }
+              >
+                {theme === "dark" ? "☀️" : "🌙"}
+              </button>
             </div>
           </div>
         </div>
       )}
-
       {/* Модальне вікно */}
       <LoginModal
         open={showLogin}
         onClose={() => setShowLogin(false)}
         onSuccess={handleRegisterSuccess}
       />
-
-      {/* Скролована зона для роутів */}
-      <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Block1
-                user={user}
-                learningLanguage={learningLanguage}
-                // Кастомний рендер тисяч
-                renderThousandItem={(thousand) => (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
-                    <div className="text-lg font-bold text-card-foreground text-center">
-                      {thousand.name}
-                    </div>
-                    {thousand.description && (
-                      <div className="text-xs text-muted-foreground text-center mt-1">
-                        {thousand.description}
-                      </div>
-                    )}
+      {/* Роутінг сторінок */}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Block1
+              user={user}
+              learningLanguage={learningLanguage}
+              // Кастомний рендер тисяч
+              renderThousandItem={(thousand) => (
+                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
+                  <div className="text-lg font-bold text-card-foreground text-center">
+                    {thousand.name}
                   </div>
-                )}
-                // Кастомний рендер комплектів
-                renderWordSetItem={(set) => (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
-                    <div className="text-lg font-bold text-card-foreground text-center">
-                      {set.word_set || set.name || `Set #${set.id}`}
+                  {thousand.description && (
+                    <div className="text-xs text-muted-foreground text-center mt-1">
+                      {thousand.description}
                     </div>
+                  )}
+                </div>
+              )}
+              // Кастомний рендер комплектів
+              renderWordSetItem={(set) => (
+                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
+                  <div className="text-lg font-bold text-card-foreground text-center">
+                    {set.word_set || set.name || `Set #${set.id}`}
                   </div>
-                )}
-              />
-            }
-          />
-          <Route
-            path="/thousand/:thousandId"
-            element={
-              <Block1
-                user={user}
-                learningLanguage={learningLanguage}
-                renderWordSetItem={(set) => (
-                  <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
-                    <div className="text-lg font-bold text-card-foreground text-center">
-                      {set.word_set || set.name || `Set #${set.id}`}
-                    </div>
+                </div>
+              )}
+            />
+          }
+        />
+        <Route
+          path="/thousand/:thousandId"
+          element={
+            <Block1
+              user={user}
+              learningLanguage={learningLanguage}
+              renderWordSetItem={(set) => (
+                <div className="flex flex-col items-center justify-center h-32 w-32 sm:h-36 sm:w-36 md:h-40 md:w-40 bg-card rounded-xl shadow border border-border hover:bg-accent transition-colors cursor-pointer select-none p-3">
+                  <div className="text-lg font-bold text-card-foreground text-center">
+                    {set.word_set || set.name || `Set #${set.id}`}
                   </div>
-                )}
-              />
-            }
-          />
-          <Route
-            path="/thousand/:thousandId/set/:setId"
-            element={<Block1 user={user} learningLanguage={learningLanguage} />}
-          />
-          {/* =====> (REQ 3) ВАШ НОВИЙ РОУТ <===== */}
-          <Route path="/review-errors" element={<ErrorReviewScreen />} />
-          {/* =====> КІНЕЦЬ КОДУ <===== */}
-        </Routes>
-      </div>
+                </div>
+              )}
+            />
+          }
+        />
+        <Route
+          path="/thousand/:thousandId/set/:setId"
+          element={<Block1 user={user} learningLanguage={learningLanguage} />}
+        />
+        {/* =====> (REQ 3) ВАШ НОВИЙ РОУТ <===== */}
+                <Route path="/review-errors" element={<ErrorReviewScreen />} /> 
+              {/* =====> КІНЕЦЬ КОДУ <===== */}
+      </Routes>
     </div>
   );
 }

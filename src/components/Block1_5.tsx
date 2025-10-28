@@ -348,7 +348,7 @@ export default function Block1({
   // 1. Головна: вибір тисяч
   if (!thousandId) {
     return (
-      <div className="w-full h-full flex flex-col max-w-3xl mx-auto overflow-hidden">
+      <div className="w-full h-full flex flex-col max-w-3xl mx-auto">
         {/* Фіксований хедер */}
         <div className="flex-shrink-0 p-4 pb-2">
           <h2 className="text-xl font-bold text-foreground">
@@ -356,8 +356,8 @@ export default function Block1({
           </h2>
         </div>
 
-        {/* Скролована зона з тисячами */}
-        <div className="flex-1 overflow-y-auto px-4 min-h-0">
+        {/* Скролована зона */}
+        <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-0">
           {loadingThousands ? (
             <div className="text-muted-foreground">{t("loading")}</div>
           ) : (
@@ -386,16 +386,14 @@ export default function Block1({
               ))}
             </div>
           )}
-          {error && <div className="text-destructive mt-4">{error}</div>}
-        </div>
-
-        {/* Фіксований футер з помилками */}
-        {errorPool.size > 0 && (
-          <div className="flex-shrink-0 p-4 pt-3 border-t border-border bg-background">
-            <div className="max-w-3xl mx-auto">
-              <h3 className="text-lg font-bold text-center mb-3 text-foreground">
+          {error && <div className="text-destructive">{error}</div>}{" "}
+          {/* =====> (REQ 3 & 4) КНОПКИ РОБОТИ З ПОМИЛКАМИ <===== */}
+          {errorPool.size > 0 && (
+            <div className="mt-8 p-4 bg-card rounded-xl shadow border border-border">
+              <h3 className="text-lg font-bold text-center mb-3 text-foreground whitespace-nowrap">
                 {t("error_pool_title", "Помилки")} ({errorPool.size})
               </h3>
+              {/* =====> ЗМІНА ТУТ: Замінено класи flexbox та прибрано min-w <===== */}
               <div className="flex gap-3">
                 <button
                   className="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
@@ -411,8 +409,9 @@ export default function Block1({
                 </button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+          {/* =====> КІНЕЦЬ КОДУ <===== */}
+        </div>
       </div>
     );
   }
