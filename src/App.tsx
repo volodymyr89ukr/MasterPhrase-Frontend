@@ -203,14 +203,16 @@ function AppContent() {
               {/* Перемикач теми */}
               <button
                 onClick={toggleTheme}
-                className="text-base sm:text-lg font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-accent focus-ring"
+                className="flex items-center justify-center h-10 w-10 rounded-md text-muted-foreground hover:text-foreground transition-colors hover:bg-accent focus-ring"
                 aria-label={
                   theme === "dark"
                     ? "Switch to light mode"
                     : "Switch to dark mode"
                 }
               >
-                {theme === "dark" ? "Світла" : "Темна"}
+                <span className="text-xl">
+                  {theme === "dark" ? "☀️" : "🌙"}
+                </span>
               </button>
 
               {/* Блок Входу / Профілю */}
