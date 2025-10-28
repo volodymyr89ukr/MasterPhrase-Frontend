@@ -181,8 +181,9 @@ function AppContent() {
         <div className="flex-shrink-0 w-full">
           <div className="w-full flex items-center justify-between p-3 sm:p-4 max-w-3xl mx-auto mt-2 mb-2">
             {/* 1. Логотип (Зліва) */}
-            <h1 className="text-3xl font-extrabold text-foreground tracking-tight select-none">
-              MasterPhrase
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight select-none">
+              <span className="sm:hidden">MP</span>
+              <span className="hidden sm:inline">MasterPhrase</span>
             </h1>
 
             {/* 2. Елементи керування (Справа) */}
