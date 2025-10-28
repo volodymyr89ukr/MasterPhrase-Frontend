@@ -179,65 +179,64 @@ function AppContent() {
       {/* Фіксований хедер на головній */}
       {isHome && (
         <div className="flex-shrink-0 w-full">
-          <div className="w-full flex items-center justify-between p-3 sm:p-4 max-w-3xl mx-auto mt-2 mb-2">
-            {/* 1. Логотип (Зліва) */}
-            <h1 className="text-3xl font-extrabold text-foreground tracking-tight select-none">
+          <div className="w-full flex flex-col items-center mt-6 mb-2">
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight text-center mb-2 select-none">
               MasterPhrase
             </h1>
-
-            {/* 2. Елементи керування (Справа) */}
-            <div className="flex items-center gap-2 sm:gap-4">
-              {/* Кнопка Мови */}
-              <button
-                onClick={() => setShowLanguageSelection(true)}
-                className="flex items-center gap-1.5 text-base sm:text-lg text-muted-foreground hover:text-foreground font-semibold transition-colors focus-ring"
-                title={t("change_language_title")}
-              >
-                <span>🌐</span>
-                <span className="uppercase">
-                  {interfaceLanguage?.code || "UA"}
-                </span>
-              </button>
-
-              {/* Перемикач теми */}
-              <button
-                onClick={toggleTheme}
-                className="text-base sm:text-lg font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-accent focus-ring"
-                aria-label={
-                  theme === "dark"
-                    ? "Switch to light mode"
-                    : "Switch to dark mode"
-                }
-              >
-                {theme === "dark" ? "Світла" : "Темна"}
-              </button>
-
-              {/* Блок Входу / Профілю */}
-              {user ? (
-                <>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem("token");
-                      localStorage.removeItem("user");
-                      setUser(null);
-                    }}
-                    className="flex items-center justify-center h-10 w-10 sm:h-auto sm:w-auto sm:gap-1.5 sm:py-2 sm:px-4 rounded-lg border border-border bg-transparent text-foreground hover:bg-accent transition-colors text-base sm:text-lg font-bold focus-ring"
-                    title={t("logout")}
-                  >
-                    <span className="hidden sm:inline">{t("logout")}</span>
-                    <span className="sm:hidden text-xl">🚪</span>
-                  </button>
-                </>
-              ) : (
+            <div className="w-full flex items-center justify-between p-2 max-w-3xl mx-auto">
+              <div className="flex items-center gap-4">
                 <button
-                  onClick={() => setShowLogin(true)}
-                  className="flex items-center justify-center h-10 w-10 sm:h-auto sm:w-auto sm:gap-1.5 sm:py-2 sm:px-4 rounded-lg border border-primary text-primary hover:bg-primary/10 transition-colors text-base sm:text-lg font-bold focus-ring"
-                  title={t("login")}
+                  onClick={() => setShowLanguageSelection(true)}
+                  className="flex items-center gap-1.5 text-lg sm:text-xl text-muted-foreground hover:text-foreground font-semibold transition-colors focus-ring"
+                  title={t("change_language_title")}
                 >
-                  <span className="hidden sm:inline">{t("login")}</span>
-                  <span className="sm:hidden text-xl">👤</span>
+                  <span>🌐</span>
+                  <span className="uppercase">
+                    {interfaceLanguage?.code || "UA"}
+                  </span>
                 </button>
-              )}
+              </div>
+              <div className="flex items-center gap-2 sm:gap-4">
+                {/* Перемикач теми */}
+                <button
+                  onClick={toggleTheme}
+                  className="text-base sm:text-lg font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-accent focus-ring"
+                  aria-label={
+                    theme === "dark"
+                      ? "Switch to light mode"
+                      : "Switch to dark mode"
+                  }
+                >
+                  {theme === "dark" ? "Світла" : "Темна"}
+                </button>
+
+                {/* Блок Входу / Профілю */}
+                {user ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem("token");
+                        localStorage.removeItem("user");
+                        setUser(null);
+                      }}
+                      className="flex items-center gap-1.5 py-2 px-4 rounded-lg border border-border bg-transparent text-foreground hover:bg-accent transition-colors text-base sm:text-lg font-bold focus-ring"
+                      title={t("logout")}
+                    >
+                      <span className="hidden sm:inline">{t("logout")}</span>
+                      <span>🚪</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="flex items-center gap-1.5 py-2 px-4 rounded-lg border border-primary text-primary hover:bg-primary/10 transition-colors text-base sm:text-lg font-bold focus-ring"
+                    title={t("login")}
+                  >
+                    <span className="hidden sm:inline">{t("login")}</span>
+                    <span>👤</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
