@@ -176,119 +176,91 @@ export default function PronunciationBlock({
     );
   }
 
-  // ВСТАВТЕ ЦЕЙ НОВИЙ КОД (~рядок 198)
-
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      {/* === 1. Content Area (Grows, Scrolls, Centers Content) === */}
-      {/* flex-1: Займає весь доступний простір, відштовхуючи кнопку "Далі" вниз.
-        overflow-y-auto: Дозволяє контенту скролитись, якщо він не вміщується (малий екран).
-        min-h-0: Потрібен для коректної роботи flex-1 + overflow.
-      */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-4">
-        {/* h-full, flex, justify-center: Центрує весь вміст 
-          вертикально у просторі, який надав flex-1.
-        */}
-        <div className="max-w-lg w-full min-w-[320px] mx-auto h-full flex flex-col items-center justify-center">
-          {/* Фраза */}
-          <div className="text-2xl text-center font-medium my-4 min-h-[3.2em] px-3 py-2 rounded">
-            {fullPhrase}
+      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
+        <div className="text-2xl text-center font-medium my-4 min-h-[3.2em] px-3 py-2 rounded">
+          {fullPhrase}
+        </div>
+
+        {showTranslation && (
+          <div className="text-lg text-muted-foreground text-center italic mb-2 min-h-[2em]">
+            {translation}
           </div>
+        )}
 
-          {/* Переклад (умовний) */}
-          {showTranslation && (
-            <div className="text-lg text-muted-foreground text-center italic mb-2 min-h-[2em]">
-              {translation}
-            </div>
-          )}
+        <div className="flex gap-4 mb-4">
+          <button
+            onClick={speakPhraseTTS}
+            title={t("listen_to_phrase")}
+            className="text-success hover:text-success/80 p-2 rounded-full shadow-md border bg-card transition-colors"
+            style={{ fontSize: "2.2rem", minWidth: 48 }}
+            tabIndex={0}
+          >
+            🔊
+          </button>
 
-          {/* === Блок кнопок аудіо (з виправленими іконками) === */}
-          <div className="flex gap-4 mb-4">
-            {/* 1. Слухати носія (Оригінал) */}
+          <button
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`p-2 rounded-full shadow-md border font-bold text-white transition-colors ${
+              isRecording
+                ? "bg-destructive animate-pulse"
+                : "bg-primary hover:bg-primary/90"
+            }`}
+            style={{ fontSize: "2.2rem", minWidth: 48 }}
+            tabIndex={0}
+            disabled={!mediaSupported}
+          >
+            {isRecording ? "⏹️" : "⏺️"}
+          </button>
+
+          {recordedBlob && (
             <button
-              onClick={speakPhraseTTS}
-              title={t("listen_to_phrase")}
-              className="text-success hover:text-success/80 p-2 rounded-full shadow-md border bg-card transition-colors"
+              onClick={playRecording}
+              className="text-primary hover:text-primary/80 p-2 rounded-full shadow-md border bg-card transition-colors"
+              title={t("play_recording")}
               style={{ fontSize: "2.2rem", minWidth: 48 }}
               tabIndex={0}
             >
               🔊
             </button>
-
-            {/* 2. Записати / Зупинити / (Перезаписати) */}
-            <button
-              onClick={isRecording ? stopRecording : startRecording}
-              className={`p-2 rounded-full shadow-md border font-bold text-white transition-colors ${
-                isRecording
-                  ? "bg-destructive animate-pulse"
-                  : "bg-primary hover:bg-primary/90"
-              }`}
-              style={{ fontSize: "2.2rem", minWidth: 48 }}
-              tabIndex={0}
-              disabled={!mediaSupported}
-              title={
-                isRecording
-                  ? t("stop_recording", "Зупинити")
-                  : t("start_recording", "Записати")
-              }
-            >
-              {isRecording ? "⏹️" : "⏺️"}
-            </button>
-
-            {/* 3. Слухати себе (З'являється після запису) */}
-            {recordedBlob && (
-              <button
-                onClick={playRecording}
-                className="text-primary hover:text-primary/80 p-2 rounded-full shadow-md border bg-card transition-colors"
-                title={t("play_recording")}
-                style={{ fontSize: "2.2rem", minWidth: 48 }}
-                tabIndex={0}
-              >
-                ▶️ {/* <--- ВИПРАВЛЕНА ІКОНКА */}
-              </button>
-            )}
-          </div>
-
-          {/* Помилка мікрофону (якщо є) */}
-          {mediaError && (
-            <div className="text-destructive text-sm text-center mb-2 max-w-xs">
-              {mediaError}
-            </div>
           )}
+        </div>
 
-          {/* Чекбокс "Показати переклад" */}
-          <div className="flex items-center gap-6 mt-2">
-            <label className="flex items-center cursor-pointer text-sm">
-              <input
-                type="checkbox"
-                checked={showTranslation}
-                onChange={() => setShowTranslation((s) => !s)}
-                className="accent-primary mr-2"
-              />
-              {t("show_translation")}
-            </label>
+        {mediaError && (
+          <div className="text-destructive text-sm text-center mb-2 max-w-xs">
+            {mediaError}
           </div>
+        )}
 
-          {/* Прихований аудіо-плеєр */}
-          {recordedBlob && (
-            <audio
-              ref={audioPlayerRef}
-              src={URL.createObjectURL(recordedBlob)}
-              style={{ display: "none" }}
+        <div className="flex items-center gap-6 mt-2">
+          <label className="flex items-center cursor-pointer text-sm">
+            <input
+              type="checkbox"
+              checked={showTranslation}
+              onChange={() => setShowTranslation((s) => !s)}
+              className="accent-primary mr-2"
             />
-          )}
-        </div>{" "}
-        {/* Кінець div, що центрує */}
-      </div>{" "}
-      {/* Кінець div (flex-1 Content Area) */}
-      {/* === 2. Action Area (Приклеєна до низу) === */}
-      <div className="flex-shrink-0 p-4 pt-2 w-full max-w-lg mx-auto">
-        <button
-          onClick={handleNext}
-          className="w-full px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow transition-transform active:scale-[0.98] focus-ring text-lg"
-        >
-          {currentIdx < phrases.length - 1 ? t("next") : t("finish")}
-        </button>
+            {t("show_translation")}
+          </label>
+        </div>
+
+        <div className="flex justify-center mt-auto pt-6">
+          <button
+            onClick={handleNext}
+            className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow transition-transform active:scale-[0.98] focus-ring text-lg"
+          >
+            {currentIdx < phrases.length - 1 ? t("next") : t("finish")}
+          </button>
+        </div>
+
+        {recordedBlob && (
+          <audio
+            ref={audioPlayerRef}
+            src={URL.createObjectURL(recordedBlob)}
+            style={{ display: "none" }}
+          />
+        )}
       </div>
     </div>
   );
