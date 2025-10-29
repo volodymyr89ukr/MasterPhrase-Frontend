@@ -446,17 +446,34 @@ export default function WritingExercise({
 
   return (
     <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
-        <div className="text-base sm:text-lg text-muted-foreground italic text-center min-h-[2em]">
-          {obj.translation}
+      {/* === NEW: Content Area (Grows, Scrolls, Centers Content) === */}
+      {/* flex-1: Займає весь доступний простір, відштовхуючи введення та клавіатуру вниз.
+        overflow-y-auto: Дозволяє контенту скролитись, якщо він не вміщується (довгі фрази / малий екран).
+        min-h-0: Потрібен для коректної роботи flex-1 + overflow.
+      */}
+      <div className="flex-1 overflow-y-auto min-h-0 p-4">
+        {/* h-full, flex, justify-center: Центрує вміст (переклад + фразу) 
+          вертикально у просторі, який надав flex-1.
+        */}
+        <div className="max-w-lg w-full min-w-[320px] mx-auto h-full flex flex-col items-center justify-center">
+          <div className="text-base sm:text-lg text-muted-foreground italic text-center min-h-[2em]">
+            {obj.translation}
+          </div>
+          <div
+            className="text-2xl sm:text-3xl text-center font-semibold min-h-[2.7em] px-2 sm:px-6 py-2"
+            style={{ letterSpacing: "0.02em", wordBreak: "break-word" }}
+          >
+            {maskedPhrase}
+          </div>
+          {/* === Кінець обгорток Content Area === */}
         </div>
-        <div
-          className="text-2xl sm:text-3xl text-center font-semibold min-h-[2.7em] px-2 sm:px-6 py-2"
-          style={{ letterSpacing: "0.02em", wordBreak: "break-word" }}
-        >
-          {maskedPhrase}
-        </div>
+      </div>
 
+      {/* === NEW: Input Area (Locked to bottom, above keyboard) === */}
+      {/* flex-shrink-0: Забороняє цьому блоку стискатися. Він завжди матиме свою висоту.
+        pt-2: Менший відступ зверху, щоб бути ближче до контенту.
+      */}
+      <div className="flex-shrink-0 p-4 pt-2 max-w-lg w-full min-w-[320px] mx-auto">
         {/* === НОВИЙ БЛОК ВВЕДЕННЯ З КНОПКОЮ ПІДКАЗКИ === */}
         <div className="flex items-center w-full max-w-[90vw] gap-2">
           {/* === Адаптивне поле вводу (Desktop або Touch) === */}
