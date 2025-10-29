@@ -282,10 +282,10 @@ export default function PronunciationBlock({
       </div>{" "}
       {/* Кінець div (flex-1 Content Area) */}
       {/* === 2. Action Area (Приклеєна до низу) === */}
-      <div className="flex-shrink-0 w-full max-w-lg mx-auto">
+      <div className="flex-shrink-0 w-full max-w-lg mx-auto p-4 pt-2">
         <button
           onClick={handleNext}
-          className="w-full px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow transition-transform active:scale-[0.98] focus-ring text-lg m-4 mt-2"
+          className="w-full px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow transition-transform active:scale-[0.98] focus-ring text-lg"
         >
           {currentIdx < phrases.length - 1 ? t("next") : t("finish")}
         </button>
