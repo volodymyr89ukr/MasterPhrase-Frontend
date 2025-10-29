@@ -185,11 +185,11 @@ export default function PronunciationBlock({
         overflow-y-auto: Дозволяє контенту скролитись, якщо він не вміщується (малий екран).
         min-h-0: Потрібен для коректної роботи flex-1 + overflow.
       */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-4">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {/* h-full, flex, justify-center: Центрує весь вміст 
           вертикально у просторі, який надав flex-1.
         */}
-        <div className="max-w-lg w-full min-w-[320px] mx-auto h-full flex flex-col items-center justify-center">
+        <div className="max-w-lg w-full min-w-[320px] mx-auto h-full flex flex-col items-center justify-center p-4">
           {/* Фраза */}
           <div className="text-2xl text-center font-medium my-4 min-h-[3.2em] px-3 py-2 rounded">
             {fullPhrase}
@@ -282,7 +282,7 @@ export default function PronunciationBlock({
       </div>{" "}
       {/* Кінець div (flex-1 Content Area) */}
       {/* === 2. Action Area (Приклеєна до низу) === */}
-      <div className="flex-shrink-0 p-4 pt-2 w-full max-w-lg mx-auto">
+      <div className="flex-shrink-0 w-full max-w-lg mx-auto p-4 pt-2">
         <button
           onClick={handleNext}
           className="w-full px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow transition-transform active:scale-[0.98] focus-ring text-lg"

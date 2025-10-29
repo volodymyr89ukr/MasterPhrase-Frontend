@@ -189,9 +189,9 @@ export default function PronunciationBlock({
         {/* h-full, flex, justify-center: Центрує весь вміст 
           вертикально у просторі, який надав flex-1.
         */}
-        <div className="max-w-lg w-full min-w-[320px] mx-auto h-full flex flex-col items-center justify-center p-4">
+        <div className="max-w-lg w-full mx-auto h-full flex flex-col items-center justify-center p-4">
           {/* Фраза */}
-          <div className="text-2xl text-center font-medium my-4 min-h-[3.2em] px-3 py-2 rounded">
+          <div className="text-2xl text-center font-medium my-4 min-h-[3.2em] px-3 py-2 rounded break-words max-w-full">
             {fullPhrase}
           </div>
 
