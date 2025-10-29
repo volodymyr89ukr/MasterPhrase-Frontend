@@ -445,38 +445,38 @@ export default function WritingExercise({
       : "border-input bg-card focus:border-ring";
 
   return (
-    <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card flex flex-col items-center">
-        <div className="text-base sm:text-lg text-muted-foreground italic text-center min-h-[2em]">
-          {obj.translation}
+    <div className="flex flex-col h-full w-full items-stretch p-0 m-0 bg-background">
+      {/* === 1. ВЕРХНЯ ГНУЧКА ЗОНА (скролиться, якщо потрібно) === */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="flex flex-col justify-center items-center min-h-full p-4">
+          <div className="w-full max-w-lg text-center">
+            <div className="text-base sm:text-lg text-muted-foreground italic mb-4">
+              {obj.translation}
+            </div>
+            <div
+              className="text-2xl sm:text-3xl font-semibold"
+              style={{ letterSpacing: "0.02em", wordBreak: "break-word" }}
+            >
+              {maskedPhrase}
+            </div>
+          </div>
         </div>
-        <div
-          className="text-2xl sm:text-3xl text-center font-semibold min-h-[2.7em] px-2 sm:px-6 py-2"
-          style={{ letterSpacing: "0.02em", wordBreak: "break-word" }}
-        >
-          {maskedPhrase}
-        </div>
+      </div>
 
-        {/* === НОВИЙ БЛОК ВВЕДЕННЯ З КНОПКОЮ ПІДКАЗКИ === */}
-        <div className="flex items-center w-full max-w-[90vw] gap-2">
-          {/* === Адаптивне поле вводу (Desktop або Touch) === */}
+      {/* === 2. СЕРЕДНЯ ФІКСОВАНА ЗОНА (поле вводу) === */}
+      <div className="flex-shrink-0 w-full max-w-lg mx-auto px-4 pb-2">
+        <div className="flex items-center w-full gap-2">
           {!isTouchDevice ? (
             <input
               ref={inputRef}
               type="text"
               className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 outline-none shadow transition-all duration-200 w-full flex-1 ${inputColorClass}`}
-              style={{
-                fontFamily: "inherit",
-                letterSpacing: "0.04em",
-              }}
+              style={{ fontFamily: "inherit", letterSpacing: "0.04em" }}
               value={engine.value}
               onChange={(e) => {
-                // Sync desktop input to engine
                 const newVal = e.target.value;
                 engine.reset();
-                for (const ch of newVal) {
-                  engine.insert(ch);
-                }
+                for (const ch of newVal) engine.insert(ch);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -491,53 +491,45 @@ export default function WritingExercise({
               autoCapitalize="off"
             />
           ) : (
-            // Touch: non-focusable display
             <div
               role="textbox"
               aria-readonly="true"
               aria-live="polite"
-              className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 shadow transition-all duration-200 w-full flex-1 min-h-[52px] ${inputColorClass}`}
-              style={{
-                fontFamily: "inherit",
-                letterSpacing: "0.04em",
-              }}
+              className={`text-xl sm:text-2xl text-center px-5 py-3 rounded-lg border-2 shadow transition-all duration-200 w-full flex-1 min-h-[52px] flex items-center justify-center ${inputColorClass}`}
+              style={{ fontFamily: "inherit", letterSpacing: "0.04em" }}
             >
               {engine.value}
               <span className="animate-pulse ml-1">|</span>
             </div>
           )}
 
-          {/* === Нова кнопка підказки (Лампочка) === */}
           <button
             onClick={handleHintClick}
             disabled={hintLevel >= 2}
             className={`flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-lg border bg-secondary hover:bg-accent text-secondary-foreground text-2xl transition-all active:scale-[0.98] focus-ring ${
               hintLevel >= 2 ? "opacity-50 cursor-not-allowed" : ""
-            } ${
-              hintLevel === 1 ? "border-primary" : "" // Підсвічуємо, якщо 1-й рівень активний
-            }`}
+            } ${hintLevel === 1 ? "border-primary" : ""}`}
             aria-label={t("get_hint", "Отримати підказку")}
             title={t("get_hint", "Отримати підказку")}
           >
             💡
           </button>
         </div>
-        {/* === КІНЕЦЬ НОВОГО БЛОКУ ВВЕДЕННЯ === */}
-
-        <style>
-          {`
-            .animate-shake {
-              animation: shake 0.22s cubic-bezier(.36,.07,.19,.97) both;
-            }
-            @keyframes shake {
-              10%, 90% { transform: translateX(-2px); }
-              20%, 80% { transform: translateX(4px); }
-              30%, 50%, 70% { transform: translateX(-6px); }
-              40%, 60% { transform: translateX(6px); }
-            }
-          `}
-        </style>
       </div>
+
+      {/* === 3. НИЖНЯ ЗОНА (клавіатура) === */}
+      {isTouchDevice && (
+        <KeyboardSheet onDensityChange={setKeyboardDensity}>
+          <CustomKeyboard
+            layout={currentLayout}
+            shift={engine.shift}
+            density={keyboardDensity}
+            onKey={handleKey}
+          />
+        </KeyboardSheet>
+      )}
+
+      {/* Language Picker Modal */}
 
       {/* Touch: Custom Keyboard */}
       {isTouchDevice && (
