@@ -554,30 +554,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             onComplete={handleWritingComplete}
             onProgressUpdate={handleWritingProgressUpdate}
             onPhraseCompleted={(phrase) => {
-              console.log("📝 WritingExercise: Phrase completed", {
-                phrase: phrase.phrase,
-                stableId: phrase.stableId,
-                phrase_id: phrase.phrase_id,
-                localId: phrase.id,
-                isErrorSession,
-              });
-
               // ✅ ВИДАЛЯЄМО ПОМИЛКУ ОДРАЗУ ПІСЛЯ УСПІШНОГО ПРОХОДЖЕННЯ ФРАЗИ
-              // Використовуємо той самий пріоритет, що й при додаванні
-              const stableId = phrase.phrase_id ?? phrase.stableId ?? phrase.id;
-
-              if (isErrorSession && typeof stableId === "number") {
-                console.log(
-                  "🎯 Attempting to remove error with stableId:",
-                  stableId
-                );
-                removeErrors([stableId]);
-              } else {
-                console.warn("⚠️ Cannot remove error:", {
-                  isErrorSession,
-                  stableId,
-                  phrase,
-                });
+              if (isErrorSession && phrase.stableId) {
+                removeErrors([phrase.stableId]);
               }
             }}
           />
