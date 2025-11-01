@@ -76,24 +76,17 @@ export const ErrorPoolProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [errorPool]);
 
   const addError = useCallback((phrase: Phrase) => {
-    // ✅ ПРІОРИТЕТ: phrase_id (з бекенду) > stableId > id (локальний)
-    const stableId = phrase.phrase_id ?? phrase.stableId ?? phrase.id;
+    // Визначаємо stableId: якщо його немає, використовуємо phrase.id як fallback
+    const stableId = phrase.stableId ?? phrase.id;
 
     // Переконуємось, що ID стабільний
     if (typeof stableId !== "number") {
       console.warn(
-        "❌ Attempted to add error phrase with invalid stableId",
+        "Attempted to add error phrase with invalid stableId",
         phrase
       );
       return;
     }
-
-    console.log("✅ Adding error to pool:", {
-      phrase: phrase.phrase,
-      stableId,
-      phrase_id: phrase.phrase_id,
-      localId: phrase.id,
-    });
 
     setErrorPool((prev) => {
       const newMap = new Map(prev);
@@ -105,23 +98,11 @@ export const ErrorPoolProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const removeErrors = useCallback((phraseIds: number[]) => {
     if (!phraseIds || phraseIds.length === 0) return;
-
-    console.log("🗑️ Removing errors from pool:", phraseIds);
-
     setErrorPool((prev) => {
       const newMap = new Map(prev);
-      let removedCount = 0;
-
       phraseIds.forEach((id) => {
-        if (newMap.has(id)) {
-          newMap.delete(id);
-          removedCount++;
-        }
+        newMap.delete(id);
       });
-
-      console.log(`✅ Removed ${removedCount}/${phraseIds.length} errors`);
-      console.log(`📊 Pool size: ${newMap.size}`);
-
       return newMap;
     });
   }, []);

@@ -8,11 +8,10 @@ export interface Phrase {
   translation: string;
   options: string[];
   answer: string;
+  // allow array or number (backward-compat)
   matching_exercise: number | number[];
   explanation?: string;
-  id?: number; // Локальний ID сесії
-  phrase_id?: number; // ✅ Унікальний ID з бази даних
-  stableId?: number; // Стабільний ID (буде дорівнювати phrase_id)
+  id?: number;
 }
 
 export interface MatchingExerciseProps {

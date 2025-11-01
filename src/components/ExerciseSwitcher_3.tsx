@@ -16,9 +16,8 @@ import { Button } from "./ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 
 export interface Phrase extends Question {
-  id: number; // Це ЛОКАЛЬНИЙ ID (idx) для поточної сесії
-  phrase_id?: number; // ✅ УНІКАЛЬНИЙ ID З БАЗИ ДАНИХ (з бекенду)
-  stableId?: number; // Стабільний ID (буде дорівнювати phrase_id)
+  id: number; // Це ЛОКАЛЬНИЙ ID (idx)
+  stableId?: number; // <-- 2. ДОДАЄМО СТАБІЛЬНИЙ ID
   writing_exercise?: string | number | Array<string | number>;
   [key: string]: any;
 }
@@ -45,11 +44,12 @@ function shuffleArray<T>(array: T[]): T[] {
 function prepareQuestions(rawData: Phrase[]): Phrase[] {
   return rawData.map((q, idx) => ({
     ...q,
-    // ✅ ВИКОРИСТОВУЄМО phrase_id З БЕКЕНДУ ЯК СТАБІЛЬНИЙ ID
-    // Це унікальний ID з бази даних, який ніколи не змінюється
-    stableId: q.phrase_id ?? q.stableId ?? q.id,
+    // Зберігаємо стабільний ID.
+    // Якщо q.stableId ВЖЕ існує (це ін'єкція помилки), НЕ перезаписуємо його.
+    // Якщо його немає (це свіжа фраза), беремо q.id як стабільний.
+    stableId: q.stableId ?? q.id,
 
-    // Створюємо НОВИЙ локальний id для ЦІЄЇ сесії (0, 1, 2, ...)
+    // Створюємо НОВИЙ локальний id для ЦІЄЇ сесії.
     id: idx,
   }));
 }

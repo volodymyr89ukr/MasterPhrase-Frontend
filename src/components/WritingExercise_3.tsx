@@ -21,8 +21,6 @@ interface Phrase {
   translation?: string;
   writing_exercise?: number | string | Array<number | string>;
   wordIndexToWrite?: number;
-  phrase_id?: number; // ✅ Унікальний ID з бази даних
-  stableId?: number; // Стабільний ID (буде дорівнювати phrase_id)
   [key: string]: any;
 }
 
