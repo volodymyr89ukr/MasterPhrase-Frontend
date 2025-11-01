@@ -304,15 +304,10 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
       }
     });
     setCycleCompletedPhrases(newCompleted);
-    // =====> (REQ 4-b) ВАШ КОД ОЧИЩЕННЯ ПОМИЛОК <=====
-    if (isErrorSession) {
-      // Якщо це була сесія помилок, видаляємо пройдені фрази з пулу
-      // Ми ОБОВ'ЯЗКОВО повинні видаляти за СТАБІЛЬНИМ ID
-      const completedStableIds = matchingPool
-        .map((p) => p.stableId) // <-- Беремо stableId
-        .filter((id): id is number => typeof id === "number"); // Фільтруємо undefined
-      removeErrors(completedStableIds);
-    } // =====> КІНЕЦЬ КОДУ <=====
+
+    // ВИДАЛЕННЯ ПОМИЛОК ТЕПЕР ВІДБУВАЄТЬСЯ В WritingExercise
+    // через callback onPhraseCompleted після кожної фрази
+
     setMatchingPool([]);
 
     // Якщо більше немає фраз для вивчення
@@ -558,6 +553,12 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             phrases={matchingPool}
             onComplete={handleWritingComplete}
             onProgressUpdate={handleWritingProgressUpdate}
+            onPhraseCompleted={(phrase) => {
+              // ✅ ВИДАЛЯЄМО ПОМИЛКУ ОДРАЗУ ПІСЛЯ УСПІШНОГО ПРОХОДЖЕННЯ ФРАЗИ
+              if (isErrorSession && phrase.stableId) {
+                removeErrors([phrase.stableId]);
+              }
+            }}
           />
         )}
       </div>

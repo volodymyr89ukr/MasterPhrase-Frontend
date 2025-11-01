@@ -28,7 +28,6 @@ interface WritingExerciseProps {
   phrases: Phrase[];
   onComplete?: () => void;
   onProgressUpdate?: (current: number, total: number) => void;
-  onPhraseCompleted?: (phrase: Phrase) => void; // <-- НОВИЙ ПРОП
 }
 
 function getWordByIndex(str: string, idx: number): string {
@@ -72,7 +71,6 @@ export default function WritingExercise({
   phrases = [],
   onComplete,
   onProgressUpdate,
-  onPhraseCompleted, // <-- ДОДАЄМО НОВИЙ ПРОП
 }: WritingExerciseProps) {
   const { t } = useTranslation();
   const { learningLanguage } = useSettings();
@@ -277,11 +275,6 @@ export default function WritingExercise({
             } catch {}
             await new Promise((r) => setTimeout(r, 800));
 
-            // ✅ ВИКЛИКАЄМО CALLBACK ПРИ ЗАВЕРШЕННІ ФРАЗИ
-            if (onPhraseCompleted) {
-              onPhraseCompleted(obj);
-            }
-
             if (currentIdx < phrases.length - 1) {
               const nextIdx = currentIdx + 1;
               setCurrentIdx(nextIdx);
@@ -353,11 +346,6 @@ export default function WritingExercise({
             });
           } catch {}
           await new Promise((r) => setTimeout(r, 800));
-
-          // ✅ ВИКЛИКАЄМО CALLBACK ПРИ ЗАВЕРШЕННІ ФРАЗИ
-          if (onPhraseCompleted) {
-            onPhraseCompleted(obj);
-          }
 
           if (currentIdx < phrases.length - 1) {
             const nextIdx = currentIdx + 1;
