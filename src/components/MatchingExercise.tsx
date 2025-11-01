@@ -289,10 +289,10 @@ export default function MatchingExercise({
         </div>
              {" "}
       </div>
-            {/* === 2. Область кнопки (Приклеєна до низу) === */}{" "}
-      {/* 4. НОВИЙ БЛОК ДЛЯ КНОПКИ */}{" "}
+            {/* === 2. Область кнопки (Приклеєна до низу) === */}     {" "}
+      {/* 4. НОВИЙ БЛОК ДЛЯ КНОПКИ */}     {" "}
       <div className="flex-shrink-0 w-full max-w-lg mx-auto p-4 pt-2">
-        {/* Показуємо кнопку, тільки коли з'являється фідбек */}{" "}
+                {/* Показуємо кнопку, тільки коли з'являється фідбек */}       {" "}
         {showFeedback && (
           <Button
             className="w-full"
@@ -300,24 +300,13 @@ export default function MatchingExercise({
             onClick={handleNext}
             autoFocus
           >
-            {" "}
+                       {" "}
             {answerResult === "correct" ? t("next") : t("try_again")}         {" "}
           </Button>
         )}
+             {" "}
       </div>
-      <div className="flex-shrink-0 w-full max-w-lg mx-auto p-4 pt-2">
-        {/* Показуємо кнопку, тільки коли з'являється фідбек */}
-        {showFeedback && (
-          <Button
-            className="w-full"
-            size="lg" // Використовуємо "lg" для кращого натискання
-            onClick={handleNext}
-            autoFocus
-          >
-            {answerResult === "correct" ? t("next") : t("try_again")}
-          </Button>
-        )}
-      </div>{" "}
+         {" "}
     </div>
   );
 }
