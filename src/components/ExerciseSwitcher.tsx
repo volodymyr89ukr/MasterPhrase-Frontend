@@ -480,7 +480,8 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
         />
       )}
 
-      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+      <div className="flex-1 overflow-hidden">
+        {" "}
         {mode === "matching" && questions[currentIdx] && (
           <MatchingExercise
             question={questions[currentIdx]}
@@ -542,7 +543,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             </Card>
           </div>
         )}
-
         {mode === "pronunciation" && matchingPool.length >= 1 && (
           <PronunciationBlock
             phrases={matchingPool}
@@ -551,7 +551,6 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             onProgressUpdate={handlePronunciationProgressUpdate}
           />
         )}
-
         {mode === "writing" && matchingPool.length >= 1 && (
           <WritingExercise
             key={matchingPool.map((obj) => obj.id).join("_")}
