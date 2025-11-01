@@ -76,15 +76,22 @@ export const ErrorPoolProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [errorPool]);
 
   const addError = useCallback((phrase: Phrase) => {
+    // Визначаємо stableId: якщо його немає, використовуємо phrase.id як fallback
+    const stableId = phrase.stableId ?? phrase.id;
+
     // Переконуємось, що ID стабільний
-    if (typeof phrase.id !== "number") {
-      console.warn("Attempted to add error phrase with invalid ID", phrase);
+    if (typeof stableId !== "number") {
+      console.warn(
+        "Attempted to add error phrase with invalid stableId",
+        phrase
+      );
       return;
     }
+
     setErrorPool((prev) => {
-      // Map.set() автоматично обробляє дублікати
       const newMap = new Map(prev);
-      newMap.set(phrase.id, phrase);
+      // Зберігаємо фразу з гарантованим stableId
+      newMap.set(stableId, { ...phrase, stableId });
       return newMap;
     });
   }, []);
@@ -113,16 +120,23 @@ export const ErrorPoolProvider: React.FC<{ children: React.ReactNode }> = ({
       const allErrors = Array.from(errorPool.values());
       if (allErrors.length === 0) {
         return [data, []];
-      } // Обираємо фрази для ін'єкції
+      }
 
+      // Обираємо фрази для ін'єкції
       const errorsToInject = shuffleAndPick(allErrors, count);
-      const injectedIds = errorsToInject.map((p) => p.id); // Видаляємо їх з пулу
 
-      removeErrors(injectedIds); // Повертаємо об'єднаний масив
+      // Збираємо stableId для повернення (для логування/аналітики)
+      const injectedIds = errorsToInject
+        .map((p) => p.stableId ?? p.id)
+        .filter((id): id is number => typeof id === "number");
 
+      // ⚠️ НЕ ВИДАЛЯЄМО ПОМИЛКИ З ПУЛУ!
+      // Видалення відбудеться в WritingExercise після успішного проходження
+
+      // Повертаємо об'єднаний масив
       return [[...data, ...errorsToInject], injectedIds];
     },
-    [errorPool, removeErrors]
+    [errorPool]
   );
 
   const value = {
