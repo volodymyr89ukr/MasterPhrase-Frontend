@@ -157,68 +157,62 @@ export default function MatchingExercise({
   };
 
   return (
-    <div className="flex flex-col h-full w-full items-stretch p-0 m-0">
-      <div className="p-4 max-w-lg w-full min-w-[320px] mx-auto rounded-xl shadow bg-card">
-        {/* Phrase with multiple blanks */}
-        <div
-          className="mb-2 text-2xl text-center font-medium min-h-[3.6em] max-h-[4.5em] overflow-hidden flex items-center justify-center text-card-foreground"
-          style={{ lineHeight: "1.2" }}
-        >
-          {maskedPhrase}
-        </div>
+    <div className="flex flex-col h-full w-full items-stretch p-0 m-0 bg-background">
+      {/* === 1. ВЕРХНЯ СКРОЛОВАНА ЗОНА === */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="p-4 max-w-lg w-full mx-auto">
+          {/* Phrase with multiple blanks */}
+          <div
+            className="mb-2 text-2xl text-center font-medium min-h-[3.6em] flex items-center justify-center text-card-foreground break-words"
+            style={{ lineHeight: "1.2" }}
+          >
+            {maskedPhrase}
+          </div>
 
-        {/* Translation */}
-        <div
-          className="mb-6 text-base text-center text-muted-foreground italic min-h-[2.4em] max-h-[3em] overflow-hidden flex items-center justify-center"
-          style={{ lineHeight: "1.2" }}
-        >
-          {question.translation}
-        </div>
+          {/* Translation */}
+          <div
+            className="mb-6 text-base text-center text-muted-foreground italic min-h-[2.4em] flex items-center justify-center break-words"
+            style={{ lineHeight: "1.2" }}
+          >
+            {question.translation}
+          </div>
 
-        {/* Answer options */}
-        <div
-          className={`grid ${
-            shuffledOptions.length === 3 ? "grid-cols-2" : "grid-cols-2"
-          } gap-3 mb-6`}
-        >
-          {shuffledOptions.map((option, i) => (
-            <button
-              key={i}
-              disabled={selected !== null}
-              className={`py-3 px-4 rounded-xl shadow border transition-all duration-150 min-h-[48px] flex items-center justify-center text-center
-              active:scale-[0.97] focus-ring
-              ${
-                selected === option
-                  ? option === question.answer
-                    ? "bg-success/20 border-success"
-                    : "bg-destructive/20 border-destructive animate-shake"
-                  : "bg-card border-border"
-              }
-              hover:bg-accent
-              ${
-                shuffledOptions.length === 3 && i === 2
-                  ? "col-span-2 mx-auto w-2/3"
-                  : ""
-              }
-            `}
-              onClick={() => handleSelect(option)}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+          {/* Answer options */}
+          <div
+            className={`grid ${
+              shuffledOptions.length === 3 ? "grid-cols-2" : "grid-cols-2"
+            } gap-3 mb-6`}
+          >
+            {shuffledOptions.map((option, i) => (
+              <button
+                key={i}
+                disabled={selected !== null}
+                className={`py-3 px-4 rounded-xl shadow border transition-all duration-150 min-h-[48px] flex items-center justify-center text-center
+                active:scale-[0.97] focus-ring
+                ${
+                  selected === option
+                    ? option === question.answer
+                      ? "bg-success/20 border-success"
+                      : "bg-destructive/20 border-destructive animate-shake"
+                    : "bg-card border-border"
+                }
+                hover:bg-accent
+                ${
+                  shuffledOptions.length === 3 && i === 2
+                    ? "col-span-2 mx-auto w-2/3"
+                    : ""
+                }
+              `}
+                onClick={() => handleSelect(option)}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
 
-        {/* Feedback and explanation */}
-        <div
-          className={`mt-2 text-center min-h-[200px] max-h-[250px] transition-all duration-300 flex flex-col items-center justify-center ${
-            showFeedback
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }`}
-          aria-live="polite"
-        >
+          {/* Feedback and explanation */}
           {showFeedback && (
-            <div className="w-full">
+            <div className="mt-2 text-center" aria-live="polite">
               <div
                 className={`text-lg font-bold mb-2 ${
                   feedback === t("correct")
@@ -255,18 +249,26 @@ export default function MatchingExercise({
                   {question.explanation}
                 </div>
               </div>
-              <button
-                className="mt-4 py-2 px-6 rounded-xl bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition-colors"
-                onClick={handleNext}
-                autoFocus
-              >
-                {answerResult === "correct" && t("next")}
-                {answerResult === "wrong" && t("try_again")}
-              </button>
             </div>
           )}
         </div>
       </div>
+
+      {/* === 2. НИЖНЯ ФІКСОВАНА ЗОНА (КНОПКА "ДАЛІ") === */}
+      {showFeedback && (
+        <div className="flex-shrink-0 w-full border-t border-border bg-background/95 backdrop-blur-sm">
+          <div className="w-full max-w-lg mx-auto p-4">
+            <button
+              className="w-full py-3 px-6 rounded-xl bg-primary text-primary-foreground font-semibold shadow-lg hover:bg-primary/90 transition-colors active:scale-[0.98]"
+              onClick={handleNext}
+              autoFocus
+            >
+              {answerResult === "correct" && t("next")}
+              {answerResult === "wrong" && t("try_again")}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
