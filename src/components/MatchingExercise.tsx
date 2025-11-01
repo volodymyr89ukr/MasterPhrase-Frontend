@@ -255,14 +255,16 @@ export default function MatchingExercise({
                   {question.explanation}
                 </div>
               </div>
-              <button
-                className="mt-4 py-2 px-6 rounded-xl bg-primary text-primary-foreground font-semibold shadow hover:bg-primary/90 transition-colors"
-                onClick={handleNext}
-                autoFocus
-              >
-                {answerResult === "correct" && t("next")}
-                {answerResult === "wrong" && t("try_again")}
-              </button>
+              <div className="flex-shrink-0 w-full max-w-lg mx-auto p-4 pt-2">
+                <button
+                  className="w-full px-8 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 shadow transition-transform active:scale-[0.98] focus-ring text-lg"
+                  onClick={handleNext}
+                  autoFocus
+                >
+                  {answerResult === "correct" && t("next")}
+                  {answerResult === "wrong" && t("try_again")}
+                </button>
+              </div>
             </div>
           )}
         </div>
