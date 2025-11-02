@@ -75,14 +75,6 @@ export default function ErrorReviewScreen() {
       writing_exercise: error.writing_exercise || [2],
       explanation: error.explanation || "",
     }));
-    console.log("🚀 Starting error training session", {
-      totalErrors: errors.length,
-      exerciseData: exerciseData.map((e) => ({
-        phrase: e.phrase,
-        stableId: e.stableId,
-        _fromErrorPool: e._fromErrorPool,
-      })),
-    });
 
     return (
       <ExerciseSwitcher
