@@ -13,7 +13,6 @@ export interface Phrase {
   id?: number; // Локальний ID сесії
   phrase_id?: number; // ✅ Унікальний ID з бази даних
   stableId?: number; // Стабільний ID (буде дорівнювати phrase_id)
-  _fromErrorPool?: boolean; // ✅ Прапорець: чи була ця фраза ін'єктована з пулу помилок
 }
 
 export interface MatchingExerciseProps {

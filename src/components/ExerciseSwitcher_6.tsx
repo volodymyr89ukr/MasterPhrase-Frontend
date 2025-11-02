@@ -19,7 +19,6 @@ export interface Phrase extends Question {
   id: number; // Це ЛОКАЛЬНИЙ ID (idx) для поточної сесії
   phrase_id?: number; // ✅ УНІКАЛЬНИЙ ID З БАЗИ ДАНИХ (з бекенду)
   stableId?: number; // Стабільний ID (буде дорівнювати phrase_id)
-  _fromErrorPool?: boolean; // ✅ Прапорець: чи була ця фраза ін'єктована з пулу помилок
   writing_exercise?: string | number | Array<string | number>;
   [key: string]: any;
 }
@@ -555,34 +554,29 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
             onComplete={handleWritingComplete}
             onProgressUpdate={handleWritingProgressUpdate}
             onPhraseCompleted={(phrase) => {
-              const stableId = phrase.phrase_id ?? phrase.stableId ?? phrase.id;
-              const isFromErrorPool = phrase._fromErrorPool === true;
-
               console.log("📝 WritingExercise: Phrase completed", {
                 phrase: phrase.phrase,
-                stableId,
+                stableId: phrase.stableId,
                 phrase_id: phrase.phrase_id,
                 localId: phrase.id,
-                isFromErrorPool,
-                _fromErrorPool: phrase._fromErrorPool,
+                isErrorSession,
               });
 
-              // ✅ ВИДАЛЯЄМО ПОМИЛКУ ТІЛЬКИ ЯКЩО:
-              // 1. Фраза була ін'єктована з пулу помилок (_fromErrorPool === true)
-              // 2. stableId існує
-              if (isFromErrorPool && typeof stableId === "number") {
+              // ✅ ВИДАЛЯЄМО ПОМИЛКУ ОДРАЗУ ПІСЛЯ УСПІШНОГО ПРОХОДЖЕННЯ ФРАЗИ
+              // Використовуємо той самий пріоритет, що й при додаванні
+              const stableId = phrase.phrase_id ?? phrase.stableId ?? phrase.id;
+
+              if (isErrorSession && typeof stableId === "number") {
                 console.log(
-                  "🎯 Removing error from pool (was injected):",
+                  "🎯 Attempting to remove error with stableId:",
                   stableId
                 );
                 removeErrors([stableId]);
               } else {
-                console.log("⏭️ Not removing error:", {
-                  reason: isFromErrorPool
-                    ? "Invalid stableId"
-                    : "Phrase was NOT from error pool (added during this session)",
+                console.warn("⚠️ Cannot remove error:", {
+                  isErrorSession,
                   stableId,
-                  isFromErrorPool,
+                  phrase,
                 });
               }
             }}

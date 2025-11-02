@@ -144,28 +144,16 @@ export const ErrorPoolProvider: React.FC<{ children: React.ReactNode }> = ({
       // Обираємо фрази для ін'єкції
       const errorsToInject = shuffleAndPick(allErrors, count);
 
-      // ✅ ПОЗНАЧАЄМО ФРАЗИ ЯК "ІН'ЄКТОВАНІ З ПУЛУ ПОМИЛОК"
-      const markedErrors = errorsToInject.map((p) => ({
-        ...p,
-        _fromErrorPool: true, // Спеціальний прапорець
-      }));
-
       // Збираємо stableId для повернення (для логування/аналітики)
       const injectedIds = errorsToInject
         .map((p) => p.stableId ?? p.id)
         .filter((id): id is number => typeof id === "number");
 
-      console.log("💉 Injected errors from pool:", {
-        count: markedErrors.length,
-        phrases: markedErrors.map((p) => p.phrase),
-        stableIds: injectedIds,
-      });
-
       // ⚠️ НЕ ВИДАЛЯЄМО ПОМИЛКИ З ПУЛУ!
       // Видалення відбудеться в WritingExercise після успішного проходження
 
       // Повертаємо об'єднаний масив
-      return [[...data, ...markedErrors], injectedIds];
+      return [[...data, ...errorsToInject], injectedIds];
     },
     [errorPool]
   );
