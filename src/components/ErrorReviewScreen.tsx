@@ -1,95 +1,144 @@
-import React from "react";
+import React, { useState } from "react";
 import { useErrorPool } from "../contexts/ErrorPoolContext";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
-import BackButton from "./BackButton";
-import { Phrase } from "./ExerciseSwitcher"; // Імпортуємо тип
+import ExerciseSwitcher from "./ExerciseSwitcher";
+import { Phrase } from "./ExerciseSwitcher";
 
-// Допоміжна функція для отримання 1-базованих індексів слів, які були відповіддю
-function normalizeMaskIndices(idx: number | number[] | undefined): Set<number> {
-  if (idx == null) return new Set();
-  const arr = Array.isArray(idx) ? idx : [idx];
-  const nums = arr
-    .map((v) => Number(v))
-    .filter((n) => Number.isFinite(n) && n > 0);
-  return new Set(nums); // Повертаємо Set для швидкої перевірки O(1)
+interface ErrorPhraseItemProps {
+  phrase: {
+    phrase: string;
+    translation?: string;
+    stableId?: number;
+    id?: number;
+    [key: string]: any;
+  };
 }
 
-// Новий компонент для відображення одного елемента помилки
-const ErrorPhraseItem: React.FC<{ phrase: Phrase }> = ({ phrase }) => {
-  const answerIndices = normalizeMaskIndices(phrase.matching_exercise);
-  // Розділяємо фразу на слова та розділові знаки, зберігаючи їх
-  const wordsAndPunctuation = phrase.phrase
-    .split(/(\s+|[,.;!?])/)
-    .filter(Boolean);
-
-  let wordIndex = 0; // Лічильник для слів (ігноруємо пробіли/пунктуацію)
-
+function ErrorPhraseItem({ phrase }: ErrorPhraseItemProps) {
   return (
-    <li className="bg-card p-4 rounded-lg shadow border border-border text-lg text-card-foreground">
-      {wordsAndPunctuation.map((part, index) => {
-        // Перевіряємо, чи це слово (не пробіл, не пунктуація)
-        const isWord = !/^\s+$|^[,.;!?]$/.test(part);
-        let currentIndex = 0;
-        if (isWord) {
-          wordIndex++;
-          currentIndex = wordIndex;
-        }
-
-        // Якщо це слово і його індекс збігається з індексом відповіді
-        if (isWord && answerIndices.has(currentIndex)) {
-          return (
-            <span
-              key={index}
-              className="font-bold text-blue-600 dark:text-blue-400"
-            >
-              {part}
-            </span>
-          );
-        } else {
-          // Інакше повертаємо слово/пробіл/пунктуацію як є
-          return <span key={index}>{part}</span>;
-        }
-      })}
+    <li className="p-4 bg-card rounded-lg shadow border border-border mb-3">
+      <div className="text-lg font-semibold text-foreground mb-1">
+        {phrase.phrase}
+      </div>
+      {phrase.translation && (
+        <div className="text-sm text-muted-foreground italic">
+          {phrase.translation}
+        </div>
+      )}
     </li>
   );
-};
+}
 
 export default function ErrorReviewScreen() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { getErrorArray } = useErrorPool();
+  const { getErrorArray, clearErrors } = useErrorPool();
   const errors = getErrorArray();
 
-  return (
-    <div className="w-full h-full flex flex-col max-w-3xl min-w-[320px] mx-auto overflow-hidden">
-      {/* Фіксований хедер */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2 mb-3">
-          <BackButton to="/" />
-          <h2 className="text-xl font-bold text-foreground">
-            {t("error_review_title", "Перегляд помилок")} ({errors.length})
-          </h2>
-        </div>
-      </div>
+  // ✅ Стан для режиму тренування
+  const [isTraining, setIsTraining] = useState(false);
 
-      {/* Скролована зона */}
-      {/* Додано pb-20 для безпечної зони внизу */}
-      <div className="flex-1 overflow-y-auto px-4 pb-20 min-h-0">
+  const handleClearAll = () => {
+    if (
+      window.confirm(
+        t(
+          "confirm_clear_errors",
+          "Ви впевнені, що хочете очистити всі помилки?"
+        )
+      )
+    ) {
+      clearErrors();
+    }
+  };
+
+  const handleStartTraining = () => {
+    if (errors.length === 0) return;
+    setIsTraining(true);
+  };
+
+  const handleExitTraining = () => {
+    setIsTraining(false);
+  };
+
+  // ✅ Якщо режим тренування активний, показуємо ExerciseSwitcher
+  if (isTraining) {
+    // Конвертуємо помилки в формат Phrase для ExerciseSwitcher
+    const exerciseData: Phrase[] = errors.map((error, idx) => ({
+      ...error,
+      id: idx, // Локальний ID
+      phrase_id: error.phrase_id,
+      stableId: error.stableId ?? error.phrase_id ?? error.id,
+      _fromErrorPool: true, // ✅ Позначаємо, що це з пулу помилок
+      // Встановлюємо дефолтні значення, якщо їх немає
+      options: error.options || [],
+      answer: error.answer || "",
+      matching_exercise: error.matching_exercise || [1, 2, 3],
+      writing_exercise: error.writing_exercise || [2],
+      explanation: error.explanation || "",
+    }));
+
+    return (
+      <ExerciseSwitcher
+        exerciseData={exerciseData}
+        onBack={handleExitTraining}
+        title={t("error_training", "Тренування помилок")}
+        isErrorSession={true}
+      />
+    );
+  }
+
+  // ✅ Звичайний вигляд списку помилок
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-foreground mb-6">
+          {t("error_pool", "Пул помилок")}
+        </h1>
+
         {errors.length === 0 ? (
-          <div className="text-center text-muted-foreground p-8 bg-card rounded-xl shadow">
-            {t("error_pool_empty", "Вітаємо, у вас немає помилок!")}
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">✅</div>
+            <div className="text-2xl font-semibold text-foreground mb-2">
+              {t("no_errors", "Вітаємо!")}
+            </div>
+            <div className="text-lg text-muted-foreground">
+              {t(
+                "no_errors_description",
+                "У вас немає помилок для повторення."
+              )}
+            </div>
           </div>
         ) : (
-          <ul className="flex flex-col gap-3">
-            {/* Використовуємо stableId як ключ для надійності */}
-            {errors.map((phrase) => (
-              <ErrorPhraseItem
-                key={phrase.stableId || phrase.id}
-                phrase={phrase}
-              />
-            ))}
-          </ul>
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-lg text-muted-foreground">
+                {t("total_errors", "Всього помилок")}: {errors.length}
+              </div>
+              <div className="flex gap-2">
+                {/* ✅ КНОПКА "ТРЕНУВАТИ" */}
+                <button
+                  onClick={handleStartTraining}
+                  className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-semibold shadow-lg"
+                >
+                  {t("train_errors", "Тренувати")}
+                </button>
+                <button
+                  onClick={handleClearAll}
+                  className="px-4 py-2 rounded-lg bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+                >
+                  {t("clear_all", "Очистити все")}
+                </button>
+              </div>
+            </div>
+
+            <ul className="space-y-3">
+              {errors.map((phrase) => (
+                <ErrorPhraseItem
+                  key={phrase.stableId || phrase.id}
+                  phrase={phrase}
+                />
+              ))}
+            </ul>
+          </>
         )}
       </div>
     </div>
