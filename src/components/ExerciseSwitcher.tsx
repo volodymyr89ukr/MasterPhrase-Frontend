@@ -295,6 +295,12 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
   }
 
   function handleWritingComplete() {
+    console.log("🎯 handleWritingComplete called", {
+      matchingPoolSize: matchingPool.length,
+      questionsLength: questions.length,
+      cycleCompletedPhrasesSize: cycleCompletedPhrases.size,
+    });
+
     // Прогрес вже встановлений через onProgressUpdate
 
     // Додаємо фрази з поточного циклу до списку повністю вивчених
@@ -313,11 +319,13 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
 
     // Якщо більше немає фраз для вивчення
     if (questions.length === 0) {
+      console.log("✅ All questions completed, showing finished screen");
       setFullyCompleted(true);
       setMode("finished");
       return;
     }
 
+    console.log("🔄 Showing session progress screen");
     // Показуємо екран макро-прогресу перед поверненням до matching
     setShowSessionProgress(true);
   }
