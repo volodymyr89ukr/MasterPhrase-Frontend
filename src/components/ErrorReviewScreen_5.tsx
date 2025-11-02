@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useErrorPool } from "../contexts/ErrorPoolContext";
 import { useTranslation } from "react-i18next";
 import ExerciseSwitcher from "./ExerciseSwitcher";
@@ -34,9 +34,8 @@ export default function ErrorReviewScreen() {
   const { getErrorArray, clearErrors } = useErrorPool();
   const errors = getErrorArray();
 
+  // ✅ Стан для режиму тренування
   const [isTraining, setIsTraining] = useState(false);
-  // ✅ ЗАМОРОЖУЄМО список помилок на момент початку тренування
-  const frozenErrorsRef = useRef<Phrase[]>([]);
 
   const handleClearAll = () => {
     if (
@@ -53,44 +52,41 @@ export default function ErrorReviewScreen() {
 
   const handleStartTraining = () => {
     if (errors.length === 0) return;
+    setIsTraining(true);
+  };
 
-    // ✅ ЗБЕРІГАЄМО ПОТОЧНИЙ список помилок
-    frozenErrorsRef.current = errors.map((error, idx) => ({
+  const handleExitTraining = () => {
+    setIsTraining(false);
+  };
+
+  // ✅ Якщо режим тренування активний, показуємо ExerciseSwitcher
+  if (isTraining) {
+    // Конвертуємо помилки в формат Phrase для ExerciseSwitcher
+    const exerciseData: Phrase[] = errors.map((error, idx) => ({
       ...error,
-      id: idx,
+      id: idx, // Локальний ID
       phrase_id: error.phrase_id,
       stableId: error.stableId ?? error.phrase_id ?? error.id,
-      _fromErrorPool: true,
+      _fromErrorPool: true, // ✅ Позначаємо, що це з пулу помилок
+      // Встановлюємо дефолтні значення, якщо їх немає
       options: error.options || [],
       answer: error.answer || "",
       matching_exercise: error.matching_exercise || [1, 2, 3],
       writing_exercise: error.writing_exercise || [2],
       explanation: error.explanation || "",
     }));
-
     console.log("🚀 Starting error training session", {
-      totalErrors: frozenErrorsRef.current.length,
-      exerciseData: frozenErrorsRef.current.map((e) => ({
+      totalErrors: errors.length,
+      exerciseData: exerciseData.map((e) => ({
         phrase: e.phrase,
         stableId: e.stableId,
         _fromErrorPool: e._fromErrorPool,
       })),
     });
 
-    setIsTraining(true);
-  };
-
-  const handleExitTraining = () => {
-    setIsTraining(false);
-    // ✅ ОЧИЩАЄМО заморожений список
-    frozenErrorsRef.current = [];
-  };
-
-  // ✅ Використовуємо ЗАМОРОЖЕНИЙ список для ExerciseSwitcher
-  if (isTraining) {
     return (
       <ExerciseSwitcher
-        exerciseData={frozenErrorsRef.current}
+        exerciseData={exerciseData}
         onBack={handleExitTraining}
         title={t("error_training", "Тренування помилок")}
         isErrorSession={true}
@@ -98,7 +94,7 @@ export default function ErrorReviewScreen() {
     );
   }
 
-  // Звичайний вигляд списку помилок
+  // ✅ Звичайний вигляд списку помилок
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto">
@@ -126,6 +122,7 @@ export default function ErrorReviewScreen() {
                 {t("total_errors", "Всього помилок")}: {errors.length}
               </div>
               <div className="flex gap-2">
+                {/* ✅ КНОПКА "ТРЕНУВАТИ" */}
                 <button
                   onClick={handleStartTraining}
                   className="px-6 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-semibold shadow-lg"
