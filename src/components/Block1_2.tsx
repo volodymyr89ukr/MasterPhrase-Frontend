@@ -386,17 +386,27 @@ export default function Block1({
           {error && <div className="text-destructive mt-4">{error}</div>}
         </div>
 
-        {/* Липка кнопка "Робота над помилками" */}
+        {/* Липкий футер-картка з помилками */}
         {errorPool.size > 0 && (
           <div className="flex-shrink-0 p-4 bg-transparent">
-            <div className="max-w-3xl mx-auto">
-              <button
-                className="w-full px-6 py-4 rounded-xl bg-primary text-primary-foreground font-bold text-lg hover:bg-primary/90 transition-colors shadow-lg border-2 border-primary/20"
-                onClick={() => navigate("/review-errors")}
-              >
-                {t("error_review_button", "Робота над помилками")} (
-                {errorPool.size})
-              </button>
+            <div className="max-w-3xl mx-auto p-4 bg-card rounded-xl shadow-lg border border-border">
+              <h3 className="text-lg font-bold text-center mb-3 text-foreground">
+                {t("error_pool_title", "Помилки")} ({errorPool.size})
+              </h3>
+              <div className="flex gap-3">
+                <button
+                  className="flex-1 px-4 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
+                  onClick={() => setErrorSessionData(getErrorArray())}
+                >
+                  {t("error_pool_practice", "Тренувати")}
+                </button>
+                <button
+                  className="flex-1 px-4 py-3 rounded-lg bg-secondary text-secondary-foreground font-semibold hover:bg-secondary/80 transition-colors"
+                  onClick={() => navigate("/review-errors")}
+                >
+                  {t("error_pool_review", "Переглянути")}
+                </button>
+              </div>
             </div>
           </div>
         )}
