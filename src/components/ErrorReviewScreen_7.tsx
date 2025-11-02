@@ -269,25 +269,48 @@ export default function ErrorReviewScreen() {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-background overflow-hidden">
-      {/* 🔝 HEADER - фіксований */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-border">
-        <div className="max-w-2xl mx-auto">
-          {/* Заголовок + кнопка назад в одному рядку */}
-          <div className="flex items-center gap-3 mb-4">
-            <BackButton to="/" />
-            <h1 className="text-3xl font-bold text-foreground">
-              {t("error_pool", "Помилки")} ({errors.length})
-            </h1>
-          </div>
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Кнопка назад */}
+        <div className="mb-4">
+          <BackButton to="/" />
+        </div>
 
-          {/* Кнопка тренування та посилання очищення */}
-          {errors.length > 0 && (
-            <div className="flex flex-col items-center gap-2">
+        {/* Заголовок з кількістю помилок */}
+        <h1 className="text-3xl font-bold text-foreground mb-6">
+          {t("error_pool", "Помилки")} ({errors.length})
+        </h1>
+
+        {errors.length === 0 ? (
+          <EmptyState
+            icon={
+              <svg
+                width={48}
+                height={48}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                className="text-primary"
+              >
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            }
+            title={t("no_errors", "Вітаємо!")}
+            description={t(
+              "no_errors_description",
+              "У вас немає помилок для повторення."
+            )}
+          />
+        ) : (
+          <>
+            {/* Кнопка тренування та посилання очищення */}
+            <div className="mb-6 flex flex-col items-center gap-2">
               <Button
                 onClick={handleStartTraining}
                 size="lg"
-                className="w-full max-w-sm shadow-lg text-lg font-semibold"
+                className="w-full max-w-sm shadow-lg"
               >
                 {t("train_errors", "Тренувати")}
               </Button>
@@ -298,36 +321,8 @@ export default function ErrorReviewScreen() {
                 {t("or_clear_all", "...або Очистити все")}
               </button>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* 📜 CONTENT - скролована зона */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4">
-        <div className="max-w-2xl mx-auto">
-          {errors.length === 0 ? (
-            <EmptyState
-              icon={
-                <svg
-                  width={48}
-                  height={48}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  className="text-primary"
-                >
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              }
-              title={t("no_errors", "Вітаємо!")}
-              description={t(
-                "no_errors_description",
-                "У вас немає помилок для повторення."
-              )}
-            />
-          ) : (
+            {/* Список помилок */}
             <ul className="space-y-3">
               {errors.map((phrase) => (
                 <ErrorPhraseItem
@@ -339,17 +334,17 @@ export default function ErrorReviewScreen() {
                 />
               ))}
             </ul>
-          )}
-        </div>
-      </div>
+          </>
+        )}
 
-      {/* Модальне вікно підтвердження */}
-      <ConfirmClearModal
-        isOpen={showConfirmClear}
-        errorCount={errors.length}
-        onConfirm={confirmClearAll}
-        onCancel={() => setShowConfirmClear(false)}
-      />
+        {/* Модальне вікно підтвердження */}
+        <ConfirmClearModal
+          isOpen={showConfirmClear}
+          errorCount={errors.length}
+          onConfirm={confirmClearAll}
+          onCancel={() => setShowConfirmClear(false)}
+        />
+      </div>
     </div>
   );
 }
