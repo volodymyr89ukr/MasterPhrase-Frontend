@@ -565,6 +565,7 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
                 localId: phrase.id,
                 isFromErrorPool,
                 _fromErrorPool: phrase._fromErrorPool,
+                currentMatchingPoolSize: matchingPool.length,
               });
 
               // ✅ ВИДАЛЯЄМО ПОМИЛКУ ТІЛЬКИ ЯКЩО:
@@ -585,6 +586,9 @@ const ExerciseSwitcher: React.FC<ExerciseSwitcherProps> = ({
                   isFromErrorPool,
                 });
               }
+
+              // ⚠️ НЕ ЗМІНЮЄМО matchingPool ТУТ!
+              // WritingExercise сам керує переходом між фразами
             }}
           />
         )}
