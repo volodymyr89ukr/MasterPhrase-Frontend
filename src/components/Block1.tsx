@@ -400,6 +400,16 @@ export default function Block1({
             </div>
           </div>
         )}
+        <div className="flex-shrink-0 px-4 pb-4 bg-transparent">
+          <div className="max-w-3xl mx-auto">
+            <button
+              className="w-full px-6 py-4 rounded-xl bg-secondary text-secondary-foreground font-bold text-lg hover:bg-secondary/80 transition-colors shadow-lg border-2 border-border"
+              onClick={() => navigate("/irregular")}
+            >
+              📚 {t("irregular_grammar", "Граматичні форми")}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

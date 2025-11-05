@@ -11,6 +11,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { preloadTTS, initTTS } from "./utils/ttsUtils";
 import { useTheme } from "./contexts/ThemeContext";
 import ErrorReviewScreen from "./components/ErrorReviewScreen";
+import IrregularTrainingPage from "./components/irregular/IrregularTrainingPage"; // ← ДОДАТИ
 
 function AppContent() {
   const { theme, toggleTheme } = useTheme();
@@ -308,7 +309,7 @@ function AppContent() {
           />
           {/* =====> (REQ 3) ВАШ НОВИЙ РОУТ <===== */}
           <Route path="/review-errors" element={<ErrorReviewScreen />} />
-          {/* =====> КІНЕЦЬ КОДУ <===== */}
+          <Route path="/irregular" element={<IrregularTrainingPage />} />
         </Routes>
       </div>
     </div>
