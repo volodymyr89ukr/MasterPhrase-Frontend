@@ -5,6 +5,7 @@ import BackButton from "../BackButton";
 import { CategoryCard } from "./CategoryCard";
 import { Category, ProgressData } from "./types";
 import { EmptyState } from "../ui/EmptyState";
+import { useIrregularProgress } from "../../contexts/IrregularProgressContext"; // ← ДОДАТИ
 
 // 🔥 TODO: В Частині 3 замінимо на реальні дані
 const MOCK_CATEGORIES: Category[] = [
@@ -42,6 +43,7 @@ const STORAGE_KEY = "mp_irregular_progress";
 export default function IrregularTrainingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { getCategoryProgress } = useIrregularProgress();
   const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
   const [progress, setProgress] = useState<ProgressData>({});
 
@@ -60,18 +62,11 @@ export default function IrregularTrainingPage() {
   // Оновлення прогресу категорій на основі збережених даних
   useEffect(() => {
     const updated = categories.map((cat) => {
-      const catProgress = progress[cat.id];
-      if (!catProgress) return cat;
-
-      const completedCount = catProgress.completedBlocks.length;
-      const totalBlocks = cat.blocks.length || 1;
-      const newProgress = Math.round((completedCount / totalBlocks) * 100);
-
+      const newProgress = getCategoryProgress(cat.id, cat.blocks.length || 1);
       return { ...cat, progress: newProgress };
     });
-
     setCategories(updated);
-  }, [progress]);
+  }, [getCategoryProgress]);
 
   return (
     <div className="w-full h-full flex flex-col bg-background overflow-hidden">

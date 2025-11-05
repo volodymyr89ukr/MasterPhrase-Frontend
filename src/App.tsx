@@ -7,11 +7,77 @@ import { useAuth } from "./contexts/AuthContext";
 import { useSettings } from "./contexts/SettingsContext";
 import { User } from "./types";
 import { useTranslation } from "react-i18next";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useLocation,
+  useParams,
+} from "react-router-dom";
 import { preloadTTS, initTTS } from "./utils/ttsUtils";
 import { useTheme } from "./contexts/ThemeContext";
 import ErrorReviewScreen from "./components/ErrorReviewScreen";
 import IrregularTrainingPage from "./components/irregular/IrregularTrainingPage"; // ← ДОДАТИ
+import CategoryView from "./components/irregular/CategoryView"; // ← ДОДАТИ
+import WordListSpeaker from "./components/irregular/WordListSpeaker";
+import { Category } from "./components/irregular/types";
+
+// ✅ MOCK DATA (в Частині 3 замінимо на реальні дані)
+// ⬇️ ВСТАВИТИ ТУТ ⬇️
+const MOCK_CATEGORIES: Category[] = [
+  {
+    id: "nouns",
+    title: "Артиклі і множина іменників",
+    description: "3000 слів (розділено на блоки по 10–20)",
+    icon: "📘",
+    totalItems: 3000,
+    blocks: [], // Заповнимо в Частині 3
+    progress: 40,
+  },
+  {
+    id: "strong-verbs",
+    title: "3 форми сильних дієслів",
+    description: "200 дієслів у 20 блоках",
+    icon: "🚀",
+    totalItems: 200,
+    blocks: [],
+    progress: 15,
+  },
+  {
+    id: "conjugations",
+    title: "Відмінювання сильних дієслів",
+    description: "Тренування Präsens",
+    icon: "🔄",
+    totalItems: 150,
+    blocks: [],
+    progress: 0,
+  },
+];
+// ⬆️ ВСТАВИТИ ТУТ ⬆️
+// ✅ Wrapper для WordListSpeaker
+function WordListSpeakerWrapper() {
+  const { categoryId } = useParams<{ categoryId: string }>();
+  const category = MOCK_CATEGORIES.find((c) => c.id === categoryId);
+
+  if (!category) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="text-6xl mb-4">❓</div>
+          <div className="text-xl font-semibold">Категорію не знайдено</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <WordListSpeaker
+      blocks={category.blocks}
+      categoryId={category.id}
+      categoryTitle={category.title}
+    />
+  );
+}
 
 function AppContent() {
   const { theme, toggleTheme } = useTheme();
@@ -19,6 +85,7 @@ function AppContent() {
   const [showLogin, setShowLogin] = useState(false);
   const [showLanguageSelection, setShowLanguageSelection] = useState(false);
   const { user, setUser } = useAuth();
+
   const {
     learningLanguage,
     setLearningLanguage,
@@ -310,6 +377,14 @@ function AppContent() {
           {/* =====> (REQ 3) ВАШ НОВИЙ РОУТ <===== */}
           <Route path="/review-errors" element={<ErrorReviewScreen />} />
           <Route path="/irregular" element={<IrregularTrainingPage />} />
+          <Route
+            path="/irregular/:categoryId"
+            element={<CategoryView categories={MOCK_CATEGORIES} />}
+          />
+          <Route
+            path="/irregular/:categoryId/block/:blockId"
+            element={<WordListSpeakerWrapper />}
+          />
         </Routes>
       </div>
     </div>
