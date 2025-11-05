@@ -21,35 +21,40 @@ import IrregularTrainingPage from "./components/irregular/IrregularTrainingPage"
 import CategoryView from "./components/irregular/CategoryView"; // ← ДОДАТИ
 import WordListSpeaker from "./components/irregular/WordListSpeaker";
 import { Category } from "./components/irregular/types";
+import { nounsData } from "./data/irregular/nounsData";
+import { strongVerbsData } from "./data/irregular/strongVerbsData";
+import { conjugationsData } from "./data/irregular/conjugationsData";
+import { generateBlocks } from "./data/irregular/blockGenerator";
 
-// ✅ MOCK DATA (в Частині 3 замінимо на реальні дані)
-// ⬇️ ВСТАВИТИ ТУТ ⬇️
+// ✅ REAL DATA з генерацією блоків
 const MOCK_CATEGORIES: Category[] = [
   {
     id: "nouns",
     title: "Артиклі і множина іменників",
-    description: "3000 слів (розділено на блоки по 10–20)",
+    description: `${nounsData.length} слів (розділено на блоки по 10)`,
     icon: "📘",
-    totalItems: 3000,
-    blocks: [], // Заповнимо в Частині 3
-    progress: 40,
+    totalItems: nounsData.length,
+    blocks: generateBlocks(nounsData, 10),
+    progress: 0,
   },
   {
     id: "strong-verbs",
     title: "3 форми сильних дієслів",
-    description: "200 дієслів у 20 блоках",
+    description: `${strongVerbsData.length} дієслів у ${Math.ceil(
+      strongVerbsData.length / 10
+    )} блоках`,
     icon: "🚀",
-    totalItems: 200,
-    blocks: [],
-    progress: 15,
+    totalItems: strongVerbsData.length,
+    blocks: generateBlocks(strongVerbsData, 10),
+    progress: 0,
   },
   {
     id: "conjugations",
     title: "Відмінювання сильних дієслів",
-    description: "Тренування Präsens",
+    description: `${conjugationsData.length} дієслів (Präsens)`,
     icon: "🔄",
-    totalItems: 150,
-    blocks: [],
+    totalItems: conjugationsData.length,
+    blocks: generateBlocks(conjugationsData, 10),
     progress: 0,
   },
 ];

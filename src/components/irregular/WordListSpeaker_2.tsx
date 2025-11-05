@@ -7,7 +7,12 @@ import BackButton from "../BackButton";
 import { Button } from "../ui/Button";
 import { Card, CardContent } from "../ui/Card";
 import { IrregularBlock, IrregularItem } from "./types";
-import { ensureWarm, cancelSpeak, speakSmartAsync } from "../../utils/ttsUtils";
+import {
+  ensureWarm,
+  getBestVoice,
+  cancelSpeak,
+  speakSmartAsync,
+} from "../../utils/ttsUtils";
 import { BlockCompletionScreen } from "./BlockCompletionScreen";
 
 interface WordListSpeakerProps {
@@ -36,12 +41,12 @@ export default function WordListSpeaker({
   const [isPaused, setIsPaused] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
   const [speed, setSpeed] = useState(ttsSettings.readingRate);
-  const [showCompletion, setShowCompletion] = useState(false);
 
   const stopRequestedRef = useRef(false);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const LANG = learningLanguage?.code || "de-DE";
+  const [showCompletion, setShowCompletion] = useState(false);
 
   // Warm-up TTS при монтуванні
   useEffect(() => {
@@ -57,13 +62,6 @@ export default function WordListSpeaker({
       });
     }
   }, [currentIndex]);
-
-  // Cleanup при розмонтуванні
-  useEffect(() => {
-    return () => {
-      cancelSpeak();
-    };
-  }, []);
 
   const formatItem = (item: IrregularItem): string => {
     // Для іменників: der Tisch - die Tische
@@ -97,7 +95,7 @@ export default function WordListSpeaker({
           markBlockCompleted(categoryId, block.id);
           setCurrentIndex(block.items.length - 1);
 
-          // ✅ Показати екран завершення через 500мс
+          // ✅ Показати екран завершення
           setTimeout(() => setShowCompletion(true), 500);
         }
         return;
@@ -177,37 +175,30 @@ export default function WordListSpeaker({
     setCurrentIndex(prevIndex);
   };
 
-  const handleRepeatBlock = () => {
-    setShowCompletion(false);
-    setCurrentIndex(null);
+  const handleRepeat = () => {
+    stopRequestedRef.current = true;
+    cancelSpeak();
     setIsPaused(true);
+    setCurrentIndex(null);
   };
 
   const handleNextBlock = () => {
     if (!block) return;
     const nextBlockId = block.id + 1;
-    navigate(`/irregular/${categoryId}/block/${nextBlockId}`);
+    const nextBlock = blocks.find((b) => b.id === nextBlockId);
+    if (nextBlock) {
+      navigate(`/irregular/${categoryId}/block/${nextBlockId}`);
+    } else {
+      navigate(`/irregular/${categoryId}`);
+    }
   };
 
-  const handleBackToCategory = () => {
-    navigate(`/irregular/${categoryId}`);
-  };
+  useEffect(() => {
+    return () => {
+      cancelSpeak();
+    };
+  }, []);
 
-  // ✅ Якщо показуємо екран завершення
-  if (showCompletion && block) {
-    return (
-      <BlockCompletionScreen
-        categoryId={categoryId}
-        currentBlockId={block.id}
-        totalBlocks={blocks.length}
-        onRepeat={handleRepeatBlock}
-        onNext={handleNextBlock}
-        onBackToCategory={handleBackToCategory}
-      />
-    );
-  }
-
-  // ✅ Якщо блок не знайдено
   if (!block) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-background">
@@ -227,7 +218,6 @@ export default function WordListSpeaker({
     );
   }
 
-  // ✅ Основний інтерфейс озвучування
   return (
     <div className="w-full h-full flex flex-col bg-background overflow-hidden">
       {/* Header */}
@@ -325,7 +315,7 @@ export default function WordListSpeaker({
 
               {/* Додаткові кнопки */}
               <div className="flex items-center justify-center gap-3 mt-4">
-                <Button onClick={handleRepeatBlock} variant="outline" size="sm">
+                <Button onClick={handleRepeat} variant="outline" size="sm">
                   🔁 {t("repeat_block", "Повторити блок")}
                 </Button>
                 <Button onClick={handleNextBlock} variant="outline" size="sm">
