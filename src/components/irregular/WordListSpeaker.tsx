@@ -227,13 +227,13 @@ export default function WordListSpeaker({
     );
   }
 
-  // ✅ Основний інтерфейс озвучування
+  // ✅ Основний інтерфейс озвучування (Holy Grail Layout)
   return (
     <div className="w-full h-full flex flex-col bg-background overflow-hidden">
-      {/* Header */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-border">
+      {/* 🔹 Header (Fixed Top) */}
+      <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-border bg-background">
         <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3">
             <BackButton to={`/irregular/${categoryId}`} />
             <div>
               <h1 className="text-xl font-bold text-foreground">
@@ -247,93 +247,135 @@ export default function WordListSpeaker({
         </div>
       </div>
 
-      {/* Content */}
+      {/* 🔹 Content Area (Scrollable) */}
       <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4">
         <div className="max-w-3xl mx-auto">
-          <Card>
-            <CardContent className="p-6">
-              {/* Список елементів */}
-              <div className="space-y-3 mb-6">
-                {block.items.map((item, idx) => (
-                  <div
-                    key={item.id}
-                    ref={(el) => {
-                      itemRefs.current[idx] = el;
-                    }}
-                    className={`p-3 rounded-lg border transition-all ${
-                      idx === currentIndex
-                        ? "bg-accent border-primary shadow-md"
-                        : "bg-card border-border"
-                    }`}
-                  >
-                    <div className="font-semibold text-foreground">
-                      {formatItem(item)}
-                    </div>
-                    {showTranslation && item.translation && (
-                      <div className="text-sm text-muted-foreground italic mt-1">
-                        {item.translation}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Налаштування */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
-                <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={showTranslation}
-                    onChange={(e) => setShowTranslation(e.target.checked)}
-                    className="accent-primary"
-                  />
-                  {t("show_translation", "Показувати переклад")}
-                </label>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    {t("speed", "Швидкість")}:
-                  </span>
-                  {[0.7, 0.85, 1.0].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSpeed(s)}
-                      className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
-                        speed === s
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground hover:bg-accent"
-                      }`}
-                    >
-                      {s === 0.7 ? "🐢" : s === 0.85 ? "🚶" : "🐇"}
-                    </button>
-                  ))}
+          {/* Список елементів */}
+          <div className="space-y-3">
+            {block.items.map((item, idx) => (
+              <div
+                key={item.id}
+                ref={(el) => {
+                  itemRefs.current[idx] = el;
+                }}
+                className={`p-4 rounded-lg border transition-all ${
+                  idx === currentIndex
+                    ? "bg-accent border-primary shadow-md scale-[1.02]"
+                    : "bg-card border-border hover:border-primary/30"
+                }`}
+              >
+                <div className="font-semibold text-foreground text-lg">
+                  {formatItem(item)}
                 </div>
+                {showTranslation && item.translation && (
+                  <div className="text-sm text-muted-foreground italic mt-2">
+                    {item.translation}
+                  </div>
+                )}
               </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-              {/* Кнопки управління */}
-              <div className="flex items-center justify-center gap-4">
-                <Button onClick={handlePrev} variant="outline" size="lg">
-                  ◀️
-                </Button>
-                <Button onClick={handlePlayPause} size="lg" className="px-8">
-                  {isPaused ? "▶️" : "⏸"}
-                </Button>
-                <Button onClick={handleNext} variant="outline" size="lg">
-                  ▶️
-                </Button>
-              </div>
+      {/* 🔹 Control Panel (Fixed Bottom) */}
+      <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto px-4 py-4">
+          {/* Налаштування */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showTranslation}
+                onChange={(e) => setShowTranslation(e.target.checked)}
+                className="w-4 h-4 accent-primary"
+              />
+              <span>{t("show_translation", "Показувати переклад")}</span>
+            </label>
 
-              {/* Додаткові кнопки */}
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <Button onClick={handleRepeatBlock} variant="outline" size="sm">
-                  🔁 {t("repeat_block", "Повторити блок")}
-                </Button>
-                <Button onClick={handleNextBlock} variant="outline" size="sm">
-                  ⏭ {t("next_block", "Наступний блок")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {t("speed", "Швидкість")}:
+              </span>
+              {[
+                { value: 0.7, emoji: "🐢", label: "Повільно" },
+                { value: 0.85, emoji: "🚶", label: "Нормально" },
+                { value: 1.0, emoji: "🐇", label: "Швидко" },
+              ].map(({ value, emoji, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setSpeed(value)}
+                  title={label}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                    speed === value
+                      ? "bg-primary text-primary-foreground shadow-md scale-110"
+                      : "bg-secondary text-secondary-foreground hover:bg-accent hover:scale-105"
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Головні кнопки управління */}
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <Button
+              onClick={handlePrev}
+              variant="outline"
+              size="lg"
+              className="w-16 h-16 text-2xl"
+              disabled={currentIndex === 0}
+            >
+              ◀️
+            </Button>
+            <Button
+              onClick={handlePlayPause}
+              size="lg"
+              className="w-20 h-16 text-3xl font-bold shadow-lg"
+            >
+              {isPaused ? "▶️" : "⏸"}
+            </Button>
+            <Button
+              onClick={handleNext}
+              variant="outline"
+              size="lg"
+              className="w-16 h-16 text-2xl"
+              disabled={
+                currentIndex !== null && currentIndex >= block.items.length - 1
+              }
+            >
+              ▶️
+            </Button>
+          </div>
+
+          {/* Додаткові кнопки */}
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <Button
+              onClick={handleRepeatBlock}
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+            >
+              🔁 {t("repeat_block", "Повторити блок")}
+            </Button>
+            <Button
+              onClick={handleNextBlock}
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+            >
+              ⏭ {t("next_block", "Наступний блок")}
+            </Button>
+            <Button
+              onClick={handleBackToCategory}
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+            >
+              📚 {t("back_to_list", "До списку блоків")}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
