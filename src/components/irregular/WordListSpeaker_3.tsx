@@ -5,10 +5,10 @@ import { useSettings } from "../../contexts/SettingsContext";
 import { useIrregularProgress } from "../../contexts/IrregularProgressContext";
 import BackButton from "../BackButton";
 import { Button } from "../ui/Button";
+import { Card, CardContent } from "../ui/Card";
 import { IrregularBlock, IrregularItem } from "./types";
 import { ensureWarm, cancelSpeak, speakSmartAsync } from "../../utils/ttsUtils";
 import { BlockCompletionScreen } from "./BlockCompletionScreen";
-import { SpeakerSettings } from "./SpeakerSettings";
 
 interface WordListSpeakerProps {
   blocks: IrregularBlock[];
@@ -16,7 +16,8 @@ interface WordListSpeakerProps {
   categoryTitle: string;
 }
 
-const PAUSE_AFTER_TRANSLATION = 400; // мс фіксована пауза після перекладу
+const PAUSE_BETWEEN_ITEMS = 800; // мс
+const PAUSE_AFTER_TRANSLATION = 400; // мс
 
 export default function WordListSpeaker({
   blocks,
@@ -26,7 +27,7 @@ export default function WordListSpeaker({
   const { blockId } = useParams<{ blockId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { learningLanguage } = useSettings();
+  const { learningLanguage, ttsSettings } = useSettings();
   const { markBlockCompleted } = useIrregularProgress();
 
   const block = blocks.find((b) => b.id === parseInt(blockId || "0", 10));
@@ -34,27 +35,8 @@ export default function WordListSpeaker({
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
+  const [speed, setSpeed] = useState(ttsSettings.readingRate);
   const [showCompletion, setShowCompletion] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
-  // Налаштування з localStorage
-  const [speed, setSpeed] = useState(() => {
-    try {
-      const saved = localStorage.getItem("mp_irregular_speaker_speed");
-      return saved ? parseFloat(saved) : 0.85;
-    } catch {
-      return 0.85;
-    }
-  });
-
-  const [pauseBetweenItems, setPauseBetweenItems] = useState(() => {
-    try {
-      const saved = localStorage.getItem("mp_irregular_speaker_pause");
-      return saved ? parseInt(saved, 10) : 800;
-    } catch {
-      return 800;
-    }
-  });
 
   const stopRequestedRef = useRef(false);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -84,15 +66,19 @@ export default function WordListSpeaker({
   }, []);
 
   const formatItem = (item: IrregularItem): string => {
+    // Для іменників: der Tisch - die Tische
     if (item.article && item.plural) {
       return `${item.article} ${item.german} — ${item.plural}`;
     }
+    // Для дієслів (3 форми): sprechen - sprach - gesprochen
     if (item.prateritum && item.partizip) {
       return `${item.german} — ${item.prateritum} — ${item.partizip}`;
     }
+    // Для відмінювання: ich spreche, du sprichst, ...
     if (item.ich) {
       return `ich ${item.ich}, du ${item.du}, er/sie/es ${item.er}, wir ${item.wir}, ihr ${item.ihr}, sie ${item.sie}`;
     }
+    // Fallback
     return item.german;
   };
 
@@ -107,8 +93,11 @@ export default function WordListSpeaker({
       if (stopRequestedRef.current || idx >= block.items.length) {
         setIsPaused(true);
         if (idx >= block.items.length) {
+          // ✅ Блок завершено
           markBlockCompleted(categoryId, block.id);
           setCurrentIndex(block.items.length - 1);
+
+          // ✅ Показати екран завершення через 500мс
           setTimeout(() => setShowCompletion(true), 500);
         }
         return;
@@ -120,14 +109,20 @@ export default function WordListSpeaker({
       const germanText = formatItem(item);
 
       try {
-        await speakSmartAsync(germanText, { lang: LANG, rate: speed });
+        // Озвучуємо німецьку фразу
+        await speakSmartAsync(germanText, {
+          lang: LANG,
+          rate: speed,
+        });
 
         if (stopRequestedRef.current) return;
 
+        // Пауза після німецької
         await new Promise((r) => setTimeout(r, PAUSE_AFTER_TRANSLATION));
 
         if (stopRequestedRef.current) return;
 
+        // Озвучуємо переклад (якщо ввімкнено)
         if (showTranslation && item.translation) {
           await speakSmartAsync(item.translation, {
             lang: "uk-UA",
@@ -137,8 +132,10 @@ export default function WordListSpeaker({
 
         if (stopRequestedRef.current) return;
 
-        await new Promise((r) => setTimeout(r, pauseBetweenItems));
+        // Пауза між елементами
+        await new Promise((r) => setTimeout(r, PAUSE_BETWEEN_ITEMS));
 
+        // Наступний елемент
         await speakNext(idx + 1);
       } catch (error) {
         console.error("Speech error:", error);
@@ -182,8 +179,6 @@ export default function WordListSpeaker({
 
   const handleRepeatBlock = () => {
     setShowCompletion(false);
-    stopRequestedRef.current = true;
-    cancelSpeak();
     setCurrentIndex(null);
     setIsPaused(true);
   };
@@ -191,36 +186,14 @@ export default function WordListSpeaker({
   const handleNextBlock = () => {
     if (!block) return;
     const nextBlockId = block.id + 1;
-    const nextBlock = blocks.find((b) => b.id === nextBlockId);
-    if (nextBlock) {
-      navigate(`/irregular/${categoryId}/block/${nextBlockId}`);
-    } else {
-      navigate(`/irregular/${categoryId}`);
-    }
+    navigate(`/irregular/${categoryId}/block/${nextBlockId}`);
   };
 
   const handleBackToCategory = () => {
     navigate(`/irregular/${categoryId}`);
   };
 
-  const handleSettingsConfirm = (newSpeed: number, newPause: number) => {
-    setSpeed(newSpeed);
-    setPauseBetweenItems(newPause);
-    localStorage.setItem("mp_irregular_speaker_speed", String(newSpeed));
-    localStorage.setItem("mp_irregular_speaker_pause", String(newPause));
-    setSettingsOpen(false);
-
-    // Якщо відтворюється - перезапустити з новими налаштуваннями
-    if (!isPaused) {
-      stopRequestedRef.current = true;
-      cancelSpeak();
-      setTimeout(() => {
-        playFromIndex(currentIndex === null ? 0 : currentIndex);
-      }, 100);
-    }
-  };
-
-  // Екран завершення
+  // ✅ Якщо показуємо екран завершення
   if (showCompletion && block) {
     return (
       <BlockCompletionScreen
@@ -234,7 +207,7 @@ export default function WordListSpeaker({
     );
   }
 
-  // Блок не знайдено
+  // ✅ Якщо блок не знайдено
   if (!block) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-background">
@@ -254,10 +227,10 @@ export default function WordListSpeaker({
     );
   }
 
-  // Основний інтерфейс
+  // ✅ Основний інтерфейс озвучування (Holy Grail Layout)
   return (
     <div className="w-full h-full flex flex-col bg-background overflow-hidden">
-      {/* Header (Fixed Top) */}
+      {/* 🔹 Header (Fixed Top) */}
       <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-border bg-background">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3">
@@ -274,9 +247,10 @@ export default function WordListSpeaker({
         </div>
       </div>
 
-      {/* Content Area (Scrollable) */}
+      {/* 🔹 Content Area (Scrollable) */}
       <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4">
         <div className="max-w-3xl mx-auto">
+          {/* Список елементів */}
           <div className="space-y-3">
             {block.items.map((item, idx) => (
               <div
@@ -304,11 +278,11 @@ export default function WordListSpeaker({
         </div>
       </div>
 
-      {/* Control Panel (Fixed Bottom) */}
+      {/* 🔹 Control Panel (Fixed Bottom) */}
       <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-4 py-4">
-          {/* Рядок налаштувань */}
-          <div className="flex items-center justify-between mb-4">
+          {/* Налаштування */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
               <input
                 type="checkbox"
@@ -316,34 +290,41 @@ export default function WordListSpeaker({
                 onChange={(e) => setShowTranslation(e.target.checked)}
                 className="w-4 h-4 accent-primary"
               />
-              <span>{t("show_translation", "Показати переклад")}</span>
+              <span>{t("show_translation", "Показувати переклад")}</span>
             </label>
 
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="text-2xl hover:scale-110 transition-transform"
-              title={t("settings", "Налаштування")}
-            >
-              ⚙️
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                {t("speed", "Швидкість")}:
+              </span>
+              {[
+                { value: 0.7, emoji: "🐢", label: "Повільно" },
+                { value: 0.85, emoji: "🚶", label: "Нормально" },
+                { value: 1.0, emoji: "🐇", label: "Швидко" },
+              ].map(({ value, emoji, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setSpeed(value)}
+                  title={label}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                    speed === value
+                      ? "bg-primary text-primary-foreground shadow-md scale-110"
+                      : "bg-secondary text-secondary-foreground hover:bg-accent hover:scale-105"
+                  }`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Головні кнопки управління */}
-          <div className="flex items-center justify-center gap-3">
-            <Button
-              onClick={handleRepeatBlock}
-              variant="outline"
-              size="lg"
-              className="w-14 h-14 text-2xl"
-              title={t("repeat_block", "Повторити блок")}
-            >
-              🔄
-            </Button>
+          <div className="flex items-center justify-center gap-3 mb-3">
             <Button
               onClick={handlePrev}
               variant="outline"
               size="lg"
-              className="w-14 h-14 text-2xl"
+              className="w-16 h-16 text-2xl"
               disabled={currentIndex === 0}
             >
               ◀️
@@ -359,34 +340,44 @@ export default function WordListSpeaker({
               onClick={handleNext}
               variant="outline"
               size="lg"
-              className="w-14 h-14 text-2xl"
+              className="w-16 h-16 text-2xl"
               disabled={
                 currentIndex !== null && currentIndex >= block.items.length - 1
               }
             >
               ▶️
             </Button>
+          </div>
+
+          {/* Додаткові кнопки */}
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <Button
+              onClick={handleRepeatBlock}
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+            >
+              🔁 {t("repeat_block", "Повторити блок")}
+            </Button>
             <Button
               onClick={handleNextBlock}
-              variant="outline"
-              size="lg"
-              className="w-14 h-14 text-2xl"
-              title={t("next_block", "Наступний блок")}
+              variant="ghost"
+              size="sm"
+              className="text-xs"
             >
-              ⏭️
+              ⏭ {t("next_block", "Наступний блок")}
+            </Button>
+            <Button
+              onClick={handleBackToCategory}
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+            >
+              📚 {t("back_to_list", "До списку блоків")}
             </Button>
           </div>
         </div>
       </div>
-
-      {/* Settings Modal */}
-      <SpeakerSettings
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        onConfirm={handleSettingsConfirm}
-        initialSpeed={speed}
-        initialPause={pauseBetweenItems}
-      />
     </div>
   );
 }
