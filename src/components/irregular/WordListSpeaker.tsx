@@ -336,7 +336,7 @@ export default function WordListSpeaker({
               onClick={handleRepeatBlock}
               variant="outline"
               size="lg"
-              className="w-11 h-11 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
+              className="w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
               title={t("repeat_block", "Повторити блок")}
             >
               🔄
@@ -345,7 +345,7 @@ export default function WordListSpeaker({
               onClick={handlePrev}
               variant="outline"
               size="lg"
-              className="w-11 h-11 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
+              className="w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
               disabled={currentIndex === 0}
             >
               ◀️
@@ -361,7 +361,7 @@ export default function WordListSpeaker({
               onClick={handleNext}
               variant="outline"
               size="lg"
-              className="w-11 h-11 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
+              className="w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
               disabled={
                 currentIndex !== null && currentIndex >= block.items.length - 1
               }
@@ -372,7 +372,7 @@ export default function WordListSpeaker({
               onClick={handleNextBlock}
               variant="outline"
               size="lg"
-              className="w-11 h-11 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
+              className="w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
               title={t("next_block", "Наступний блок")}
             >
               ⏭️
