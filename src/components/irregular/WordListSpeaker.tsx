@@ -331,7 +331,7 @@ export default function WordListSpeaker({
           </div>
 
           {/* Головні кнопки управління - адаптивні розміри */}
-          <div className="flex items-center justify-center gap-1.5 sm:gap-3">
+          <div className="flex items-center justify-center gap-2 sm:gap-3">
             <Button
               onClick={handleRepeatBlock}
               variant="outline"
