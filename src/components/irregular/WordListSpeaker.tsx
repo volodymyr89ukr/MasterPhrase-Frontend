@@ -323,7 +323,7 @@ export default function WordListSpeaker({
 
             <button
               onClick={() => setSettingsOpen(true)}
-              className="text-xl sm:text-2xl flex-shrink-0 hover:scale-110 transition-transform p-1"
+              className="text-xl sm:text-2xl flex-shrink-0 hover:scale-110 transition-transform p-2"
               title={t("settings", "Налаштування")}
             >
               ⚙️
