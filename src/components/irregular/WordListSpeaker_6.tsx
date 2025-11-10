@@ -309,12 +309,12 @@ export default function WordListSpeaker({
         <div className="max-w-3xl mx-auto px-3 sm:px-4 py-3">
           {/* Рядок налаштувань */}
           <div className="flex items-center justify-between mb-3 gap-2">
-            <label className="flex items-center gap-2 text-sm sm:text-base text-foreground cursor-pointer min-w-0">
+            <label className="flex items-center gap-2 text-xs sm:text-sm text-foreground cursor-pointer min-w-0">
               <input
                 type="checkbox"
                 checked={showTranslation}
                 onChange={(e) => setShowTranslation(e.target.checked)}
-                className="w-5 h-5 flex-shrink-0 accent-primary"
+                className="w-4 h-4 flex-shrink-0 accent-primary"
               />
               <span className="truncate">
                 {t("show_translation", "Показати переклад")}
