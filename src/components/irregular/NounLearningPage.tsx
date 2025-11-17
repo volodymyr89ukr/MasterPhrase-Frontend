@@ -2,46 +2,51 @@ import React, { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useSettings } from "../../contexts/SettingsContext";
-import { useIrregularProgress } from "../../contexts/IrregularProgressContext";
+import { useNounProgress } from "../../contexts/NounProgressContext";
 import BackButton from "../BackButton";
 import { Button } from "../ui/Button";
-import { IrregularBlock, IrregularItem } from "./types";
+import { EmptyState } from "../ui/EmptyState";
+import { SpeakerSettings } from "./SpeakerSettings";
+import { NounQuiz } from "./NounQuiz";
+import { fetchNounsByWordSet, generateQuiz } from "../../api/nounsApi";
+import { NounData, QuizQuestion } from "../../api/nounsApi";
 import { ensureWarm, cancelSpeak, speakSmartAsync } from "../../utils/ttsUtils";
 import { BlockCompletionScreen } from "./BlockCompletionScreen";
-import { SpeakerSettings } from "./SpeakerSettings";
 
-interface WordListSpeakerProps {
-  blocks: IrregularBlock[];
-  categoryId: string;
-  categoryTitle: string;
-}
+const PAUSE_AFTER_TRANSLATION = 400;
 
-const PAUSE_AFTER_TRANSLATION = 400; // мс фіксована пауза після перекладу
+type LearningPhase =
+  | "learning1"
+  | "quiz1"
+  | "learning2"
+  | "quiz2"
+  | "completed";
 
-export default function WordListSpeaker({
-  blocks,
-  categoryId,
-  categoryTitle,
-}: WordListSpeakerProps) {
-  const { blockId } = useParams<{ blockId: string }>();
+export default function NounLearningPage() {
+  const { supersetId, setId } = useParams<{
+    supersetId: string;
+    setId: string;
+  }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { learningLanguage } = useSettings();
-  const { markBlockCompleted } = useIrregularProgress();
+  const { learningLanguage, interfaceLanguage } = useSettings();
+  const { markSetCompleted } = useNounProgress();
 
-  const block = blocks.find((b) => b.id === parseInt(blockId || "0", 10));
-
+  const [nouns, setNouns] = useState<NounData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<LearningPhase>("learning1");
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const [isPaused, setIsPaused] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
-  const [showCompletion, setShowCompletion] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [quiz, setQuiz] = useState<QuizQuestion[]>([]);
 
-  // Налаштування з localStorage
   const [speed, setSpeed] = useState(() => {
     try {
-      const saved = localStorage.getItem("mp_irregular_speaker_speed");
-      return saved ? parseFloat(saved) : 0.85;
+      return parseFloat(
+        localStorage.getItem("mp_irregular_speaker_speed") || "0.85"
+      );
     } catch {
       return 0.85;
     }
@@ -49,8 +54,10 @@ export default function WordListSpeaker({
 
   const [pauseBetweenItems, setPauseBetweenItems] = useState(() => {
     try {
-      const saved = localStorage.getItem("mp_irregular_speaker_pause");
-      return saved ? parseInt(saved, 10) : 800;
+      return parseInt(
+        localStorage.getItem("mp_irregular_speaker_pause") || "800",
+        10
+      );
     } catch {
       return 800;
     }
@@ -58,15 +65,31 @@ export default function WordListSpeaker({
 
   const stopRequestedRef = useRef(false);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-
   const LANG = learningLanguage?.code || "de-DE";
 
-  // Warm-up TTS при монтуванні
+  useEffect(() => {
+    const loadNouns = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchNounsByWordSet(
+          Number(setId),
+          interfaceLanguage?.code || "uk"
+        );
+        setNouns(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (setId) loadNouns();
+  }, [setId, interfaceLanguage]);
+
   useEffect(() => {
     ensureWarm(LANG);
   }, [LANG]);
 
-  // Auto-scroll до поточного елемента
   useEffect(() => {
     if (currentIndex !== null && itemRefs.current[currentIndex]) {
       itemRefs.current[currentIndex]?.scrollIntoView({
@@ -76,67 +99,67 @@ export default function WordListSpeaker({
     }
   }, [currentIndex]);
 
-  // Cleanup при розмонтуванні
   useEffect(() => {
     return () => {
       cancelSpeak();
     };
   }, []);
 
-  const formatItem = (item: IrregularItem): string => {
-    if (item.article && item.plural) {
-      return `${item.article} ${item.german} — ${item.plural}`;
+  const formatNoun = (noun: NounData): string => {
+    return `${noun.article} ${noun.word} — ${noun.plural || "-"}`;
+  };
+
+  const getVisibleNouns = (): NounData[] => {
+    if (phase === "learning1" || phase === "quiz1") {
+      return nouns.slice(0, 9); // Перші 9 слів
     }
-    if (item.prateritum && item.partizip) {
-      return `${item.german} — ${item.prateritum} — ${item.partizip}`;
-    }
-    if (item.ich) {
-      return `ich ${item.ich}, du ${item.du}, er/sie/es ${item.er}, wir ${item.wir}, ihr ${item.ihr}, sie ${item.sie}`;
-    }
-    return item.german;
+    return nouns; // Всі 18 слів для learning2 та quiz2
   };
 
   const playFromIndex = async (startIdx: number) => {
-    if (!block || startIdx >= block.items.length) return;
+    const visible = getVisibleNouns();
+    if (startIdx >= visible.length) return;
 
     await ensureWarm(LANG);
     stopRequestedRef.current = false;
     setIsPaused(false);
 
     const speakNext = async (idx: number) => {
-      if (stopRequestedRef.current || idx >= block.items.length) {
+      if (stopRequestedRef.current || idx >= visible.length) {
         setIsPaused(true);
-        if (idx >= block.items.length) {
-          markBlockCompleted(categoryId, block.id);
-          setCurrentIndex(block.items.length - 1);
-          setTimeout(() => setShowCompletion(true), 500);
+        if (idx >= visible.length) {
+          // Завершили частину
+          if (phase === "learning1") {
+            setPhase("quiz1");
+            setQuiz(generateQuiz(nouns.slice(0, 9), 4));
+          } else if (phase === "learning2") {
+            setPhase("quiz2");
+            setQuiz(generateQuiz(nouns, 5));
+          }
         }
         return;
       }
 
-      const item = block.items[idx];
+      const noun = visible[idx];
       setCurrentIndex(idx);
 
-      const germanText = formatItem(item);
+      const germanText = formatNoun(noun);
 
       try {
         await speakSmartAsync(germanText, { lang: LANG, rate: speed });
-
         if (stopRequestedRef.current) return;
 
         await new Promise((r) => setTimeout(r, PAUSE_AFTER_TRANSLATION));
-
         if (stopRequestedRef.current) return;
 
-        if (showTranslation && item.translation) {
-          await speakSmartAsync(item.translation, {
+        if (showTranslation && noun.translation) {
+          await speakSmartAsync(noun.translation, {
             lang: "uk-UA",
             rate: speed,
           });
         }
 
         if (stopRequestedRef.current) return;
-
         await new Promise((r) => setTimeout(r, pauseBetweenItems));
 
         await speakNext(idx + 1);
@@ -161,14 +184,14 @@ export default function WordListSpeaker({
   };
 
   const handleNext = () => {
-    if (!block) return;
+    const visible = getVisibleNouns();
     stopRequestedRef.current = true;
     cancelSpeak();
     setIsPaused(true);
     const nextIndex =
       currentIndex === null
         ? 0
-        : Math.min(block.items.length - 1, currentIndex + 1);
+        : Math.min(visible.length - 1, currentIndex + 1);
     setCurrentIndex(nextIndex);
   };
 
@@ -180,27 +203,11 @@ export default function WordListSpeaker({
     setCurrentIndex(prevIndex);
   };
 
-  const handleRepeatBlock = () => {
-    setShowCompletion(false);
+  const handleRepeat = () => {
     stopRequestedRef.current = true;
     cancelSpeak();
     setCurrentIndex(null);
     setIsPaused(true);
-  };
-
-  const handleNextBlock = () => {
-    if (!block) return;
-    const nextBlockId = block.id + 1;
-    const nextBlock = blocks.find((b) => b.id === nextBlockId);
-    if (nextBlock) {
-      navigate(`/irregular/${categoryId}/block/${nextBlockId}`);
-    } else {
-      navigate(`/irregular/${categoryId}`);
-    }
-  };
-
-  const handleBackToCategory = () => {
-    navigate(`/irregular/${categoryId}`);
   };
 
   const handleSettingsConfirm = (newSpeed: number, newPause: number) => {
@@ -210,7 +217,6 @@ export default function WordListSpeaker({
     localStorage.setItem("mp_irregular_speaker_pause", String(newPause));
     setSettingsOpen(false);
 
-    // Якщо відтворюється - перезапустити з новими налаштуваннями
     if (!isPaused) {
       stopRequestedRef.current = true;
       cancelSpeak();
@@ -220,67 +226,116 @@ export default function WordListSpeaker({
     }
   };
 
-  // Екран завершення
-  if (showCompletion && block) {
-    return (
-      <BlockCompletionScreen
-        categoryId={categoryId}
-        currentBlockId={block.id}
-        totalBlocks={blocks.length}
-        onRepeat={handleRepeatBlock}
-        onNext={handleNextBlock}
-        onBackToCategory={handleBackToCategory}
-      />
-    );
-  }
+  const handleQuizComplete = (score: number) => {
+    if (phase === "quiz1") {
+      setPhase("learning2");
+      setCurrentIndex(null);
+    } else if (phase === "quiz2") {
+      markSetCompleted(Number(supersetId), Number(setId));
+      setPhase("completed");
+    }
+  };
 
-  // Блок не знайдено
-  if (!block) {
+  const handleQuizSkip = () => {
+    if (phase === "quiz1") {
+      setPhase("learning2");
+    } else if (phase === "quiz2") {
+      markSetCompleted(Number(supersetId), Number(setId));
+      setPhase("completed");
+    }
+  };
+
+  const handleRepeatSet = () => {
+    setPhase("learning1");
+    setCurrentIndex(null);
+    setIsPaused(true);
+    stopRequestedRef.current = true;
+    cancelSpeak();
+  };
+
+  const handleNextSet = () => {
+    // TODO: реалізувати перехід до наступного комплекту
+    navigate(`/nouns/${supersetId}`);
+  };
+
+  const handleBackToSets = () => {
+    navigate(`/nouns/${supersetId}`);
+  };
+
+  if (loading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="text-6xl mb-4">❓</div>
-          <div className="text-xl font-semibold">
-            {t("block_not_found", "Блок не знайдено")}
-          </div>
-          <Button
-            onClick={() => navigate(`/irregular/${categoryId}`)}
-            className="mt-4"
-          >
-            {t("back_to_category", "Повернутися до категорії")}
-          </Button>
-        </div>
+        <div className="text-2xl">⏳ {t("loading", "Завантаження")}...</div>
       </div>
     );
   }
 
-  // Основний інтерфейс
+  if (error) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-background">
+        <EmptyState
+          icon={<span className="text-6xl">❌</span>}
+          title={t("error", "Помилка")}
+          description={error}
+        />
+      </div>
+    );
+  }
+
+  if (phase === "completed") {
+    return (
+      <BlockCompletionScreen
+        categoryId={`nouns-${supersetId}`}
+        currentBlockId={Number(setId)}
+        totalBlocks={10}
+        onRepeat={handleRepeatSet}
+        onNext={handleNextSet}
+        onBackToCategory={handleBackToSets}
+      />
+    );
+  }
+
+  if (phase === "quiz1" || phase === "quiz2") {
+    return (
+      <NounQuiz
+        questions={quiz}
+        onComplete={handleQuizComplete}
+        onSkip={handleQuizSkip}
+      />
+    );
+  }
+
+  const visibleNouns = getVisibleNouns();
+
   return (
     <div className="w-full h-full flex flex-col bg-background overflow-hidden">
-      {/* Header (Fixed Top) - БЕЗ ЗМІН */}
+      {/* Header */}
       <div className="flex-shrink-0 px-4 pt-4 pb-3 border-b border-border bg-background">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center gap-3">
-            <BackButton to={`/irregular/${categoryId}`} />
+            <BackButton to={`/nouns/${supersetId}`} />
             <div>
               <h1 className="text-xl font-bold text-foreground">
-                {categoryTitle} — {t("block", "Блок")} {block.id + 1}
+                📘 {t("noun_learning", "Вивчення іменників")} —{" "}
+                {t("set", "Комплект")}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {block.items.length} {t("items", "елементів")} • {block.level}
+                {phase === "learning1"
+                  ? t("part_1", "Частина 1 (1-9)")
+                  : t("part_2", "Частина 2 (10-18)")}
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content Area (Scrollable) - БЕЗ ЗМІН */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4">
         <div className="max-w-3xl mx-auto">
           <div className="space-y-3">
-            {block.items.map((item, idx) => (
+            {visibleNouns.map((noun, idx) => (
               <div
-                key={item.id}
+                key={noun.word_id}
                 ref={(el) => {
                   itemRefs.current[idx] = el;
                 }}
@@ -291,11 +346,11 @@ export default function WordListSpeaker({
                 }`}
               >
                 <div className="font-semibold text-foreground text-lg">
-                  {formatItem(item)}
+                  {formatNoun(noun)}
                 </div>
-                {showTranslation && item.translation && (
+                {showTranslation && noun.translation && (
                   <div className="text-sm text-muted-foreground italic mt-2">
-                    {item.translation}
+                    {noun.translation}
                   </div>
                 )}
               </div>
@@ -304,17 +359,16 @@ export default function WordListSpeaker({
         </div>
       </div>
 
-      {/* ✅ Control Panel (Fixed Bottom) - АДАПТИВНИЙ */}
+      {/* Control Panel */}
       <div className="flex-shrink-0 border-t border-border bg-background/95 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto px-3 sm:px-4 py-3">
-          {/* Рядок налаштувань */}
           <div className="flex items-center justify-between mb-3 gap-2">
-            <label className="flex items-center gap-2 text-xs sm:text-sm text-foreground cursor-pointer min-w-0">
+            <label className="flex items-center gap-2 text-sm sm:text-base text-foreground cursor-pointer min-w-0">
               <input
                 type="checkbox"
                 checked={showTranslation}
                 onChange={(e) => setShowTranslation(e.target.checked)}
-                className="w-4 h-4 flex-shrink-0 accent-primary"
+                className="w-5 h-5 flex-shrink-0 accent-primary"
               />
               <span className="truncate">
                 {t("show_translation", "Показати переклад")}
@@ -323,21 +377,20 @@ export default function WordListSpeaker({
 
             <button
               onClick={() => setSettingsOpen(true)}
-              className="text-xl sm:text-2xl flex-shrink-0 hover:scale-110 transition-transform p-1"
+              className="text-xl sm:text-2xl flex-shrink-0 hover:scale-110 transition-transform p-2"
               title={t("settings", "Налаштування")}
             >
               ⚙️
             </button>
           </div>
 
-          {/* Головні кнопки управління - адаптивні розміри */}
           <div className="flex items-center justify-center gap-2.5 sm:gap-3">
             <Button
-              onClick={handleRepeatBlock}
+              onClick={handleRepeat}
               variant="outline"
               size="lg"
               className="w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
-              title={t("repeat_block", "Повторити блок")}
+              title={t("repeat", "Повторити")}
             >
               🔄
             </Button>
@@ -363,25 +416,32 @@ export default function WordListSpeaker({
               size="lg"
               className="w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
               disabled={
-                currentIndex !== null && currentIndex >= block.items.length - 1
+                currentIndex !== null && currentIndex >= visibleNouns.length - 1
               }
             >
               ▶️
             </Button>
             <Button
-              onClick={handleNextBlock}
+              onClick={() => {
+                if (phase === "learning1") {
+                  setPhase("quiz1");
+                  setQuiz(generateQuiz(nouns.slice(0, 9), 4));
+                } else {
+                  setPhase("quiz2");
+                  setQuiz(generateQuiz(nouns, 5));
+                }
+              }}
               variant="outline"
               size="lg"
               className="w-12 h-12 sm:w-14 sm:h-14 text-lg sm:text-2xl p-0 flex-shrink-0"
-              title={t("next_block", "Наступний блок")}
+              title={t("quiz", "Тест")}
             >
-              ⏭️
+              🧪
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Settings Modal */}
       <SpeakerSettings
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}

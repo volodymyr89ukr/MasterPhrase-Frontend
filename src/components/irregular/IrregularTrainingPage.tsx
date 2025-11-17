@@ -12,11 +12,11 @@ const MOCK_CATEGORIES: Category[] = [
   {
     id: "nouns",
     title: "Артиклі і множина іменників",
-    description: "3000 слів (розділено на блоки по 10–20)",
+    description: "3000+ слів (розділено на суперсети по 180 слів)",
     icon: "📘",
     totalItems: 3000,
-    blocks: [], // Заповнимо в Частині 3
-    progress: 40,
+    blocks: [],
+    progress: 0,
   },
   {
     id: "strong-verbs",

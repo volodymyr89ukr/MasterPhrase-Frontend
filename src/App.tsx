@@ -25,6 +25,9 @@ import { nounsData } from "./data/irregular/nounsData";
 import { strongVerbsData } from "./data/irregular/strongVerbsData";
 import { conjugationsData } from "./data/irregular/conjugationsData";
 import { generateBlocks } from "./data/irregular/blockGenerator";
+import NounsSupersetsPage from "./components/irregular/NounsSupersetsPage";
+import NounWordSetsPage from "./components/irregular/NounWordSetsPage";
+import NounLearningPage from "./components/irregular/NounLearningPage";
 
 // ✅ REAL DATA з генерацією блоків
 const MOCK_CATEGORIES: Category[] = [
@@ -389,6 +392,13 @@ function AppContent() {
           <Route
             path="/irregular/:categoryId/block/:blockId"
             element={<WordListSpeakerWrapper />}
+          />
+          {/* Маршрути для іменників */}
+          <Route path="/nouns" element={<NounsSupersetsPage />} />
+          <Route path="/nouns/:supersetId" element={<NounWordSetsPage />} />
+          <Route
+            path="/nouns/:supersetId/set/:setId"
+            element={<NounLearningPage />}
           />
         </Routes>
       </div>

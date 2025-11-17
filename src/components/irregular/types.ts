@@ -38,9 +38,52 @@ export interface Category {
   progress: number; // 0-100
 }
 
+export interface NounSuperset {
+  id: number;
+  name: string;
+  description?: string;
+  totalWords: number; // 180 слів
+  totalSets: number; // 10 комплектів по 18 слів
+  progress: number; // 0-100
+}
+
+export interface NounWordSet {
+  id: number;
+  name: string;
+  words: NounWord[];
+  completed: boolean;
+  quizPassed: boolean;
+}
+
+export interface NounWord {
+  wordId: number;
+  german: string;
+  translation: string | null;
+  article: "der" | "die" | "das" | "der/die";
+  plural: string | null;
+  artikelExplanation?: string;
+  pluralExplanation?: string;
+}
+
+export interface QuizQuestion {
+  id: number;
+  type: "article" | "plural";
+  word: string;
+  correctAnswer: string;
+  options: string[];
+  explanation?: string;
+}
+
 export interface ProgressData {
   [categoryId: string]: {
     completedBlocks: number[];
+    lastStudied?: string;
+  };
+}
+
+export interface NounProgressData {
+  [supersetId: string]: {
+    completedSets: number[]; // ID завершених комплектів
     lastStudied?: string;
   };
 }

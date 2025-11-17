@@ -94,7 +94,13 @@ export function CategoryCard({ category }: CategoryCardProps) {
 
       <CardFooter>
         <Button
-          onClick={() => navigate(`/irregular/${category.id}`)}
+          onClick={() => {
+            if (category.id === "nouns") {
+              navigate("/nouns");
+            } else {
+              navigate(`/irregular/${category.id}`);
+            }
+          }}
           className="w-full"
           size="lg"
         >
