@@ -1,5 +1,4 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export interface ThousandData {
   id: number;
@@ -39,7 +38,7 @@ export async function fetchThousands(
   languageId: number = 1
 ): Promise<ThousandData[]> {
   const response = await fetch(
-    `${API_BASE_URL}/thousands?language_id=${languageId}`
+    `${API_BASE_URL}/api/thousands?language_id=${languageId}`
   );
   if (!response.ok) throw new Error("Failed to fetch thousands");
   const json = await response.json();
@@ -51,7 +50,7 @@ export async function fetchWordSetsByThousand(
   thousandId: number
 ): Promise<WordSetData[]> {
   const response = await fetch(
-    `${API_BASE_URL}/thousands/${thousandId}/word-sets`
+    `${API_BASE_URL}/api/thousands/${thousandId}/word-sets`
   );
   if (!response.ok) throw new Error("Failed to fetch word sets");
   const json = await response.json();
@@ -64,7 +63,7 @@ export async function fetchNounsByWordSet(
   interfaceLanguage: string = "uk"
 ): Promise<NounData[]> {
   const response = await fetch(
-    `${API_BASE_URL}/nouns/word-set/${wordSetId}?interface_language=${interfaceLanguage}`
+    `${API_BASE_URL}/api/nouns/word-set/${wordSetId}?interface_language=${interfaceLanguage}`
   );
   if (!response.ok) throw new Error("Failed to fetch nouns");
   const json = await response.json();
