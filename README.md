@@ -12,6 +12,7 @@ This repository contains the **frontend** application.
 - Tailwind CSS
 - React Router
 - i18next
+- Framer Motion
 
 ## Selected functionality
 
@@ -31,6 +32,18 @@ This repository contains the **frontend** application.
 npm install
 cp .env.example .env
 npm run dev
+```
+
+Production build:
+
+```bash
+npm run build
+```
+
+Lint:
+
+```bash
+npm run lint
 ```
 
 Set `VITE_API_URL` in your local `.env` before starting the application.
