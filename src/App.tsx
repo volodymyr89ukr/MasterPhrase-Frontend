@@ -17,8 +17,8 @@ import {
 import { preloadTTS, initTTS } from "./utils/ttsUtils";
 import { useTheme } from "./contexts/ThemeContext";
 import ErrorReviewScreen from "./components/ErrorReviewScreen";
-import IrregularTrainingPage from "./components/irregular/IrregularTrainingPage"; // ← ДОДАТИ
-import CategoryView from "./components/irregular/CategoryView"; // ← ДОДАТИ
+import IrregularTrainingPage from "./components/irregular/IrregularTrainingPage";
+import CategoryView from "./components/irregular/CategoryView";
 import WordListSpeaker from "./components/irregular/WordListSpeaker";
 import { Category } from "./components/irregular/types";
 import { nounsData } from "./data/irregular/nounsData";
@@ -29,8 +29,8 @@ import NounsSupersetsPage from "./components/irregular/NounsSupersetsPage";
 import NounWordSetsPage from "./components/irregular/NounWordSetsPage";
 import NounLearningPage from "./components/irregular/NounLearningPage";
 
-// ✅ REAL DATA з генерацією блоків
-const MOCK_CATEGORIES: Category[] = [
+// Learning categories generated from the current irregular-word datasets.
+const CATEGORIES: Category[] = [
   {
     id: "nouns",
     title: "Артиклі і множина іменників",
@@ -61,11 +61,10 @@ const MOCK_CATEGORIES: Category[] = [
     progress: 0,
   },
 ];
-// ⬆️ ВСТАВИТИ ТУТ ⬆️
-// ✅ Wrapper для WordListSpeaker
+// Wrapper used by the category route.
 function WordListSpeakerWrapper() {
   const { categoryId } = useParams<{ categoryId: string }>();
-  const category = MOCK_CATEGORIES.find((c) => c.id === categoryId);
+  const category = CATEGORIES.find((c) => c.id === categoryId);
 
   if (!category) {
     return (
@@ -387,7 +386,7 @@ function AppContent() {
           <Route path="/irregular" element={<IrregularTrainingPage />} />
           <Route
             path="/irregular/:categoryId"
-            element={<CategoryView categories={MOCK_CATEGORIES} />}
+            element={<CategoryView categories={CATEGORIES} />}
           />
           <Route
             path="/irregular/:categoryId/block/:blockId"
